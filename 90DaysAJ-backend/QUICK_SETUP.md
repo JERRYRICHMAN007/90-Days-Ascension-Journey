@@ -37,11 +37,13 @@ DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/ascension
 ```
 Replace `YOUR_PASSWORD` with your PostgreSQL password.
 
-Also update these JWT secrets (I've generated them for you):
+Also update these JWT secrets (generate secure random strings, at least 32 characters):
 ```
-JWT_ACCESS_SECRET=f231264bd14f91b4d4e65ef03a728b187221c73b884794584a814bfe0a1d6bc4
-JWT_REFRESH_SECRET=389132be997b6b3007dce1268aa774e3a95f987f32f81a8073dd9de9e175eaf2
+JWT_ACCESS_SECRET=your-secure-access-secret-min-32-chars
+JWT_REFRESH_SECRET=your-secure-refresh-secret-min-32-chars
 ```
+
+**⚠️ IMPORTANT:** Never commit real secrets to git. Use environment variables or a secrets manager.
 
 #### Step 4: Run Setup Commands
 ```powershell
