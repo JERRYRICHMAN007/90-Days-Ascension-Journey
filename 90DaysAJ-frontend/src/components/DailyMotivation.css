@@ -1,0 +1,143 @@
+.daily-motivation {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 30px;
+  border-radius: 15px;
+  margin: 20px 0;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.daily-motivation::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.motivation-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.motivation-icon {
+  font-size: 3rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.encouragement-badge {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 10px 20px;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.encouragement-emoji {
+  font-size: 1.5rem;
+}
+
+.encouragement-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.motivation-content {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 20px;
+}
+
+.motivation-quote {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 0 0 15px 0;
+  font-style: italic;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.motivation-author {
+  font-size: 1rem;
+  opacity: 0.9;
+  font-style: normal;
+  display: block;
+  text-align: right;
+}
+
+.motivation-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.stat-divider {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .daily-motivation {
+    padding: 20px;
+  }
+
+  .motivation-quote {
+    font-size: 1.2rem;
+  }
+
+  .motivation-stats {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .stat-divider {
+    display: none;
+  }
+}
+
