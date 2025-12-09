@@ -79,25 +79,49 @@ function SimpleRoadmap({ discipline, roadmap, currentDay, onStartLesson, userPro
         <div className="space-y-4">
           {roadmap.map((node, idx) => {
             const lessonKey = node.skill.toLowerCase().replace(/\s+/g, "-");
-            const isCompleted = lessonProgress[lessonKey] === true;
-            // Current is the first incomplete lesson
-            const firstIncompleteIndex = roadmap.findIndex((n, i) => {
-              const key = n.skill.toLowerCase().replace(/\s+/g, "-");
-              return !lessonProgress[key];
-            });
-            const isCurrent = idx === firstIncompleteIndex && !isCompleted;
-            const isUpcoming = idx > firstIncompleteIndex;
+            // Check if lesson is completed - handle both old format (true) and new format (object with completed flag)
+            const lessonData = lessonProgress[lessonKey];
+            const isCompleted = lessonData === true || (lessonData && lessonData.completed === true);
+            
+            // Find the first incomplete lesson in sequence
+            // Always check from the beginning - lessons must be completed in order
+            let firstIncompleteIndex = -1;
+            for (let i = 0; i < roadmap.length; i++) {
+              const key = roadmap[i].skill.toLowerCase().replace(/\s+/g, "-");
+              if (!lessonProgress[key]) {
+                firstIncompleteIndex = i;
+                break;
+              }
+            }
+            
+            // Current lesson: the first incomplete lesson (must be HTML5 if not completed)
+            // If HTML5 is not completed, it's always current regardless of other lessons
+            const html5Key = roadmap[0]?.skill.toLowerCase().replace(/\s+/g, "-");
+            const html5Completed = html5Key ? lessonProgress[html5Key] === true : false;
+            
+            const isCurrent = html5Completed
+              ? (idx === firstIncompleteIndex && !isCompleted && firstIncompleteIndex !== -1)
+              : (idx === 0); // HTML5 is always current if not completed
+            
+            const isUpcoming = html5Completed
+              ? (firstIncompleteIndex !== -1 && idx > firstIncompleteIndex)
+              : (idx > 0); // All others are upcoming if HTML5 is not completed
 
             return (
               <Card
                 key={idx}
-                className={`border-4 transition-all hover:shadow-xl ${
+                className={`border-4 transition-all ${
                   isCurrent
-                    ? `${colors.border} shadow-2xl scale-105`
+                    ? `${colors.border} shadow-2xl scale-105 bg-gray-900 dark:bg-gray-800 hover:shadow-xl cursor-pointer`
                     : isCompleted
-                    ? "border-green-300 bg-green-50"
-                    : "border-gray-200 bg-white opacity-60"
+                    ? "border-blue-400 bg-blue-900/30 dark:bg-blue-900/20 hover:shadow-xl cursor-pointer"
+                    : "border-gray-200 bg-gray-900 dark:bg-gray-800 opacity-60 cursor-not-allowed"
                 }`}
+                onClick={() => {
+                  if (isCurrent || isCompleted) {
+                    onStartLesson(node);
+                  }
+                }}
               >
                 <CardContent className="p-6 md:p-8">
                   <div className="flex items-start gap-6">
@@ -124,10 +148,10 @@ function SimpleRoadmap({ discipline, roadmap, currentDay, onStartLesson, userPro
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div>
-                          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                          <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
                             {node.skill}
                           </h3>
-                          <p className="text-lg text-gray-600 mb-3">
+                          <p className="text-lg text-gray-300 mb-3">
                             {node.description}
                           </p>
                           <span
@@ -145,26 +169,36 @@ function SimpleRoadmap({ discipline, roadmap, currentDay, onStartLesson, userPro
                       </div>
 
                       {/* Action Button */}
-                      {isCurrent && (
+                      {isCurrent && (() => {
+                        // Check if there's progress for this lesson
+                        const hasProgress = lessonData && typeof lessonData === 'object' && lessonData.completedSteps && Array.isArray(lessonData.completedSteps) && lessonData.completedSteps.length > 0;
+                        const buttonText = hasProgress ? "Continue Lesson" : "Start This Lesson Now";
+                        
+                        return (
+                          <Button
+                            size="lg"
+                            onClick={() => onStartLesson(node)}
+                            className={`${colors.bg} hover:opacity-90 text-white text-lg px-8 py-6 font-bold shadow-lg`}
+                          >
+                            <Play className="w-6 h-6 mr-3" />
+                            {buttonText}
+                          </Button>
+                        );
+                      })()}
+                      {isCompleted && (
                         <Button
                           size="lg"
                           onClick={() => onStartLesson(node)}
-                          className={`${colors.bg} hover:opacity-90 text-white text-lg px-8 py-6 font-bold shadow-lg`}
+                          className="bg-blue-500 hover:bg-blue-600 text-white text-lg px-8 py-6 font-bold shadow-lg"
                         >
                           <Play className="w-6 h-6 mr-3" />
-                          Start This Lesson Now
+                          Retake This Lesson
                         </Button>
                       )}
-                      {isCompleted && (
-                        <div className="flex items-center gap-2 text-green-600 font-semibold">
-                          <CheckCircle2 className="w-5 h-5" />
-                          <span>Completed!</span>
-                        </div>
-                      )}
                       {isUpcoming && (
-                        <p className="text-gray-400 italic">
-                          Coming up next...
-                        </p>
+                        <div className="flex items-center gap-2 text-gray-400 italic">
+                          <p>Complete previous lessons to unlock</p>
+                        </div>
                       )}
                     </div>
 
@@ -173,7 +207,11 @@ function SimpleRoadmap({ discipline, roadmap, currentDay, onStartLesson, userPro
                       <div className="hidden md:flex flex-shrink-0 items-center justify-center w-12">
                         <ArrowRight
                           className={`w-8 h-8 ${
-                            isCompleted ? "text-green-500" : "text-gray-300"
+                            isCompleted 
+                              ? "text-green-500" 
+                              : isCurrent
+                              ? "text-blue-500"
+                              : "text-gray-500 opacity-50"
                           }`}
                         />
                       </div>

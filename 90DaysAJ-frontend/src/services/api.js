@@ -4,8 +4,9 @@
  * This module provides a centralized API client for making HTTP requests.
  */
 
-// Default to backend on port 5001 to avoid conflicts with other local services
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001/v1';
+// Default to backend on port 4000 (Docker) or 5001 (direct run)
+// Set VITE_API_BASE_URL in .env.local to override
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/v1';
 
 class ApiClient {
   constructor(baseURL = API_BASE_URL) {

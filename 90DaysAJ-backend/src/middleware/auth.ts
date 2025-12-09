@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { verifyAccessToken } from '../services/supabaseAuth';
 import { AppError } from './errorHandler';
 
 export interface AuthRequest extends Request {
   userId?: string;
+  userEmail?: string;
+  userName?: string;
 }
 
-export function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
+export async function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -16,8 +18,10 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
   const token = authHeader.substring(7);
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as { sub: string };
-    req.userId = decoded.sub;
+    const user = await verifyAccessToken(token);
+    req.userId = user.id;
+    req.userEmail = user.email;
+    req.userName = user.user_metadata?.name;
     next();
   } catch (error) {
     throw new AppError(401, 'Invalid or expired token', 'INVALID_TOKEN');

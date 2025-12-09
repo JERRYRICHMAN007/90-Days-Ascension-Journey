@@ -48,6 +48,91 @@ export const journeys = [
   }
 ]
 
+// Helper function to check if a day is a test run day (December 8, 9, 10)
+function isTestRunDay(dateString) {
+  const testRunDates = ['2025-12-08', '2025-12-09', '2025-12-10']
+  return testRunDates.includes(dateString)
+}
+
+// Helper function to shift day numbers: days 8,9,10 are test runs, so content shifts
+// Day 8 content → Day 11, Day 9 → Day 12, Day 10 → Day 13, etc.
+function getShiftedDayIndex(dayNumber) {
+  // Days 1-7: no shift
+  if (dayNumber <= 7) return dayNumber - 1;
+  // Days 8-10: test run days, return null to indicate test day
+  if (dayNumber >= 8 && dayNumber <= 10) return null;
+  // Days 11+: shift back by 3 (day 11 gets day 8 content, day 12 gets day 9 content, etc.)
+  return dayNumber - 4; // dayNumber - 1 (convert to 0-index) - 3 (shift) = dayNumber - 4
+}
+
+// Get original week and day index from shifted day number
+function getOriginalWeekAndDayIndex(dayNumber) {
+  const shiftedIndex = getShiftedDayIndex(dayNumber);
+  if (shiftedIndex === null) return null; // Test run day
+  const weekNum = Math.floor(shiftedIndex / 7) + 1;
+  const dayIndex = shiftedIndex % 7;
+  return { weekNum, dayIndex };
+}
+
+// Get test run content for familiarization days based on date
+function getTestRunContent(dateString) {
+  const testDays = {
+    '2025-12-08': {
+      focus: '🧪 Test Run Day 1 - App Familiarization (Dec 8)',
+      testRunNote: '🧪 TEST RUN DAY 1 (December 8th): Explore the app interface, test all features, understand the journey structure. No real tasks today - just get comfortable with the system.',
+      tasks: [
+        'Navigate through all journey sections',
+        'Test the progress tracking features',
+        'Explore the dashboard and stats',
+        'Review the achievement system',
+        'Familiarize yourself with the daily structure',
+        'Test the reflection/journal features',
+        'Check all navigation and UI elements'
+      ],
+      resources: [
+        { title: 'App Tour Guide', url: '#', time: '10 min' },
+        { title: 'Feature Overview', url: '#', time: '5 min' }
+      ]
+    },
+    '2025-12-09': {
+      focus: '🧪 Test Run Day 2 - Feature Testing (Dec 9)',
+      testRunNote: '🧪 TEST RUN DAY 2 (December 9th): Test all interactive features, practice using the app, identify any issues or improvements needed.',
+      tasks: [
+        'Test marking tasks as complete',
+        'Practice using the reflection system',
+        'Test the quiz/assessment features',
+        'Explore learning resources section',
+        'Test the progress visualization',
+        'Practice navigation between days',
+        'Test mobile responsiveness (if applicable)'
+      ],
+      resources: [
+        { title: 'Feature Testing Checklist', url: '#', time: '15 min' },
+        { title: 'User Guide', url: '#', time: '10 min' }
+      ]
+    },
+    '2025-12-10': {
+      focus: '🧪 Test Run Day 3 - Final Preparation (Dec 10)',
+      testRunNote: '🧪 TEST RUN DAY 3 (December 10th): Final familiarization, correct any issues, prepare mentally for December 11th when the real journey begins. Lock in mode starts tomorrow!',
+      tasks: [
+        'Review all journey paths (Body, Dual Brand, Reading, Writing, Software)',
+        'Set your intentions for the 90-day journey',
+        'Plan your daily schedule and time blocks',
+        'Test the reminder/notification system',
+        'Prepare your workspace and environment',
+        'Mental preparation and commitment check',
+        'Final system check - everything ready?'
+      ],
+      resources: [
+        { title: 'Journey Preparation Guide', url: '#', time: '20 min' },
+        { title: 'Commitment Declaration', url: '#', time: '10 min' },
+        { title: 'December 11th Preview - What to Expect', url: '#', time: '5 min' }
+      ]
+    }
+  }
+  return testDays[dateString] || null
+}
+
 // Helper function to generate all weeks
 function generateWeeks(startDate, numWeeks) {
   const weeks = []
@@ -107,18 +192,36 @@ export const bodyTransformationWeeks = generateWeeks('2025-12-08', 13).map((week
     const dayDate = new Date(week.startDate)
     dayDate.setDate(new Date(week.startDate).getDate() + i)
     
-    const workoutData = getWorkoutForDay(idx + 1, i)
-    const workoutResources = getWorkoutResources(idx + 1, i)
+    const dayDateString = dayDate.toISOString().split('T')[0]
+    const dayNumber = idx * 7 + i + 1
+    const isTestDay = isTestRunDay(dayDateString)
+    const testContent = isTestDay ? getTestRunContent(dayDateString) : null
+    
+    // Shift content: days 8,9,10 are test runs, so day 11 gets day 8 content, etc.
+    let contentWeekNum = idx + 1
+    let contentDayIndex = i
+    if (!isTestDay && dayNumber >= 11) {
+      const originalDayNumber = dayNumber - 3
+      contentWeekNum = Math.floor((originalDayNumber - 1) / 7) + 1
+      contentDayIndex = (originalDayNumber - 1) % 7
+    }
+    
+    const workoutData = isTestDay ? null : getWorkoutForDay(contentWeekNum, contentDayIndex)
+    const workoutResources = isTestDay ? [] : getWorkoutResources(contentWeekNum, contentDayIndex)
+    
     days.push({
-      dayNumber: idx * 7 + i + 1,
-      date: dayDate.toISOString().split('T')[0],
+      dayNumber: dayNumber,
+      date: dayDateString,
       dayName: dayNames[i],
-      focus: workoutTypes[i],
-      workout: workoutData.name || workoutData,
-      workoutLink: workoutData.link || null,
-      nutrition: getNutritionForWeek(idx + 1, i),
-      mindset: getMindsetAffirmation(i),
-      resources: workoutResources
+      focus: isTestDay ? testContent.focus : workoutTypes[i],
+      workout: isTestDay ? 'App Familiarization & Testing' : (workoutData.name || workoutData),
+      workoutLink: isTestDay ? null : (workoutData.link || null),
+      nutrition: isTestDay ? 'No specific nutrition plan - focus on app testing' : getNutritionForWeek(idx + 1, i),
+      mindset: isTestDay ? 'I am preparing myself for the journey ahead. December 11th is when I lock in completely.' : getMindsetAffirmation(i),
+      resources: isTestDay ? testContent.resources : workoutResources,
+      isTestRun: isTestDay,
+      testRunNote: isTestDay ? testContent.testRunNote : null,
+      testRunTasks: isTestDay ? testContent.tasks : null
     })
   }
   
@@ -226,16 +329,33 @@ export const readingWeeks = generateWeeks('2025-12-08', 13).map((week, idx) => {
     const dayDate = new Date(week.startDate)
     dayDate.setDate(new Date(week.startDate).getDate() + i)
     
-    const isWeekend = i >= 5
+    const dayDateString = dayDate.toISOString().split('T')[0]
+    const dayNumber = idx * 7 + i + 1
+    const isTestDay = isTestRunDay(dayDateString)
+    const testContent = isTestDay ? getTestRunContent(dayDateString) : null
     
-    const readingResources = getReadingResources(idx + 1, i)
+    // Shift content: days 8,9,10 are test runs, so day 11 gets day 8 content, etc.
+    let contentWeekNum = idx + 1
+    let contentDayIndex = i
+    if (!isTestDay && dayNumber >= 11) {
+      const originalDayNumber = dayNumber - 3
+      contentWeekNum = Math.floor((originalDayNumber - 1) / 7) + 1
+      contentDayIndex = (originalDayNumber - 1) % 7
+    }
+    
+    const isWeekend = contentDayIndex >= 5
+    const readingResources = isTestDay ? [] : getReadingResources(contentWeekNum, contentDayIndex)
+    
     days.push({
-      dayNumber: idx * 7 + i + 1,
-      date: dayDate.toISOString().split('T')[0],
+      dayNumber: dayNumber,
+      date: dayDateString,
       dayName: dayNames[i],
-      readingSessions: isWeekend ? getWeekendReading(idx + 1, i) : getWeekdayReading(idx + 1, i),
-      theme: getReadingTheme(idx + 1),
-      resources: readingResources
+      readingSessions: isTestDay ? [{ time: 'App Testing', type: 'Familiarization', material: 'Explore app features', focus: 'Get comfortable with the system' }] : (isWeekend ? getWeekendReading(idx + 1, i) : getWeekdayReading(idx + 1, i)),
+      theme: isTestDay ? testContent.focus : getReadingTheme(idx + 1),
+      resources: isTestDay ? testContent.resources : readingResources,
+      isTestRun: isTestDay,
+      testRunNote: isTestDay ? testContent.testRunNote : null,
+      testRunTasks: isTestDay ? testContent.tasks : null
     })
   }
   
@@ -409,18 +529,35 @@ export const dualBrandWeeks = generateWeeks('2025-12-08', 13).map((week, idx) =>
     const dayDate = new Date(week.startDate)
     dayDate.setDate(new Date(week.startDate).getDate() + i)
     
+    const dayDateString = dayDate.toISOString().split('T')[0]
+    const dayNumber = idx * 7 + i + 1
+    const isTestDay = isTestRunDay(dayDateString)
+    const testContent = isTestDay ? getTestRunContent(dayDateString) : null
+    
+    // Shift content: days 8,9,10 are test runs, so day 11 gets day 8 content, etc.
+    let contentWeekNum = idx + 1
+    let contentDayIndex = i
+    if (!isTestDay && dayNumber >= 11) {
+      const originalDayNumber = dayNumber - 3
+      contentWeekNum = Math.floor((originalDayNumber - 1) / 7) + 1
+      contentDayIndex = (originalDayNumber - 1) % 7
+    }
+    
     days.push({
-      dayNumber: idx * 7 + i + 1,
-      date: dayDate.toISOString().split('T')[0],
+      dayNumber: dayNumber,
+      date: dayDateString,
       dayName: dayNames[i],
-      focus: getDualBrandFocus(idx + 1, i),
-      ryxenTasks: getRyxenTasks(idx + 1, i),
-      havenXTasks: getHavenXTasks(idx + 1, i),
-      theme: getDualBrandTheme(idx + 1),
-      learningResources: getDualBrandLearningResources(idx + 1, i),
-      outcome: getDualBrandOutcome(idx + 1, i),
+      focus: isTestDay ? testContent.focus : getDualBrandFocus(contentWeekNum, contentDayIndex),
+      ryxenTasks: isTestDay ? 'App familiarization and testing' : getRyxenTasks(contentWeekNum, contentDayIndex),
+      havenXTasks: isTestDay ? 'App familiarization and testing' : getHavenXTasks(contentWeekNum, contentDayIndex),
+      theme: isTestDay ? 'Test Run - App Familiarization' : getDualBrandTheme(idx + 1),
+      learningResources: isTestDay ? testContent.resources : getDualBrandLearningResources(idx + 1, i),
+      outcome: isTestDay ? 'App familiarity and system understanding' : getDualBrandOutcome(idx + 1, i),
       // Platform-specific sessions for content planning
-      platformSessions: getPlatformSessions(idx + 1, i)
+      platformSessions: isTestDay ? [] : getPlatformSessions(idx + 1, i),
+      isTestRun: isTestDay,
+      testRunNote: isTestDay ? testContent.testRunNote : null,
+      testRunTasks: isTestDay ? testContent.tasks : null
     })
   }
   
@@ -699,16 +836,35 @@ export const writersWeeks = generateWeeks('2025-12-08', 12).map((week, idx) => {
     const dayDate = new Date(week.startDate)
     dayDate.setDate(new Date(week.startDate).getDate() + i)
     
-    const writerResources = getWriterResources(idx + 1, i)
+    const dayDateString = dayDate.toISOString().split('T')[0]
+    const dayNumber = idx * 5 + i + 1
+    const isTestDay = isTestRunDay(dayDateString)
+    const testContent = isTestDay ? getTestRunContent(dayDateString) : null
+    
+    // Shift content: days 8,9,10 are test runs, so day 11 gets day 8 content, etc.
+    // For writers journey (5 days/week), day 8 = week 2 day 3, day 11 = week 3 day 1
+    let contentWeekNum = idx + 1
+    let contentDayIndex = i
+    if (!isTestDay && dayNumber >= 11) {
+      const originalDayNumber = dayNumber - 3
+      contentWeekNum = Math.floor((originalDayNumber - 1) / 5) + 1
+      contentDayIndex = (originalDayNumber - 1) % 5
+    }
+    
+    const writerResources = isTestDay ? [] : getWriterResources(contentWeekNum, contentDayIndex)
+    
     days.push({
-      dayNumber: idx * 5 + i + 1,
-      date: dayDate.toISOString().split('T')[0],
+      dayNumber: dayNumber,
+      date: dayDateString,
       dayName: dayNames[i],
-      learning: getWriterLearning(idx + 1, i),
-      execution: getWriterExecution(idx + 1, i),
-      reflection: getWriterReflection(idx + 1, i),
-      theme: getWriterTheme(idx + 1),
-      resources: writerResources
+      learning: isTestDay ? 'App familiarization and testing' : getWriterLearning(contentWeekNum, contentDayIndex),
+      execution: isTestDay ? 'Explore all app features' : getWriterExecution(contentWeekNum, contentDayIndex),
+      reflection: isTestDay ? 'Prepare mentally for December 11th - the real journey begins' : getWriterReflection(idx + 1, i),
+      theme: isTestDay ? testContent.focus : getWriterTheme(idx + 1),
+      resources: isTestDay ? testContent.resources : writerResources,
+      isTestRun: isTestDay,
+      testRunNote: isTestDay ? testContent.testRunNote : null,
+      testRunTasks: isTestDay ? testContent.tasks : null
     })
   }
   
@@ -819,50 +975,68 @@ export const softwareEngineeringWeeks = generateWeeks('2025-12-08', 13).map((wee
     const dayDate = new Date(week.startDate)
     dayDate.setDate(new Date(week.startDate).getDate() + i)
     
+    const dayDateString = dayDate.toISOString().split('T')[0]
+    const dayNumber = idx * 7 + i + 1
+    const isTestDay = isTestRunDay(dayDateString)
+    const testContent = isTestDay ? getTestRunContent(dayDateString) : null
+    
+    // Shift content: days 8,9,10 are test runs, so day 11 gets day 8 content, etc.
+    let contentWeekNum = idx + 1
+    let contentDayIndex = i
+    if (!isTestDay && dayNumber >= 11) {
+      // Shift back: day 11 → day 8 content, day 12 → day 9, day 13 → day 10
+      const originalDayNumber = dayNumber - 3
+      contentWeekNum = Math.floor((originalDayNumber - 1) / 7) + 1
+      contentDayIndex = (originalDayNumber - 1) % 7
+    }
+    
     const weekNum = idx + 1
-    const learningData = getSoftwareEngineeringLearning(weekNum, i)
-    const workflowData = getSoftwareEngineeringCursorWorkflow(weekNum, i)
-    const projectData = getSoftwareEngineeringProject(weekNum, i)
-    const monetizationData = getSoftwareEngineeringMonetization(weekNum, i)
+    const learningData = isTestDay ? null : getSoftwareEngineeringLearning(contentWeekNum, contentDayIndex)
+    const workflowData = isTestDay ? null : getSoftwareEngineeringCursorWorkflow(contentWeekNum, contentDayIndex)
+    const projectData = isTestDay ? null : getSoftwareEngineeringProject(contentWeekNum, contentDayIndex)
+    const monetizationData = isTestDay ? null : getSoftwareEngineeringMonetization(contentWeekNum, contentDayIndex)
     
     // Get scheduling and discipline rotation
     const timeBlocks = getTimeBlocks(i)
-    const disciplineRotation = getDisciplineRotation(weekNum, i)
+    const disciplineRotation = getDisciplineRotation(contentWeekNum, contentDayIndex)
     
     // Map existing content to disciplines and time blocks
-    const scheduledContent = organizeContentBySchedule(
+    const scheduledContent = isTestDay ? [] : organizeContentBySchedule(
       learningData,
       projectData,
       workflowData,
-      weekNum,
-      i,
+      contentWeekNum,
+      contentDayIndex,
       disciplineRotation,
       timeBlocks
     )
     
     days.push({
-      dayNumber: idx * 7 + i + 1,
-      date: dayDate.toISOString().split('T')[0],
+      dayNumber: dayNumber,
+      date: dayDateString,
       dayName: dayNames[i],
-      theme: getSoftwareEngineeringTheme(weekNum),
-      // Original content (preserved)
-      dailyLearning: learningData,
-      cursorWorkflow: workflowData,
-      miniProject: projectData,
-      resources: getSoftwareEngineeringResources(weekNum, i),
-      monetization: monetizationData,
-      quiz: getSoftwareEngineeringQuizzes(weekNum, i),
-      socialPosting: getSoftwareEngineeringSocialPosting(weekNum, i),
-      reflection: getSoftwareEngineeringReflection(weekNum, i),
+      theme: isTestDay ? testContent.focus : getSoftwareEngineeringTheme(contentWeekNum),
+      // Original content (preserved) - only if not test day
+      dailyLearning: isTestDay ? 'App familiarization and testing' : learningData,
+      cursorWorkflow: isTestDay ? 'Explore app features' : workflowData,
+      miniProject: isTestDay ? 'Test all app functionality' : projectData,
+      resources: isTestDay ? testContent.resources : getSoftwareEngineeringResources(weekNum, i),
+      monetization: isTestDay ? 'No monetization tasks - app testing only' : monetizationData,
+      quiz: isTestDay ? null : getSoftwareEngineeringQuizzes(contentWeekNum, contentDayIndex),
+      socialPosting: isTestDay ? 'No posting - app testing' : getSoftwareEngineeringSocialPosting(contentWeekNum, contentDayIndex),
+      reflection: isTestDay ? 'Prepare for December 11th - the real journey begins. No complaints, just lock in.' : getSoftwareEngineeringReflection(contentWeekNum, contentDayIndex),
       // Daily cumulative quiz and practical assessment
-      dailyQuiz: getDailyCumulativeQuiz(weekNum, i, idx * 7 + i + 1),
-      practicalAssessment: getDailyPracticalAssessment(weekNum, i, idx * 7 + i + 1),
+      dailyQuiz: isTestDay ? null : getDailyCumulativeQuiz(contentWeekNum, contentDayIndex, dayNumber),
+      practicalAssessment: isTestDay ? null : getDailyPracticalAssessment(contentWeekNum, contentDayIndex, dayNumber),
       // New scheduling structure
-      schedule: {
+      schedule: isTestDay ? { timeBlocks: [], disciplineRotation: [], scheduledContent: [] } : {
         timeBlocks: timeBlocks,
         disciplineRotation: disciplineRotation,
         scheduledContent: scheduledContent
-      }
+      },
+      isTestRun: isTestDay,
+      testRunNote: isTestDay ? testContent.testRunNote : null,
+      testRunTasks: isTestDay ? testContent.tasks : null
     })
   }
   
@@ -1306,7 +1480,194 @@ function getDisciplineResources(discipline, weekNum, skillName = null) {
 }
 
 // Export functions for use in components
-export { getSkillResources, getSkillQuiz };
+// Get topics for each skill
+function getSkillTopics(skillName) {
+  const skillTopics = {
+    'HTML5': [
+      'HTML document structure: <!DOCTYPE html>, <html>, <head>, <body>',
+      'Semantic HTML5 elements: <header>, <nav>, <main>, <article>, <section>, <aside>, <footer>',
+      'Text elements: headings (<h1>-<h6>), paragraphs (<p>), lists (<ul>, <ol>, <dl>)',
+      'Links and navigation: <a>, href attributes, relative vs absolute paths',
+      'Images: <img>, alt attributes, srcset for responsive images',
+      'Forms: <form>, <input> types, <label>, <button>, <textarea>, <select>',
+      'Metadata: <meta> tags, Open Graph, SEO basics',
+      'Accessibility: ARIA labels, semantic structure, keyboard navigation'
+    ],
+    'CSS3': [
+      'CSS syntax: selectors, properties, values',
+      'Three ways to add CSS: inline, <style>, external stylesheet',
+      'Basic selectors: element, class (.), ID (#)',
+      'Box model: content, padding, border, margin',
+      'Display types: block, inline, inline-block, none',
+      'Positioning: static, relative, absolute, fixed, sticky',
+      'Flexbox: container and item properties',
+      'CSS Grid: grid-template-columns, grid-template-rows, gap',
+      'Responsive Design: media queries, mobile-first approach'
+    ],
+    'TailwindCSS': [
+      'Utility-first CSS philosophy',
+      'Installation: CDN, npm, CLI',
+      'Configuration: tailwind.config.js',
+      'Core concepts: utility classes vs component classes',
+      'Responsive prefixes: sm:, md:, lg:, xl:, 2xl:',
+      'State variants: hover:, focus:, active:, disabled:',
+      'Dark mode: dark:',
+      'Spacing, typography, colors, layout utilities',
+      'Custom configuration: colors, fonts, spacing'
+    ],
+    'JavaScript ES6': [
+      'Variables: let, const, var',
+      'Data types: string, number, boolean, object, array',
+      'Functions: arrow functions, function declarations',
+      'DOM manipulation: querySelector, addEventListener',
+      'ES6 features: destructuring, spread operator, template literals',
+      'Async JavaScript: promises, async/await',
+      'Fetch API: making HTTP requests',
+      'Event handling and callbacks'
+    ],
+    'React': [
+      'React basics: components, JSX, props',
+      'State management: useState hook',
+      'Effects: useEffect hook',
+      'Event handling in React',
+      'Conditional rendering',
+      'Lists and keys',
+      'Component lifecycle',
+      'React Router for navigation'
+    ],
+    'Next.js': [
+      'File-based routing',
+      'Pages and layouts',
+      'API routes',
+      'Server-side rendering (SSR)',
+      'Static site generation (SSG)',
+      'Data fetching: getServerSideProps, getStaticProps',
+      'Image optimization',
+      'Deployment'
+    ],
+    'Node.js': [
+      'Node.js basics and runtime',
+      'NPM and package management',
+      'File system operations',
+      'HTTP server creation',
+      'Modules: require, module.exports',
+      'Event loop and asynchronous programming',
+      'Streams and buffers'
+    ],
+    'Express': [
+      'Express setup and routing',
+      'Middleware: built-in and custom',
+      'Request and response objects',
+      'Route parameters and query strings',
+      'Error handling',
+      'Template engines',
+      'Static files serving'
+    ],
+    'REST APIs': [
+      'REST principles',
+      'HTTP methods: GET, POST, PUT, DELETE',
+      'Request/response cycle',
+      'API endpoints design',
+      'Status codes',
+      'JSON data format',
+      'API documentation'
+    ],
+    'Authentication': [
+      'Authentication vs authorization',
+      'JWT tokens',
+      'Password hashing',
+      'Session management',
+      'OAuth 2.0',
+      'Security best practices',
+      'Protected routes'
+    ],
+    'Databases': [
+      'SQL vs NoSQL',
+      'MongoDB basics',
+      'PostgreSQL basics',
+      'CRUD operations',
+      'Database relationships',
+      'Indexes and optimization',
+      'Query optimization'
+    ],
+    'ORMs': [
+      'ORM concepts',
+      'Prisma setup and schema',
+      'Mongoose for MongoDB',
+      'Migrations',
+      'Relationships in ORMs',
+      'Query building',
+      'Data validation'
+    ],
+    'Dart': [
+      'Dart language basics',
+      'Variables and data types',
+      'Functions and classes',
+      'Null safety',
+      'Async programming',
+      'Packages and imports'
+    ],
+    'Flutter Widgets': [
+      'Widget tree concept',
+      'Stateless vs Stateful widgets',
+      'Common widgets: Container, Row, Column',
+      'Material Design widgets',
+      'Layout widgets',
+      'Navigation'
+    ],
+    'State Management': [
+      'State management concepts',
+      'Provider package',
+      'setState vs state management',
+      'Global state vs local state',
+      'State management patterns'
+    ],
+    'React Native': [
+      'React Native basics',
+      'Components and styling',
+      'Navigation',
+      'Platform-specific code',
+      'Native modules',
+      'Performance optimization'
+    ],
+    'WP Structure': [
+      'WordPress file structure',
+      'Theme hierarchy',
+      'Template files',
+      'The Loop',
+      'Hooks and filters',
+      'WordPress database'
+    ],
+    'Custom Themes': [
+      'Theme development basics',
+      'Creating a theme',
+      'Template hierarchy',
+      'Custom post types',
+      'Widgets and menus',
+      'Theme customization'
+    ],
+    'Gutenberg Blocks': [
+      'Block editor basics',
+      'Creating custom blocks',
+      'Block attributes',
+      'Block editor API',
+      'Block patterns',
+      'Reusable blocks'
+    ],
+    'Plugin Development': [
+      'Plugin structure',
+      'Creating a plugin',
+      'Hooks and filters',
+      'Database operations',
+      'Admin pages',
+      'Plugin security'
+    ]
+  };
+  
+  return skillTopics[skillName] || [];
+}
+
+export { getSkillResources, getSkillQuiz, getSkillTopics };
 
 // Roadmap progression for each discipline (enhanced with resources and quizzes)
 function getDisciplineRoadmap(discipline) {

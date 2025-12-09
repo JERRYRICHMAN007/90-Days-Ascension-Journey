@@ -4,11 +4,12 @@
   "description": "Backend API for 90 Days Ascension Journey",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "set PORT=5001&& set HOST=127.0.0.1&& tsx watch src/index.ts",
+    "dev": "set PORT=4000&& set HOST=127.0.0.1&& tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx src/prisma/seed.ts",
     "test": "jest",
@@ -19,6 +20,7 @@
     "@aws-sdk/s3-request-presigner": "^3.490.0",
     "@prisma/client": "^5.7.1",
     "@sendgrid/mail": "^8.1.0",
+    "@supabase/supabase-js": "^2.87.0",
     "argon2": "^0.31.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -45,4 +47,3 @@
     "typescript": "^5.3.3"
   }
 }
-

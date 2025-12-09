@@ -37,9 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Handle both response formats: { data: {...} } or direct user object
           setUser(userData.data || userData);
         } catch (error: any) {
-          // If 404 or user endpoint doesn't exist, try to refresh token
-          // Otherwise, clear invalid tokens
-          if (error.message?.includes('404') || error.message?.includes('not found')) {
+          // If connection refused or backend is down, keep tokens but don't fail
+          if (error.message?.includes('ERR_CONNECTION_REFUSED') || 
+              error.message?.includes('Failed to fetch') ||
+              error.message?.includes('NetworkError')) {
+            console.warn('Backend not available, skipping auth initialization');
+            // Keep tokens for when backend comes back online
+          } else if (error.message?.includes('404') || error.message?.includes('not found')) {
             try {
               await refreshToken();
               // Retry getting user after refresh
@@ -163,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within AuthProvider');
   }
   return context;

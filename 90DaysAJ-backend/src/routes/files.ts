@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../prisma/client';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { generatePresignedUrl } from '../services/s3';
 import { processAvatarImage } from '../services/imageProcessor';
 import { AppError } from '../middleware/errorHandler';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Generate presigned URL for upload
 router.post(

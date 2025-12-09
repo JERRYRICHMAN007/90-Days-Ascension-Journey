@@ -130,8 +130,13 @@ export function JourneySidebar({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">
+                      <div className="text-sm font-medium truncate flex items-center gap-2">
                         Day {day.dayNumber}
+                        {day.isTestRun && (
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
+                            🧪
+                          </span>
+                        )}
                       </div>
                       {day.date && (
                         <div className="text-xs font-semibold text-primary truncate">

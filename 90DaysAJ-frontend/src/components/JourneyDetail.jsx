@@ -6,6 +6,7 @@ import {
   getJourneyData,
   getSkillResources,
   getSkillQuiz,
+  getSkillTopics,
 } from "../data/journeyData";
 import CourseraLayout from "./CourseraLayout";
 import MinimalDashboard from "./MinimalDashboard";
@@ -135,6 +136,35 @@ function JourneyDetail({
       setActiveSection(null);
     }
   }, [location.search, location.pathname]);
+
+  // Handle lessonId from URL to set correct lesson index
+  useEffect(() => {
+    if (lessonId && discipline && journeyId === "software-engineering") {
+      const disciplineMap = {
+        frontend: "Frontend",
+        backend: "Backend",
+        mobile: "Mobile",
+        wordpress: "WordPress",
+      };
+      const disciplineName = disciplineMap[discipline?.toLowerCase()] || "Frontend";
+      
+      // Get roadmap to find the skill
+      const roadmap =
+        currentDay?.schedule?.scheduledContent?.deepLearning?.find(
+          (b) => b.discipline === disciplineName
+        )?.content?.roadmap || [];
+
+      // Find the index of the lesson that matches the lessonId
+      const lessonIndex = roadmap.findIndex((node) => {
+        const lessonKey = node.skill.toLowerCase().replace(/\s+/g, "-");
+        return lessonKey === lessonId.toLowerCase();
+      });
+
+      if (lessonIndex !== -1) {
+        setCurrentLessonIndex(lessonIndex);
+      }
+    }
+  }, [lessonId, discipline, journeyId, currentDay]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -329,31 +359,47 @@ function JourneyDetail({
       };
       const disciplineName =
         disciplineMap[discipline?.toLowerCase()] || "Frontend";
+      
+      // Get roadmap to find skill name (for software-engineering)
+      const roadmap =
+        currentDay?.schedule?.scheduledContent?.deepLearning?.find(
+          (b) => b.discipline === disciplineName
+        )?.content?.roadmap || [];
+
+      // Find the skill that matches the lessonId
+      const matchedSkill = roadmap.find((node) => {
+        const lessonKey = node.skill.toLowerCase().replace(/\s+/g, "-");
+        return lessonKey === lessonId.toLowerCase();
+      });
+
+      // Get lessons for the discipline
       const lessons =
         currentDay?.schedule?.scheduledContent?.deepLearning?.filter(
           (b) => b.discipline === disciplineName
         ) || [];
 
-      const currentLesson = lessons[currentLessonIndex] || lessons[0];
+      // For software-engineering, use roadmap index; otherwise use lessons array
+      let lessonIndexToUse = currentLessonIndex;
+      if (journeyId === "software-engineering" && matchedSkill) {
+        lessonIndexToUse = roadmap.findIndex((node) => {
+          const lessonKey = node.skill.toLowerCase().replace(/\s+/g, "-");
+          return lessonKey === lessonId.toLowerCase();
+        });
+        if (lessonIndexToUse === -1) lessonIndexToUse = 0;
+      }
+
+      const currentLesson = lessons[lessonIndexToUse] || lessons[0];
       const resources = currentLesson?.content?.resources || [];
 
       // Use SimpleLessonView for software-engineering, LessonSlide for others
       if (journeyId === "software-engineering") {
-        // Get roadmap to find skill name
-        const roadmap =
-          currentDay?.schedule?.scheduledContent?.deepLearning?.find(
-            (b) => b.discipline === disciplineName
-          )?.content?.roadmap || [];
-
-        // Get skill name from lesson title to fetch specific resources
-        const lessonTitle = currentLesson?.content?.title || "";
-        const skillName = roadmap.find((r) =>
-          lessonTitle.toLowerCase().includes(r.skill.toLowerCase())
-        )?.skill;
+        // Use the matched skill name
+        const skillName = matchedSkill?.skill;
         const skillResources = skillName
           ? getSkillResources(skillName)
           : currentLesson?.content?.resources || [];
         const skillQuiz = skillName ? getSkillQuiz(skillName) : [];
+        const skillTopics = skillName ? getSkillTopics(skillName) : [];
         const deepLearningTime = skillName
           ? roadmap.find((r) => r.skill === skillName)?.deepLearningTime
           : currentLesson?.duration || "30 min";
@@ -361,26 +407,62 @@ function JourneyDetail({
         return (
           <SimpleLessonView
             lesson={{
-              title: currentLesson?.content?.title || "Lesson",
-              topics: currentLesson?.content?.topics || [],
+              title: skillName || currentLesson?.content?.title || "Lesson",
+              topics: skillTopics.length > 0 ? skillTopics : (currentLesson?.content?.topics || []),
               content: currentLesson?.content,
               estimatedTime: deepLearningTime,
               resources: skillResources,
               quiz: skillQuiz,
             }}
-            lessonIndex={currentLessonIndex}
-            totalLessons={lessons.length}
+            lessonIndex={lessonIndexToUse}
+            totalLessons={roadmap.length || lessons.length}
             journeyId={journeyId}
             discipline={disciplineName}
             currentDay={currentDay}
+            skillName={skillName}
+            lessonKey={lessonId}
             onPrevious={() => {
-              if (currentLessonIndex > 0) {
-                setCurrentLessonIndex(currentLessonIndex - 1);
+              if (lessonIndexToUse > 0) {
+                const prevSkill = roadmap[lessonIndexToUse - 1];
+                if (prevSkill) {
+                  const prevKey = prevSkill.skill.toLowerCase().replace(/\s+/g, "-");
+                  navigate(`/discipline/${discipline}/lesson/${prevKey}`);
+                }
               }
             }}
             onNext={() => {
-              if (currentLessonIndex < lessons.length - 1) {
-                setCurrentLessonIndex(currentLessonIndex + 1);
+              // Check if current lesson is completed before allowing next
+              const currentLessonKey = lessonId?.toLowerCase();
+              try {
+                const saved = localStorage.getItem(`lessonProgress_${journeyId}_${disciplineName}`) || "{}";
+                const lessonProgress = JSON.parse(saved);
+                const isCurrentCompleted = lessonProgress[currentLessonKey] === true;
+                
+                if (!isCurrentCompleted) {
+                  alert("Please complete all steps in this lesson before moving to the next one.");
+                  return;
+                }
+              } catch (error) {
+                console.error("Error checking lesson progress:", error);
+              }
+              
+              if (lessonIndexToUse < roadmap.length - 1) {
+                const nextSkill = roadmap[lessonIndexToUse + 1];
+                if (nextSkill) {
+                  const nextKey = nextSkill.skill.toLowerCase().replace(/\s+/g, "-");
+                  navigate(`/discipline/${discipline}/lesson/${nextKey}`);
+                }
+              }
+            }}
+            isCurrentLessonCompleted={() => {
+              // Check if current lesson is completed
+              const currentLessonKey = lessonId?.toLowerCase();
+              try {
+                const saved = localStorage.getItem(`lessonProgress_${journeyId}_${disciplineName}`) || "{}";
+                const lessonProgress = JSON.parse(saved);
+                return lessonProgress[currentLessonKey] === true;
+              } catch {
+                return false;
               }
             }}
             onComplete={() => {

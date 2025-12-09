@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -18,7 +18,7 @@ import Quiz from "./Quiz";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 
-function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPrevious, onComplete, journeyId = "software-engineering", discipline, currentDay }) {
+function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPrevious, onComplete, journeyId = "software-engineering", discipline, currentDay, skillName, lessonKey, isCurrentLessonCompleted }) {
   const navigate = useNavigate();
   const [isStarted, setIsStarted] = useState(false);
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -47,15 +47,119 @@ function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPreviou
   };
 
   const toggleStep = (index) => {
-    setCompletedSteps(prev => 
-      prev.includes(index) 
+    setCompletedSteps(prev => {
+      const newSteps = prev.includes(index) 
         ? prev.filter(i => i !== index)
-        : [...prev, index]
-    );
+        : [...prev, index].sort((a, b) => a - b); // Sort to maintain order
+      
+      // Save immediately when toggling
+      if (lessonKey && discipline && journeyId) {
+        try {
+          const saved = localStorage.getItem(`lessonProgress_${journeyId}_${discipline}`) || "{}";
+          const lessonProgress = JSON.parse(saved);
+          lessonProgress[lessonKey] = {
+            ...lessonProgress[lessonKey],
+            completedSteps: newSteps,
+            timeElapsed: timeElapsed,
+            lastUpdated: new Date().toISOString()
+          };
+          localStorage.setItem(`lessonProgress_${journeyId}_${discipline}`, JSON.stringify(lessonProgress));
+        } catch (error) {
+          console.error("Error saving lesson progress:", error);
+        }
+      }
+      
+      return newSteps;
+    });
   };
 
   const topics = lesson?.topics || [];
   const allStepsCompleted = completedSteps.length === topics.length;
+
+  // Load saved progress when component mounts
+  useEffect(() => {
+    if (lessonKey && discipline && journeyId) {
+      try {
+        const saved = localStorage.getItem(`lessonProgress_${journeyId}_${discipline}`) || "{}";
+        const lessonProgress = JSON.parse(saved);
+        const savedProgress = lessonProgress[lessonKey];
+        
+        // Handle both object format (with progress data) and boolean format (just marked complete)
+        if (savedProgress) {
+          if (typeof savedProgress === 'object' && savedProgress.completedSteps) {
+            // New format: object with detailed progress
+            const savedSteps = Array.isArray(savedProgress.completedSteps) ? savedProgress.completedSteps : [];
+            // Always set the saved steps, even if empty (to preserve state)
+            setCompletedSteps(savedSteps);
+            if (savedProgress.timeElapsed) {
+              setTimeElapsed(savedProgress.timeElapsed);
+            }
+            // Auto-start lesson if there's progress
+            if (savedSteps.length > 0) {
+              setIsStarted(true);
+            }
+          } else if (savedProgress === true) {
+            // Old format: just marked as complete, reset steps to allow re-learning
+            setCompletedSteps([]);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading lesson progress:", error);
+      }
+    }
+  }, [lessonKey, discipline, journeyId]);
+
+  // Track if we've loaded initial progress to avoid overwriting on mount
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
+  // Save progress whenever completedSteps or timeElapsed changes (skip initial load)
+  useEffect(() => {
+    // Skip saving on initial mount - progress is already saved in toggleStep
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+      return;
+    }
+    
+    // Only save if we have valid data and it's not the initial load
+    if (lessonKey && discipline && journeyId) {
+      try {
+        const saved = localStorage.getItem(`lessonProgress_${journeyId}_${discipline}`) || "{}";
+        const lessonProgress = JSON.parse(saved);
+        lessonProgress[lessonKey] = {
+          ...(lessonProgress[lessonKey] || {}),
+          completedSteps: completedSteps,
+          timeElapsed: timeElapsed,
+          lastUpdated: new Date().toISOString()
+        };
+        localStorage.setItem(`lessonProgress_${journeyId}_${discipline}`, JSON.stringify(lessonProgress));
+      } catch (error) {
+        console.error("Error saving lesson progress:", error);
+      }
+    }
+  }, [completedSteps, timeElapsed, lessonKey, discipline, journeyId, isInitialLoad]);
+
+  // Scroll to last checked box when lesson loads with progress
+  useEffect(() => {
+    if (isStarted && completedSteps.length > 0) {
+      // Wait for DOM to render, then scroll to the step after the last completed one
+      setTimeout(() => {
+        const lastCompletedIndex = Math.max(...completedSteps);
+        const nextStepIndex = lastCompletedIndex + 1;
+        const targetElement = document.getElementById(`lesson-step-${nextStepIndex}`);
+        const fallbackElement = document.getElementById(`lesson-step-${lastCompletedIndex}`);
+        const elementToScroll = targetElement || fallbackElement;
+        
+        if (elementToScroll) {
+          elementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Highlight the target step briefly
+          elementToScroll.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+          setTimeout(() => {
+            elementToScroll.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+          }, 2000);
+        }
+      }, 500);
+    }
+  }, [isStarted, completedSteps]);
 
   return (
     <div className="simple-lesson-view min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-8">
@@ -65,7 +169,23 @@ function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPreviou
           <Button
             variant="outline"
             size="lg"
-            onClick={() => navigate(-1)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // Navigate back to the roadmap page
+              if (discipline) {
+                const disciplineMap = {
+                  "Frontend": "frontend",
+                  "Backend": "backend",
+                  "Mobile": "mobile",
+                  "WordPress": "wordpress"
+                };
+                const disciplineSlug = disciplineMap[discipline] || discipline.toLowerCase();
+                navigate(`/discipline/${disciplineSlug}`, { replace: true });
+              } else {
+                navigate(-1);
+              }
+            }}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -82,10 +202,10 @@ function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPreviou
         </div>
 
         {/* Progress Indicator */}
-        <Card className="border-2 border-blue-200 shadow-lg">
+        <Card className="border-2 border-blue-200 shadow-lg bg-gray-900 dark:bg-gray-800">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-semibold text-gray-700">Your Progress</span>
+              <span className="text-lg font-semibold text-white">Your Progress</span>
               <span className="text-2xl font-bold text-blue-600">
                 {Math.round((completedSteps.length / Math.max(topics.length, 1)) * 100)}%
               </span>
@@ -133,11 +253,11 @@ function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPreviou
 
         {/* Start Learning Button */}
         {!isStarted && (
-          <Card className="border-4 border-blue-500 shadow-2xl">
+          <Card className="border-4 border-blue-500 shadow-2xl bg-gray-900 dark:bg-gray-800">
             <CardContent className="p-8 text-center">
               <BookOpen className="w-20 h-20 mx-auto mb-6 text-blue-500" />
-              <h2 className="text-3xl font-bold mb-4 text-gray-900">Ready to Learn?</h2>
-              <p className="text-lg text-gray-600 mb-6">
+              <h2 className="text-3xl font-bold mb-4 text-white">Ready to Learn?</h2>
+              <p className="text-lg text-gray-300 mb-6">
                 Click the button below to start this lesson. Take your time and learn at your own pace!
               </p>
               <Button
@@ -175,6 +295,7 @@ function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPreviou
               return (
                 <Card
                   key={index}
+                  id={`lesson-step-${index}`}
                   className={`border-2 transition-all cursor-pointer hover:shadow-lg ${
                     isCompleted 
                       ? "border-green-500 bg-green-50" 
@@ -285,16 +406,25 @@ function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPreviou
                   size="lg"
                   onClick={() => {
                     // Save lesson completion to localStorage
-                    if (lesson?.title && discipline) {
-                      const lessonKey = lesson.title.toLowerCase().replace(/\s+/g, "-");
+                    if (lessonKey && discipline) {
                       try {
                         const saved = localStorage.getItem(`lessonProgress_${journeyId}_${discipline}`) || "{}";
                         const lessonProgress = JSON.parse(saved);
-                        lessonProgress[lessonKey] = true;
+                        // Mark lesson as completed using the lessonKey (skill name)
+                        // Preserve the progress data and add completion flag
+                        lessonProgress[lessonKey] = {
+                          ...lessonProgress[lessonKey],
+                          completed: true,
+                          completedAt: new Date().toISOString(),
+                          completedSteps: completedSteps,
+                          allStepsCompleted: true
+                        };
                         lessonProgress[`lesson_${lessonIndex}`] = {
                           completed: true,
                           completedAt: new Date().toISOString(),
-                          title: lesson.title
+                          title: lesson?.title || skillName,
+                          skillName: skillName,
+                          completedSteps: completedSteps
                         };
                         localStorage.setItem(`lessonProgress_${journeyId}_${discipline}`, JSON.stringify(lessonProgress));
                       } catch (error) {
@@ -323,6 +453,21 @@ function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPreviou
                     "Mark Complete & Finish"
                   )}
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Progress Reminder - Show when not all steps completed */}
+        {isStarted && !allStepsCompleted && (
+          <Card className="border-2 border-cyan-400 bg-white">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Circle className="w-6 h-6 text-cyan-600" />
+                <p className="text-sm font-medium text-black">
+                  Complete all {topics.length} steps before marking this lesson as done. 
+                  Progress: {completedSteps.length} of {topics.length} completed.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -357,10 +502,18 @@ function SimpleLessonView({ lesson, lessonIndex, totalLessons, onNext, onPreviou
             </div>
             <Button
               size="lg"
-              onClick={onNext}
-              disabled={lessonIndex >= totalLessons - 1}
-              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
-            >
+            onClick={() => {
+              // Check if current lesson is completed
+              const isCompleted = isCurrentLessonCompleted ? isCurrentLessonCompleted() : false;
+              if (!isCompleted) {
+                alert("Please complete all steps in this lesson before moving to the next one.");
+                return;
+              }
+              onNext();
+            }}
+            disabled={lessonIndex >= totalLessons - 1 || !(isCurrentLessonCompleted ? isCurrentLessonCompleted() : false)}
+            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
               <span className="hidden md:inline">Next</span>
               <ArrowRight className="w-5 h-5" />
             </Button>

@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../prisma/client';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Get current user
 router.get('/me', authenticate, async (req: AuthRequest, res, next) => {

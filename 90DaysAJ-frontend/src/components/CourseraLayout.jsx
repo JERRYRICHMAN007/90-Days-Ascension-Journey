@@ -113,13 +113,31 @@ function CourseraLayout({
       />
 
       {/* Day Header */}
-      <Card className="glass-card">
+      <Card className={`glass-card ${currentDay.isTestRun ? 'border-2 border-yellow-400 dark:border-yellow-500' : ''}`}>
         <CardHeader>
+          {currentDay.isTestRun && (
+            <div className="mb-4 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🧪</span>
+                <div>
+                  <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">Test Run Day</h4>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    {currentDay.testRunNote || 'Explore the app, test features, and get familiar with the journey structure. This day is for learning and experimentation.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex items-start justify-between gap-4">
             <div>
               <CardTitle className="text-3xl mb-2">
                 {currentDay.dayName && `${currentDay.dayName}, `}
                 Day {currentDay.dayNumber}
+                {currentDay.isTestRun && (
+                  <span className="ml-2 px-2 py-1 rounded-md bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-sm font-normal">
+                    🧪 Test Run
+                  </span>
+                )}
                 {currentDay.date && (
                   <span className="block text-lg font-normal text-muted-foreground mt-1">
                     {formatDateForDisplay(currentDay.date)}
