@@ -1,4 +1,5 @@
 import { Moon, Sun, Sparkles, Search, Bell, Flame } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useGamification } from '../../hooks/useGamification';
 import { Button } from '../ui/button';
@@ -18,6 +19,7 @@ const themeOptions = [
 ];
 
 export function TopNav() {
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { streaks, getLevel } = useGamification();
   const globalLevel = getLevel();
@@ -29,9 +31,21 @@ export function TopNav() {
   return (
     <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 overflow-visible">
       <div className="flex items-center justify-between h-16 px-6 overflow-visible">
-        {/* Left: Day Number & Status */}
+        {/* Left: Ascension Logo & Day Number & Status */}
         <div className="flex items-center gap-6 flex-1">
-          {currentPhase === 'ascension' && currentDay && (
+          {/* Ascension Logo - Clickable */}
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+          >
+            <div className="text-2xl">🚀</div>
+            <span className="text-xl font-bold bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent">
+              Ascension
+            </span>
+          </button>
+          
+          <div className="h-6 w-px bg-border"></div>
+          {(currentPhase === 'ascension' || (currentPhase === 'preparation' && currentDay === 0)) && currentDay !== null && (
             <>
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-primary">
@@ -54,7 +68,7 @@ export function TopNav() {
               </div>
             </>
           )}
-          {currentPhase === 'preparation' && (
+          {currentPhase === 'preparation' && currentDay !== 0 && (
             <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Preparation Phase
             </div>

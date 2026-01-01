@@ -3,8 +3,9 @@
  * 
  * Timeline:
  * - Preparation Phase: Dec 21-31, 2025
- * - Ascension Phase: Jan 1 - Mar 31, 2026 (90 days)
- * - Day 1 = January 1, 2026
+ * - Day 0 (Preparation): January 1, 2026
+ * - Ascension Phase: Jan 2 - Mar 31, 2026 (90 days)
+ * - Day 1 = January 2, 2026
  */
 
 export const JOURNEY_CONSTANTS = {
@@ -16,6 +17,8 @@ export const JOURNEY_CONSTANTS = {
 
 /**
  * Get the current phase of the journey
+ * January 1, 2026 is preparation phase (Day 0)
+ * January 2, 2026 onwards is ascension phase (Day 1-90)
  * @returns {'preparation' | 'ascension' | 'before' | 'after'}
  */
 export function getCurrentPhase() {
@@ -28,14 +31,19 @@ export function getCurrentPhase() {
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
   ascensionStart.setHours(0, 0, 0, 0);
   
+  // January 2, 2026 is when ascension actually starts (Day 1)
+  const ascensionActualStart = new Date('2026-01-02');
+  ascensionActualStart.setHours(0, 0, 0, 0);
+  
   const ascensionEnd = new Date(JOURNEY_CONSTANTS.ASCENSION_END);
   ascensionEnd.setHours(23, 59, 59, 999);
   
   if (today < prepStart) {
     return 'before';
-  } else if (today >= prepStart && today < ascensionStart) {
+  } else if (today >= prepStart && today < ascensionActualStart) {
+    // Preparation phase includes January 1, 2026 (Day 0)
     return 'preparation';
-  } else if (today >= ascensionStart && today <= ascensionEnd) {
+  } else if (today >= ascensionActualStart && today <= ascensionEnd) {
     return 'ascension';
   } else {
     return 'after';
@@ -43,17 +51,29 @@ export function getCurrentPhase() {
 }
 
 /**
- * Calculate the current day number (1-90)
- * Returns 0 if before ascension phase, null if after
+ * Calculate the current day number (0-90)
+ * Returns 0 for preparation phase (January 1, 2026), 1-90 for ascension phase, null if after
  * @returns {number | null}
  */
 export function getCurrentDayNumber() {
   const phase = getCurrentPhase();
   
-  if (phase !== 'ascension') {
-    return phase === 'before' ? 0 : null;
+  // If before preparation phase, return 0
+  if (phase === 'before') {
+    return 0;
   }
   
+  // If in preparation phase (includes January 1, 2026), return 0
+  if (phase === 'preparation') {
+    return 0;
+  }
+  
+  // If after ascension phase, return null
+  if (phase === 'after') {
+    return null;
+  }
+  
+  // In ascension phase - calculate day number
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
@@ -63,11 +83,16 @@ export function getCurrentDayNumber() {
   const diffTime = today - ascensionStart;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
-  return diffDays + 1; // Day 1 = Jan 1
+  // Day 1 = Jan 2, 2026 (ASCENSION_START + 1 day)
+  // So if today is Jan 1, we're in preparation (handled above)
+  // If today is Jan 2, diffDays = 1, so return 1
+  return diffDays + 1;
 }
 
 /**
  * Get the date for a specific day number (1-90)
+ * Day 0 = January 1, 2026 (preparation)
+ * Day 1 = January 2, 2026 (first actual day)
  * @param {number} dayNumber - Day number (1-90)
  * @returns {Date | null}
  */
@@ -77,7 +102,9 @@ export function getDateForDay(dayNumber) {
   }
   
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  ascensionStart.setDate(ascensionStart.getDate() + (dayNumber - 1));
+  // Day 1 = Jan 2, 2026 (ASCENSION_START + 1 day)
+  // Day 2 = Jan 3, 2026 (ASCENSION_START + 2 days)
+  ascensionStart.setDate(ascensionStart.getDate() + dayNumber);
   
   return ascensionStart;
 }
@@ -108,10 +135,13 @@ export function getPreparationDayNumber() {
 
 /**
  * Format day number with "Day X of 90" format
- * @param {number} dayNumber - Day number (1-90)
+ * @param {number} dayNumber - Day number (0-90)
  * @returns {string}
  */
 export function formatDayNumber(dayNumber) {
+  if (dayNumber === 0) {
+    return 'Day 0 - Preparation';
+  }
   if (!dayNumber || dayNumber < 1) {
     return 'Preparation Phase';
   }
@@ -120,12 +150,17 @@ export function formatDayNumber(dayNumber) {
 
 /**
  * Get days remaining in the journey
+ * Day 0 (preparation) doesn't count towards the 90 days
  * @returns {number | null}
  */
 export function getDaysRemaining() {
   const currentDay = getCurrentDayNumber();
-  if (currentDay === null || currentDay === 0) {
+  if (currentDay === null) {
     return null;
+  }
+  // Day 0 is preparation, so if we're on Day 0, all 90 days are remaining
+  if (currentDay === 0) {
+    return JOURNEY_CONSTANTS.TOTAL_DAYS;
   }
   return JOURNEY_CONSTANTS.TOTAL_DAYS - currentDay;
 }
@@ -170,5 +205,86 @@ export function getWeekNumber(dayNumber) {
     return 0;
   }
   return Math.ceil(dayNumber / 7);
+}
+
+/**
+ * Check if a day is accessible (today or tomorrow only)
+ * Day 0 is always accessible
+ * @param {number} dayNumber - Day number to check (0-90)
+ * @returns {boolean}
+ */
+export function isDayAccessible(dayNumber) {
+  // Day 0 (preparation) is always accessible
+  if (dayNumber === 0) {
+    return true;
+  }
+  
+  const phase = getCurrentPhase();
+  const currentDayNumber = getCurrentDayNumber();
+  
+  // If we're in preparation phase or before, Day 1 (tomorrow from Day 0) is accessible
+  // This handles the case when today is January 1, 2026 (Day 0) and tomorrow is January 2, 2026 (Day 1)
+  if (phase === 'preparation' || phase === 'before') {
+    // Day 1 is accessible when we're in preparation phase (Day 0)
+    // This allows users to preview Day 1 when on Day 0
+    return dayNumber === 1;
+  }
+  
+  // If we're in ascension phase, allow today and tomorrow
+  if (phase === 'ascension' && currentDayNumber) {
+    // Day is accessible if it's today or tomorrow
+    return dayNumber <= currentDayNumber + 1;
+  }
+  
+  // Otherwise, only Day 0 is accessible
+  return false;
+}
+
+/**
+ * Check if a day can be marked as complete (today only)
+ * @param {number} dayNumber - Day number to check (0-90)
+ * @returns {boolean}
+ */
+export function canCompleteDay(dayNumber) {
+  // Day 0 cannot be completed
+  if (dayNumber === 0) {
+    return false;
+  }
+  
+  const phase = getCurrentPhase();
+  const currentDayNumber = getCurrentDayNumber();
+  
+  // Can only complete if in ascension phase and it's today
+  if (phase !== 'ascension' || !currentDayNumber) {
+    return false;
+  }
+  
+  return dayNumber === currentDayNumber;
+}
+
+/**
+ * Check if a day is tomorrow
+ * @param {number} dayNumber - Day number to check (0-90)
+ * @returns {boolean}
+ */
+export function isTomorrow(dayNumber) {
+  if (dayNumber === 0) {
+    return false;
+  }
+  
+  const phase = getCurrentPhase();
+  const currentDayNumber = getCurrentDayNumber();
+  
+  // If we're in preparation phase or before, and viewing Day 0, tomorrow is Day 1 (January 2, 2026)
+  if (phase === 'preparation' || phase === 'before') {
+    return dayNumber === 1;
+  }
+  
+  // If we're in ascension phase, check if it's the next day
+  if (phase === 'ascension' && currentDayNumber) {
+    return dayNumber === currentDayNumber + 1;
+  }
+  
+  return false;
 }
 

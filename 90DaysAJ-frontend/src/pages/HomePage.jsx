@@ -255,7 +255,20 @@ export function HomePage({ userProgress }) {
     <div className="space-y-6">
       {/* Hero Section - Day Number */}
       <div className="text-center space-y-2 py-6 border-b">
-        {currentPhase === "preparation" && (
+        {currentPhase === "preparation" && currentDay === 0 && (
+          <>
+            <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              {formatDayNumber(currentDay)}
+            </div>
+            <div className="text-lg text-muted-foreground">
+              {daysRemaining} days remaining • Journey starts tomorrow
+            </div>
+            <div className="text-sm font-medium text-foreground mt-2">
+              "Preparation is the foundation of success"
+            </div>
+          </>
+        )}
+        {currentPhase === "preparation" && currentDay !== 0 && (
           <>
             <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Preparation Phase
@@ -268,7 +281,7 @@ export function HomePage({ userProgress }) {
             </div>
           </>
         )}
-        {currentPhase === "ascension" && currentDay && (
+        {currentPhase === "ascension" && currentDay && currentDay > 0 && (
           <>
             <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               {formatDayNumber(currentDay)}
@@ -312,7 +325,7 @@ export function HomePage({ userProgress }) {
               ? "Prepare for your transformation"
               : "Your transformation awaits"}
           </p>
-          {currentPhase === "ascension" && currentDay && (
+          {(currentPhase === "ascension" || (currentPhase === "preparation" && currentDay === 0)) && currentDay !== null && (
             <p className="text-sm text-muted-foreground mt-1">{todayDate}</p>
           )}
         </div>

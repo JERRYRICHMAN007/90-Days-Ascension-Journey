@@ -48,9 +48,10 @@ export const journeys = [
   }
 ]
 
-// OFFICIAL START DATE: January 1, 2026
-// Day 1 = January 1, 2026
-// All journeys start January 1, 2026 - Official Ascension Phase begins!
+// OFFICIAL START DATE: January 1, 2026 (Day 0 - Preparation)
+// Day 0 = January 1, 2026 (Preparation)
+// Day 1 = January 2, 2026 (First actual day)
+// All journeys start January 2, 2026 - Official Ascension Phase begins!
 
 // Helper function to generate all weeks
 function generateWeeks(startDate, numWeeks) {
@@ -94,7 +95,7 @@ function getWeekTheme(weekNum) {
 }
 
 // Body Transformation Journey - Complete 13 weeks
-export const bodyTransformationWeeks = generateWeeks('2026-01-01', 13).map((week, idx) => {
+export const bodyTransformationWeeks = generateWeeks('2026-01-02', 13).map((week, idx) => {
   const days = []
   const workoutTypes = [
     'Rest & Recovery',
@@ -232,7 +233,7 @@ function getWorkoutResources(weekNum, dayIndex) {
 }
 
 // Reading Journey - Complete 13 weeks
-export const readingWeeks = generateWeeks('2026-01-01', 13).map((week, idx) => {
+export const readingWeeks = generateWeeks('2026-01-02', 13).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 7; i++) {
@@ -424,7 +425,7 @@ function getReadingResources(weekNum, dayIndex) {
 }
 
 // Dual Brand Journey - Complete 13 weeks
-export const dualBrandWeeks = generateWeeks('2026-01-01', 13).map((week, idx) => {
+export const dualBrandWeeks = generateWeeks('2026-01-02', 13).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 7; i++) {
@@ -723,7 +724,7 @@ function getDualBrandOutcome(weekNum, dayIndex) {
 }
 
 // Writer's Journey - Complete 12 weeks (60 days, Mon-Fri only)
-export const writersWeeks = generateWeeks('2026-01-01', 12).map((week, idx) => {
+export const writersWeeks = generateWeeks('2026-01-02', 12).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 5; i++) {
@@ -1779,7 +1780,7 @@ function getCrashCourseDisciplineRotation(dayNum) {
 // Software Engineering Journey - Full 13-Week Journey
 // January 1, 2026 - March 31, 2026 (90 days)
 // Official Ascension Phase - Day 1 = January 1, 2026
-export const softwareEngineeringWeeks = generateWeeks('2026-01-01', 13).map((week, idx) => {
+export const softwareEngineeringWeeks = generateWeeks('2026-01-02', 13).map((week, idx) => {
   const days = []
   const weekNum = idx + 1
   
@@ -1897,32 +1898,80 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
   const isSunday = dayIndex === 6
   
   if (isSaturday) {
-    // Saturday: WordPress only
-    scheduled.deepLearning.push({
-      ...timeBlocks.deepLearning[0],
-      content: {
-        title: learningData.title || 'WordPress Learning',
-        topics: learningData.topics || [],
-        type: 'study',
-        discipline: 'WordPress'
-      }
-    })
+    // Saturday: WordPress + Mobile Revision
+    // WordPress Learning
+    if (timeBlocks.deepLearning && timeBlocks.deepLearning.length > 0) {
+      timeBlocks.deepLearning.forEach(block => {
+        const disciplineContent = getDisciplineContent(learningData, block.discipline, weekNum, 'study')
+        scheduled.deepLearning.push({
+          ...block,
+          content: {
+            ...disciplineContent,
+            isRevision: block.isRevision || false
+          }
+        })
+      })
+    }
     
-    scheduled.focusedImplementation.push({
-      ...timeBlocks.focusedImplementation[0],
-      content: {
-        title: projectData.title || 'WordPress Project',
-        description: projectData.description || '',
-        requirements: projectData.requirements || [],
-        type: 'build',
-        discipline: 'WordPress'
-      }
-    })
+    // Mobile Revision (Focused Implementation)
+    if (timeBlocks.focusedImplementation && timeBlocks.focusedImplementation.length > 0) {
+      timeBlocks.focusedImplementation.forEach(block => {
+        // For revision sessions, use revision content instead of regular project content
+        const revisionContent = block.isRevision 
+          ? getRevisionContent(block.discipline, weekNum, dayIndex)
+          : getDisciplineContent(projectData, block.discipline, weekNum, 'build')
+        scheduled.focusedImplementation.push({
+          ...block,
+          content: {
+            ...revisionContent,
+            isRevision: block.isRevision || false,
+            revisionType: 'practice'
+          }
+        })
+      })
+    }
     
     return scheduled
   }
   
-  // Sunday-Friday: All 4 disciplines must be covered
+  if (isSunday) {
+    // Sunday: WordPress + Frontend & Backend Revision
+    // WordPress Learning
+    if (timeBlocks.deepLearning && timeBlocks.deepLearning.length > 0) {
+      timeBlocks.deepLearning.forEach(block => {
+        const disciplineContent = getDisciplineContent(learningData, block.discipline, weekNum, 'study')
+        scheduled.deepLearning.push({
+          ...block,
+          content: {
+            ...disciplineContent,
+            isRevision: block.isRevision || false
+          }
+        })
+      })
+    }
+    
+    // Frontend & Backend Revision (Focused Implementation)
+    if (timeBlocks.focusedImplementation && timeBlocks.focusedImplementation.length > 0) {
+      timeBlocks.focusedImplementation.forEach(block => {
+        // For revision sessions, use revision content instead of regular project content
+        const revisionContent = block.isRevision 
+          ? getRevisionContent(block.discipline, weekNum, dayIndex)
+          : getDisciplineContent(projectData, block.discipline, weekNum, 'build')
+        scheduled.focusedImplementation.push({
+          ...block,
+          content: {
+            ...revisionContent,
+            isRevision: block.isRevision || false,
+            revisionType: 'practice'
+          }
+        })
+      })
+    }
+    
+    return scheduled
+  }
+  
+  // Monday-Friday: Mobile, Frontend, Backend
   const allDisciplines = disciplineRotation.allDisciplines // ['Frontend', 'Backend', 'Mobile', 'WordPress']
   
   // Collect all discipline content for syncing
@@ -1944,7 +1993,8 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
       ...block,
       content: {
         ...disciplineContent,
-        sync: syncInfo
+        sync: syncInfo,
+        isRevision: block.isRevision || false
       }
     })
   })
@@ -1959,17 +2009,20 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
       ...block,
       content: {
         ...disciplineContent,
-        sync: syncInfo
+        sync: syncInfo,
+        isRevision: block.isRevision || false,
+        revisionType: block.isRevision ? 'practice' : undefined
       }
     })
   })
   
-  // Ensure all 4 disciplines are covered (add missing ones)
+  // Ensure all required disciplines for this day are covered
   const coveredDisciplines = new Set([
     ...scheduled.deepLearning.map(b => b.discipline),
     ...scheduled.focusedImplementation.map(b => b.discipline)
   ])
   
+  // Only add missing disciplines that are in the rotation for this day
   allDisciplines.forEach(discipline => {
     if (!coveredDisciplines.has(discipline)) {
       // Add missing discipline to appropriate time blocks
@@ -1991,7 +2044,7 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
           })
         }
       } else {
-        // Fallback: add to flexible time
+        // Fallback: add to flexible time (only if discipline is in rotation)
         scheduled.deepLearning.push({
           time: 'Flexible',
           discipline: discipline,
@@ -2012,6 +2065,89 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
   })
   
   return scheduled
+}
+
+// Generate revision content for weekend sessions
+function getRevisionContent(discipline, weekNum, dayIndex) {
+  const revisionTemplates = {
+    Mobile: {
+      title: `${discipline} Revision - Week ${weekNum}`,
+      description: 'Review, practice, and fix gaps from this week\'s Mobile Engineering learning',
+      topics: [
+        'Review all Mobile concepts learned this week',
+        'Practice building mobile components',
+        'Fix any gaps or unclear concepts',
+        'Revisit challenging topics',
+        'Build a small practice project',
+        'Review code from earlier in the week',
+        'Identify areas for improvement'
+      ],
+      requirements: [
+        'Review all Mobile Engineering notes from this week',
+        'Complete any unfinished Mobile tasks',
+        'Practice key concepts through coding exercises',
+        'Fix any bugs or issues in Mobile projects',
+        'Reflect on what you learned and what needs more practice'
+      ]
+    },
+    Frontend: {
+      title: `${discipline} Revision - Week ${weekNum}`,
+      description: 'Review, practice, and fix gaps from this week\'s Frontend Engineering learning',
+      topics: [
+        'Review all Frontend concepts learned this week',
+        'Practice building React components',
+        'Fix any gaps or unclear concepts',
+        'Revisit challenging topics',
+        'Build a small practice project',
+        'Review code from earlier in the week',
+        'Identify areas for improvement'
+      ],
+      requirements: [
+        'Review all Frontend Engineering notes from this week',
+        'Complete any unfinished Frontend tasks',
+        'Practice key concepts through coding exercises',
+        'Fix any bugs or issues in Frontend projects',
+        'Reflect on what you learned and what needs more practice'
+      ]
+    },
+    Backend: {
+      title: `${discipline} Revision - Week ${weekNum}`,
+      description: 'Review, practice, and fix gaps from this week\'s Backend Engineering learning',
+      topics: [
+        'Review all Backend concepts learned this week',
+        'Practice building APIs and endpoints',
+        'Fix any gaps or unclear concepts',
+        'Revisit challenging topics',
+        'Build a small practice project',
+        'Review code from earlier in the week',
+        'Identify areas for improvement'
+      ],
+      requirements: [
+        'Review all Backend Engineering notes from this week',
+        'Complete any unfinished Backend tasks',
+        'Practice key concepts through coding exercises',
+        'Fix any bugs or issues in Backend projects',
+        'Reflect on what you learned and what needs more practice'
+      ]
+    }
+  }
+  
+  return revisionTemplates[discipline] || {
+    title: `${discipline} Revision - Week ${weekNum}`,
+    description: 'Review, practice, and fix gaps from this week\'s learning',
+    topics: [
+      'Review all concepts learned this week',
+      'Practice key skills',
+      'Fix any gaps or unclear concepts',
+      'Revisit challenging topics'
+    ],
+    requirements: [
+      'Review all notes from this week',
+      'Complete any unfinished tasks',
+      'Practice key concepts',
+      'Reflect on what you learned'
+    ]
+  }
 }
 
 // Get discipline-specific content from existing curriculum
@@ -2801,107 +2937,91 @@ function getDisciplineContent(content, discipline, weekNum, type) {
 function getTimeBlocks(dayIndex) {
   const isSaturday = dayIndex === 5
   const isSunday = dayIndex === 6
-  const isWeekday = dayIndex >= 0 && dayIndex <= 4 // Monday-Friday
+  const isWeekday = dayIndex >= 0 && dayIndex <= 4 // Monday-Friday (0=Monday, 4=Friday)
   
   if (isSaturday) {
-    // Saturday: WordPress only
+    // Saturday: WordPress + Mobile Revision
     return {
       deepLearning: [
-        { time: '2:00pm-3:30pm', discipline: 'WordPress', type: 'study', duration: '90 min' }
+        { time: '1:30 PM - 2:30 PM', discipline: 'WordPress', type: 'study', duration: '60 min', isRevision: false }
       ],
       focusedImplementation: [
-        { time: '3:30pm-5:00pm', discipline: 'WordPress', type: 'build', duration: '90 min' }
+        { time: '2:30 PM - 4:00 PM', discipline: 'Mobile', type: 'revision', duration: '90 min', isRevision: true }
       ]
     }
   }
   
   if (isSunday) {
-    // Sunday: All 4 disciplines
+    // Sunday: WordPress + Frontend & Backend Revision
     return {
       deepLearning: [
-        { time: '3:00am-4:00am', discipline: 'Frontend', type: 'study', duration: '60 min' },
-        { time: '2:00pm-3:00pm', discipline: 'Backend', type: 'study', duration: '60 min' }
+        { time: '2:30 AM - 4:30 AM', discipline: 'WordPress', type: 'study', duration: '120 min', isRevision: false }
       ],
       focusedImplementation: [
-        { time: '4:00am-5:00am', discipline: 'Frontend', type: 'build', duration: '60 min' },
-        { time: '3:00pm-4:00pm', discipline: 'Backend', type: 'build', duration: '60 min' }
-      ],
-      // Additional time blocks for Mobile and WordPress on Sunday
-      additional: {
-        deepLearning: [
-          { time: 'Flexible', discipline: 'Mobile', type: 'study', duration: '60 min' },
-          { time: 'Flexible', discipline: 'WordPress', type: 'study', duration: '60 min' }
-        ],
-        focusedImplementation: [
-          { time: 'Flexible', discipline: 'Mobile', type: 'build', duration: '60 min' },
-          { time: 'Flexible', discipline: 'WordPress', type: 'build', duration: '60 min' }
-        ]
-      }
+        { time: '1:00 PM - 4:00 PM', discipline: 'Frontend', type: 'revision', duration: '180 min', isRevision: true },
+        { time: '1:00 PM - 4:00 PM', discipline: 'Backend', type: 'revision', duration: '180 min', isRevision: true }
+      ]
     }
   }
   
-  // Monday-Friday: All 4 disciplines
+  // Monday-Friday: Mobile, Frontend, Backend
   return {
     deepLearning: [
-      { time: '3:00am-4:00am', discipline: 'Frontend', type: 'study', duration: '60 min' },
-      { time: '8:00am-10:00am', discipline: 'Backend', type: 'study', duration: '120 min' },
-      { time: '2:30pm-3:30pm', discipline: 'Mobile', type: 'study', duration: '60 min' }
+      { time: '2:30 AM - 4:30 AM', discipline: 'Mobile', type: 'study', duration: '120 min', isRevision: false },
+      { time: '2:00 PM - 3:30 PM', discipline: 'Frontend', type: 'study', duration: '90 min', isRevision: false },
+      { time: '3:30 PM - 5:00 PM', discipline: 'Backend', type: 'study', duration: '90 min', isRevision: false }
     ],
     focusedImplementation: [
-      { time: '4:00am-5:00am', discipline: 'Frontend', type: 'build', duration: '60 min' },
-      { time: '10:00am-12:00pm', discipline: 'Backend', type: 'build', duration: '120 min' },
-      { time: '1:00pm-2:30pm', discipline: 'Mobile', type: 'build', duration: '90 min' }
-    ],
-    // WordPress gets integrated into available time slots
-    additional: {
-      deepLearning: [
-        { time: 'Flexible (within study blocks)', discipline: 'WordPress', type: 'study', duration: '30-60 min' }
-      ],
-      focusedImplementation: [
-        { time: 'Flexible (within build blocks)', discipline: 'WordPress', type: 'build', duration: '30-60 min' }
-      ]
-    }
+      { time: '2:30 AM - 4:30 AM', discipline: 'Mobile', type: 'build', duration: '120 min', isRevision: false },
+      { time: '2:00 PM - 3:30 PM', discipline: 'Frontend', type: 'build', duration: '90 min', isRevision: false },
+      { time: '3:30 PM - 5:00 PM', discipline: 'Backend', type: 'build', duration: '90 min', isRevision: false }
+    ]
   }
 }
 
 function getDisciplineRotation(weekNum, dayIndex) {
   const isSaturday = dayIndex === 5
+  const isSunday = dayIndex === 6
+  const isWeekday = dayIndex >= 0 && dayIndex <= 4 // Monday-Friday
   
-  // Saturday is WordPress only
+  // Saturday: WordPress + Mobile Revision
   if (isSaturday) {
     return {
       primary: 'WordPress',
-      secondary: null,
+      secondary: 'Mobile',
       tertiary: null,
       quaternary: null,
-      allDisciplines: ['WordPress'],
-      priorityOrder: ['WordPress']
+      allDisciplines: ['WordPress', 'Mobile'],
+      priorityOrder: ['WordPress', 'Mobile'],
+      rotationOrder: ['WordPress', 'Mobile'],
+      earlyMorningDiscipline: null
     }
   }
   
-  // Sunday-Friday: All 4 disciplines in priority order
-  // Priority: Frontend > Backend > Mobile > WordPress
-  // This order determines which discipline gets the best time slots
-  const priorityOrder = ['Frontend', 'Backend', 'Mobile', 'WordPress']
+  // Sunday: WordPress + Frontend & Backend Revision
+  if (isSunday) {
+    return {
+      primary: 'WordPress',
+      secondary: 'Frontend',
+      tertiary: 'Backend',
+      quaternary: null,
+      allDisciplines: ['WordPress', 'Frontend', 'Backend'],
+      priorityOrder: ['WordPress', 'Frontend', 'Backend'],
+      rotationOrder: ['WordPress', 'Frontend', 'Backend'],
+      earlyMorningDiscipline: 'WordPress'
+    }
+  }
   
-  // Rotate which discipline gets the early morning (3am) slot based on day
-  // This ensures all disciplines get prime time slots throughout the week
-  const rotationIndex = dayIndex === 6 ? 0 : dayIndex // Sunday uses Monday's rotation
-  const earlyDiscipline = priorityOrder[rotationIndex % 4]
-  
-  // Reorder disciplines with rotated one first, then by priority
-  const remaining = priorityOrder.filter(d => d !== earlyDiscipline)
-  const rotatedOrder = [earlyDiscipline, ...remaining]
-  
+  // Monday-Friday: Mobile, Frontend, Backend (no WordPress)
   return {
-    primary: priorityOrder[0], // Frontend always highest priority
-    secondary: priorityOrder[1], // Backend second
-    tertiary: priorityOrder[2], // Mobile third
-    quaternary: priorityOrder[3], // WordPress lowest priority
-    allDisciplines: priorityOrder,
-    priorityOrder: priorityOrder,
-    rotationOrder: rotatedOrder, // Order for time slot assignment
-    earlyMorningDiscipline: earlyDiscipline // Which discipline gets 3am slot today
+    primary: 'Mobile',
+    secondary: 'Frontend',
+    tertiary: 'Backend',
+    quaternary: null,
+    allDisciplines: ['Mobile', 'Frontend', 'Backend'],
+    priorityOrder: ['Mobile', 'Frontend', 'Backend'],
+    rotationOrder: ['Mobile', 'Frontend', 'Backend'],
+    earlyMorningDiscipline: 'Mobile'
   }
 }
 

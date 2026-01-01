@@ -23,6 +23,7 @@ import { Progress } from "./ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { JourneySidebar } from "./journey/JourneySidebar";
 import { JourneyDetailV2 } from "./journey/JourneyDetailV2";
+import { getCurrentPhase } from "../utils/dates";
 import "./JourneyDetail.css";
 
 function JourneyDetail({
@@ -44,8 +45,17 @@ function JourneyDetail({
   // Initialize with first available week/day, or default to 1
   const firstWeek = weeks && weeks.length > 0 ? weeks[0] : null;
   const firstDay = firstWeek?.days && firstWeek.days.length > 0 ? firstWeek.days[0] : null;
+  const currentPhase = getCurrentPhase();
+  // Check if today is January 1, 2026 (Day 0)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const day0Date = new Date('2026-01-01');
+  day0Date.setHours(0, 0, 0, 0);
+  const isDay0Date = today.getTime() === day0Date.getTime();
+  // Default to Day 0 if it's January 1, 2026, or in preparation phase, otherwise use first day
+  const defaultDay = (isDay0Date || currentPhase === 'preparation' || currentPhase === 'before') ? 0 : (firstDay?.dayNumber || 1);
   const [selectedWeek, setSelectedWeek] = useState(firstWeek?.weekNumber || 1);
-  const [selectedDay, setSelectedDay] = useState(firstDay?.dayNumber || 1);
+  const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [activeSection, setActiveSection] = useState(null); // 'quiz' or 'assessment'

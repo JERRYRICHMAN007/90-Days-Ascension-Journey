@@ -18,14 +18,18 @@ import {
   ChevronUp,
   Server,
   Smartphone,
-  Globe
+  Globe,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useGamification } from '../../hooks/useGamification';
-import { getCurrentDayNumber } from '../../utils/dates';
+import { useAuth } from '../../contexts/AuthContext';
+import { getCurrentDayNumber, getCurrentPhase, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow } from '../../utils/dates';
 import { getQuoteOfTheDay } from '../../data/quotes';
 import { cn } from '../../lib/utils';
+import { getJourneyPreparation } from '../../data/preparationData';
 
 /**
  * Journey Detail Page v2.0 - PRD Redesign
@@ -44,6 +48,29 @@ export function JourneyDetailV2({
 }) {
   const navigate = useNavigate();
   const { xp, getLevel } = useGamification();
+  const { user } = useAuth();
+  
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+  
+  // Get what user is working on today
+  const getTodayFocus = () => {
+    if (isPreparationPhase) {
+      return 'Preparing for your journey';
+    }
+    if (currentDay) {
+      if (isTomorrow(currentDay.dayNumber)) {
+        return `Previewing tomorrow's content`;
+      }
+      return `Working on Day ${currentDay.dayNumber}`;
+    }
+    return 'Starting your journey';
+  };
   
   // Safety checks - early returns
   if (!journey) {
@@ -75,21 +102,61 @@ export function JourneyDetailV2({
   const completedDays = Object.values(journeyProgress).filter(Boolean).length;
   const progressPercentage = Math.round((completedDays / (journey?.totalDays || 1)) * 100);
 
+  // Check if we're in preparation phase (Day 0)
+  const currentPhase = getCurrentPhase();
+  const currentDayNumber = getCurrentDayNumber();
+  
+  // Day 0 is January 1, 2026 - accessible on that date or when explicitly selected
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const day0Date = new Date('2026-01-01');
+  day0Date.setHours(0, 0, 0, 0);
+  const isDay0Date = today.getTime() === day0Date.getTime();
+  
+  // Show preparation ONLY if Day 0 is explicitly selected
+  // Day 1 and other days should show their content even if it's January 1, 2026 (preview mode)
+  const isPreparationPhase = selectedDay === 0;
+  
+  // Always get preparation data so Day 0 is always available
+  const preparationData = getJourneyPreparation(journeyId);
+  
   // Find current week - handle case where selectedWeek might be out of bounds
-  const currentWeek = weeks.find((w) => w && w.weekNumber === selectedWeek) || weeks[0] || null;
-  
-  // Find current day - handle software engineering crash course structure
-  let currentDay = null;
-  if (currentWeek?.days && Array.isArray(currentWeek.days) && currentWeek.days.length > 0) {
-    currentDay = currentWeek.days.find((d) => d && d.dayNumber === selectedDay) || currentWeek.days[0] || null;
+  // When on Day 0 or Day 1, default to Week 1 to ensure Day 1 is accessible
+  // Also ensure we use the correct week for the selected day
+  let effectiveWeek = selectedWeek;
+  if (selectedDay === 0 || selectedDay === 1) {
+    effectiveWeek = 1;
+  } else if (selectedDay > 0) {
+    // Calculate which week the selected day belongs to
+    const calculatedWeek = Math.ceil(selectedDay / 7);
+    if (calculatedWeek >= 1 && calculatedWeek <= weeks.length) {
+      effectiveWeek = calculatedWeek;
+    }
   }
+  const currentWeek = weeks.find((w) => w && w.weekNumber === effectiveWeek) || weeks[0] || null;
   
-  // If no current day found, try to find any day in any week
-  if (!currentDay && weeks.length > 0) {
-    for (const week of weeks) {
-      if (week && week.days && Array.isArray(week.days) && week.days.length > 0) {
-        currentDay = week.days[0];
-        break;
+  // Find current day - search across all weeks if needed
+  let currentDay = null;
+  if (!isPreparationPhase && selectedDay > 0) {
+    // First, try to find the day in the effective week
+    if (currentWeek?.days && Array.isArray(currentWeek.days) && currentWeek.days.length > 0) {
+      currentDay = currentWeek.days.find((d) => d && d.dayNumber === selectedDay) || null;
+    }
+    
+    // If not found in current week, search across all weeks for the selected day
+    if (!currentDay && weeks.length > 0) {
+      for (const week of weeks) {
+        if (week && week.days && Array.isArray(week.days) && week.days.length > 0) {
+          const foundDay = week.days.find((d) => d && d.dayNumber === selectedDay);
+          if (foundDay) {
+            currentDay = foundDay;
+            // Update selectedWeek to match the week where the day was found
+            if (selectedWeek !== week.weekNumber) {
+              onWeekChange(week.weekNumber);
+            }
+            break;
+          }
+        }
       }
     }
   }
@@ -164,6 +231,45 @@ export function JourneyDetailV2({
     return Math.round((completed / weekDays.length) * 100);
   };
 
+  // Find the next day for preview/preparation (only if it's tomorrow)
+  const findNextDay = () => {
+    // Calculate next day number
+    const nextDayNumber = selectedDay === 0 ? 1 : selectedDay + 1;
+    
+    // Only show next day if it's accessible (today or tomorrow)
+    if (!isDayAccessible(nextDayNumber)) {
+      return null;
+    }
+    
+    // Don't show next day if we're already at the last day (90)
+    if (nextDayNumber > journey.totalDays) {
+      return null;
+    }
+
+    // Search across all weeks for the next day
+    for (const week of weeks) {
+      if (week && week.days && Array.isArray(week.days)) {
+        const nextDay = week.days.find((d) => d && d.dayNumber === nextDayNumber);
+        if (nextDay) {
+          return nextDay;
+        }
+      }
+    }
+    
+    // If not found in weeks, create a placeholder using getDateForDay
+    const nextDate = getDateForDay(nextDayNumber);
+    if (nextDate) {
+      return {
+        dayNumber: nextDayNumber,
+        date: nextDate.toISOString().split('T')[0]
+      };
+    }
+    
+    return null;
+  };
+
+  const nextDay = findNextDay();
+
   const formatDateShort = (dateString) => {
     if (!dateString) return '';
     try {
@@ -217,214 +323,313 @@ export function JourneyDetailV2({
   const Icon = journey.icon || (() => <span>{journey.icon}</span>);
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Header Section - Fixed */}
-      <div className="border-b border-border/50 bg-card/50 backdrop-blur-sm shrink-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          {/* Back Button & Title */}
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/dashboard')}
-              className="shrink-0"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center shrink-0`}>
-                <Icon className="w-6 h-6 text-white" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-3xl font-bold text-display truncate">{journey.title}</h1>
-                <p className="text-sm text-muted-foreground mt-1">{journey.description}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-foreground">
-                {progressPercentage}% Complete
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Day {completedDays} of {journey.totalDays}
-              </span>
-            </div>
-            <div className="relative h-3 bg-muted rounded-full overflow-hidden">
-              <motion.div
-                className={`h-full bg-gradient-to-r ${colors.gradient} rounded-full`}
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercentage}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              >
-                <div className="shimmer absolute inset-0" />
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Stats Row */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-              <Flame className="w-5 h-5 text-streak shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs text-muted-foreground">Streak</div>
-                <div className="text-lg font-bold text-foreground tabular-nums">0</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-              <Star className="w-5 h-5 text-xp shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs text-muted-foreground">XP</div>
-                <div className="text-lg font-bold text-foreground tabular-nums">
-                  {journeyXP.toLocaleString()}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-              <TrendingUp className="w-5 h-5 text-levelup shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs text-muted-foreground">Level</div>
-                <div className="text-lg font-bold text-foreground tabular-nums">
-                  Lv.{journeyLevel.level}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-              <Calendar className="w-5 h-5 text-primary shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs text-muted-foreground">Week</div>
-                <div className="text-lg font-bold text-foreground tabular-nums">
-                  {selectedWeek}/{weeks.length}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Week Navigation Tabs - Fixed */}
-      <div className="border-b border-border/50 bg-card/30 shrink-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-4">
-            {weeks.map((week) => {
-              const weekProgress = getWeekProgress(week);
-              const isActive = week.weekNumber === selectedWeek;
-              
-              return (
-                <button
-                  key={week.weekNumber}
-                  onClick={() => onWeekChange(week.weekNumber)}
-                  className={`
-                    flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
-                    whitespace-nowrap shrink-0 transition-all
-                    ${isActive 
-                      ? `bg-gradient-to-r ${colors.gradient} text-white` 
-                      : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-                    }
-                  `}
-                >
-                  <span>Week {week.weekNumber}</span>
-                  {weekProgress > 0 && (
-                    <span className={`
-                      text-xs px-1.5 py-0.5 rounded
-                      ${isActive ? 'bg-white/20' : 'bg-muted'}
-                    `}>
-                      {weekProgress}%
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Discipline Tabs - Only for Software Engineering */}
-      {journeyId === 'software-engineering' && (
-        <div className="border-b border-border/50 bg-card/20 shrink-0 z-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-3">
-              {disciplines.map((discipline) => {
-                const Icon = discipline.icon;
-                const isActive = activeDiscipline === discipline.id;
-                
-                return (
-                  <button
-                    key={discipline.id}
-                    onClick={() => setActiveDiscipline(discipline.id)}
-                    className={cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm',
-                      'whitespace-nowrap shrink-0 transition-all relative',
-                      isActive
-                        ? 'text-foreground bg-muted/50'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
-                    )}
-                    style={
-                      isActive
-                        ? {
-                            borderBottom: `2px solid ${discipline.color}`,
-                            color: discipline.color,
-                          }
-                        : {}
-                    }
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{discipline.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content - Single Scroll Container */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Section A - Personalized Header */}
+      <div className="bg-background border-b border-border/50 shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
-          {/* Days Sidebar - Part of Main Scroll - Compact */}
-          <aside className="lg:col-span-1 lg:sticky lg:top-0 lg:self-start">
-            <div className="glass-card rounded-xl p-4 lg:max-w-[280px]">
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                Week {selectedWeek}
-              </h3>
-              <div className="space-y-2">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/dashboard')}
+                className="shrink-0"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-semibold text-foreground mb-1">
+                  {getGreeting()}, {user?.name?.split(' ')[0] || 'there'} 👋
+                </h1>
+                <p className="text-muted-foreground text-base">
+                  {getTodayFocus()}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Lightweight Helper Banner */}
+          {currentDay && !isPreparationPhase && (
+            <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Target className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-foreground">
+                    {isTomorrow(currentDay.dayNumber) 
+                      ? "You're previewing tomorrow's content. Complete today's tasks first to maintain your streak."
+                      : "Focus on today's tasks. You can preview tomorrow's content to plan ahead."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Section B - Learning / Journey Overview */}
+      <div className="bg-muted/30 border-b border-border/50 shrink-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center shrink-0`}>
+                <Icon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">{journey.title}</h2>
+                <p className="text-sm text-muted-foreground">{journey.description}</p>
+              </div>
+            </div>
+            
+            {/* Status Pills */}
+            <div className="flex items-center gap-2">
+              {progressPercentage === 100 ? (
+                <span className="px-3 py-1.5 rounded-full bg-green-500/10 text-green-700 dark:text-green-400 text-sm font-medium flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Completed
+                </span>
+              ) : (
+                <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                  In Progress
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Progress Indicator */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Progress</span>
+                <span className="font-semibold text-foreground">{progressPercentage}%</span>
+              </div>
+              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className={`h-full bg-gradient-to-r ${colors.gradient} rounded-full`}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercentage}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Week </span>
+                <span className="font-semibold text-foreground">{selectedWeek} of {weeks.length}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Day </span>
+                <span className="font-semibold text-foreground">{completedDays} of {journey.totalDays}</span>
+              </div>
+            </div>
+
+            {/* Learning Plan Summary - Software Engineering */}
+            {journeyId === 'software-engineering' && currentDay?.schedule && (
+              <div className="text-sm">
+                <span className="text-muted-foreground">Today: </span>
+                <span className="font-medium text-foreground">
+                  {currentDay.schedule.scheduledContent?.deepLearning?.map(b => b.discipline).filter((v, i, a) => a.indexOf(v) === i).join(', ') || 'No sessions'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Section C - Main Content Area */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full flex gap-6 px-4 sm:px-6 py-6">
+          {/* Left Column - Navigation (Sticky, Non-scrolling) */}
+          <aside className="w-64 shrink-0 hidden lg:block">
+            <div className="sticky top-6 space-y-4 h-[calc(100vh-200px)] overflow-y-auto">
+              {/* Week Navigation */}
+              <Card className="p-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3">Learning Plan</h3>
+                <div className="space-y-1">
+                  {weeks.map((week) => {
+                    const weekProgress = getWeekProgress(week);
+                    const isActive = week.weekNumber === selectedWeek;
+                    
+                    return (
+                      <button
+                        key={week.weekNumber}
+                        onClick={() => onWeekChange(week.weekNumber)}
+                        className={cn(
+                          'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all',
+                          isActive 
+                            ? `bg-gradient-to-r ${colors.gradient} text-white` 
+                            : 'text-muted-foreground hover:bg-muted/50'
+                        )}
+                      >
+                        <span>Week {week.weekNumber}</span>
+                        {weekProgress > 0 && (
+                          <span className={cn(
+                            'text-xs px-1.5 py-0.5 rounded',
+                            isActive ? 'bg-white/20' : 'bg-muted'
+                          )}>
+                            {weekProgress}%
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              {/* Days List */}
+              <Card className="p-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  {isPreparationPhase ? 'Preparation' : `Week ${selectedWeek}`}
+                </h3>
+                <div className="space-y-1">
+                {/* Day 0 - Preparation Button - Always Available */}
+                {preparationData && (
+                  <button
+                    onClick={() => onDayChange(0)}
+                    className={`
+                      w-full flex items-center gap-3 p-3 rounded-lg text-left
+                      transition-all group
+                      ${selectedDay === 0
+                        ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg` 
+                        : 'hover:bg-muted/50 border border-border/50'
+                      }
+                    `}
+                  >
+                    <div className={`
+                      w-6 h-6 rounded-full flex items-center justify-center shrink-0
+                      ${selectedDay === 0 ? 'bg-white/20' : 'bg-muted border-2 border-border'}
+                    `}>
+                      <span className="text-xs font-semibold">0</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-sm font-medium ${selectedDay === 0 ? 'text-white' : 'text-foreground'}`}>
+                        Day 0 - Preparation
+                      </div>
+                      <div className={`text-xs ${selectedDay === 0 ? 'text-white/80' : 'text-muted-foreground'}`}>
+                        Jan 1, 2026 • Setup & Environment
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {/* When on Day 0, always show Day 1 from Week 1 as preview */}
+                {selectedDay === 0 && (() => {
+                  const week1 = weeks.find(w => w && w.weekNumber === 1);
+                  const day1 = week1?.days?.find(d => d && d.dayNumber === 1);
+                  if (!day1) return null;
+                  
+                  // Verify Day 1 is accessible
+                  const day1IsAccessible = isDayAccessible(1);
+                  const day1IsTomorrow = isTomorrow(1);
+                  
+                  return (
+                    <button
+                      onClick={() => {
+                        if (day1IsAccessible) {
+                          onWeekChange(1);
+                          onDayChange(1);
+                        }
+                      }}
+                      disabled={!day1IsAccessible}
+                      className={`
+                        w-full flex items-center gap-3 p-3 rounded-lg text-left
+                        transition-all group
+                        ${day1IsAccessible 
+                          ? 'border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/5 bg-primary/5 cursor-pointer' 
+                          : 'opacity-50 cursor-not-allowed border-2 border-dashed border-muted bg-muted/20'
+                        }
+                      `}
+                    >
+                      <div className={`
+                        w-6 h-6 rounded-full flex items-center justify-center shrink-0
+                        ${day1IsAccessible 
+                          ? 'bg-primary/20 border-2 border-primary/40' 
+                          : 'bg-muted border-2 border-border'
+                        }
+                      `}>
+                        <span className={`text-xs font-semibold ${day1IsAccessible ? 'text-primary' : 'text-muted-foreground'}`}>1</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground flex items-center gap-2">
+                          Day 1
+                          {day1IsTomorrow && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal">
+                              Tomorrow
+                            </span>
+                          )}
+                          {!day1IsAccessible && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-normal">
+                              Locked
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDateShort(day1.date)} • {formatDayName(day1.date)}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })()}
+                
                 {currentWeek?.days?.map((day, idx) => {
                   if (!day || !day.dayNumber) return null;
+                  // Skip Day 1 if we're on Day 0 and already showing it above
+                  if (selectedDay === 0 && day.dayNumber === 1) return null;
+                  
                   const isCompleted = getDayProgress(day);
                   const isActive = day.dayNumber === selectedDay;
+                  const dayIsAccessible = isDayAccessible(day.dayNumber);
+                  const dayIsTomorrow = isTomorrow(day.dayNumber);
+                  const isLocked = !dayIsAccessible;
                   
                   return (
                     <button
                       key={day.dayNumber}
-                      onClick={() => onDayChange(day.dayNumber)}
+                      onClick={() => {
+                        if (dayIsAccessible) {
+                          onDayChange(day.dayNumber);
+                        }
+                      }}
+                      disabled={isLocked}
                       className={`
                         w-full flex items-center gap-3 p-3 rounded-lg text-left
                         transition-all group
-                        ${isActive 
+                        ${isLocked 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : isActive 
                           ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg` 
                           : isCompleted
                           ? 'bg-muted/50 hover:bg-muted'
+                          : dayIsTomorrow
+                          ? 'hover:bg-primary/5 border border-primary/20 bg-primary/5'
                           : 'hover:bg-muted/50'
                         }
                       `}
                     >
                       <div className={`
                         w-6 h-6 rounded-full flex items-center justify-center shrink-0
-                        ${isActive ? 'bg-white/20' : isCompleted ? 'bg-primary' : 'bg-muted border-2 border-border'}
+                        ${isActive ? 'bg-white/20' : isCompleted ? 'bg-primary' : dayIsTomorrow ? 'bg-primary/20 border-2 border-primary/40' : 'bg-muted border-2 border-border'}
                       `}>
                         {isCompleted && (
                           <Check className="w-4 h-4 text-white" />
                         )}
                         {!isCompleted && !isActive && (
-                          <span className="text-xs font-semibold">{day.dayNumber}</span>
+                          <span className={`text-xs font-semibold ${dayIsTomorrow ? 'text-primary' : ''}`}>{day.dayNumber}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-medium ${isActive ? 'text-white' : 'text-foreground'}`}>
+                        <div className={`text-sm font-medium flex items-center gap-2 ${isActive ? 'text-white' : 'text-foreground'}`}>
                           Day {day.dayNumber}
+                          {dayIsTomorrow && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal">
+                              Tomorrow
+                            </span>
+                          )}
+                          {isLocked && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-normal">
+                              Locked
+                            </span>
+                          )}
                         </div>
                         <div className={`text-xs ${isActive ? 'text-white/80' : 'text-muted-foreground'}`}>
                           {formatDateShort(day.date)} • {formatDayName(day.date)}
@@ -433,19 +638,104 @@ export function JourneyDetailV2({
                     </button>
                   );
                 })}
-              </div>
+
+                {/* Next Day - Always Visible for Preview (only if not already in current week and not Day 1 when on Day 0) */}
+                {nextDay && 
+                 nextDay.dayNumber !== selectedDay && 
+                 !(selectedDay === 0 && nextDay.dayNumber === 1) && // Don't show if we already show Day 1 above
+                 !currentWeek?.days?.some(d => d && d.dayNumber === nextDay.dayNumber) && (
+                  <>
+                    <div className="my-3 border-t border-border/50"></div>
+                    <div className="text-xs font-semibold text-muted-foreground mb-2 px-1">
+                      Next Day
+                    </div>
+                    <button
+                      onClick={() => {
+                        // If next day is in a different week, switch to that week first
+                        for (const week of weeks) {
+                          if (week && week.days && week.days.some(d => d && d.dayNumber === nextDay.dayNumber)) {
+                            onWeekChange(week.weekNumber);
+                            break;
+                          }
+                        }
+                        // Then change to the next day
+                        onDayChange(nextDay.dayNumber);
+                      }}
+                      className="
+                        w-full flex items-center gap-3 p-3 rounded-lg text-left
+                        transition-all group
+                        border-2 border-dashed border-primary/30
+                        hover:border-primary/50 hover:bg-primary/5
+                        bg-primary/5
+                      "
+                    >
+                      <div className="
+                        w-6 h-6 rounded-full flex items-center justify-center shrink-0
+                        bg-primary/20 border-2 border-primary/40
+                      ">
+                        <span className="text-xs font-semibold text-primary">{nextDay.dayNumber}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground flex items-center gap-2">
+                          Day {nextDay.dayNumber}
+                          <span className="text-xs text-primary font-normal">Preview</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDateShort(nextDay.date)} • {formatDayName(nextDay.date)}
+                        </div>
+                      </div>
+                    </button>
+                  </>
+                )}
+                </div>
+              </Card>
             </div>
           </aside>
 
-          {/* Main Content Area - Single Scroll Container */}
-          <main className="lg:col-span-3 min-w-0">
-            {!currentDay && (
-              <Card className="p-12 text-center">
-                <p className="text-muted-foreground">No day data available. Please try refreshing the page.</p>
-              </Card>
-            )}
-            {currentDay && (
-              <div className="space-y-6">
+          {/* Right Column - Content (Scrollable) */}
+          <main className="flex-1 min-w-0 overflow-y-auto">
+            <div className="max-w-4xl space-y-6 pb-8">
+                  {/* Discipline Tabs - Only for Software Engineering (Inside Content Area) */}
+                  {journeyId === 'software-engineering' && (
+                    <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+                      {disciplines.map((discipline) => {
+                        const Icon = discipline.icon;
+                        const isActive = activeDiscipline === discipline.id;
+                        
+                        return (
+                          <button
+                            key={discipline.id}
+                            onClick={() => setActiveDiscipline(discipline.id)}
+                            className={cn(
+                              'flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all',
+                              isActive
+                                ? 'text-foreground bg-muted/50'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
+                            )}
+                            style={
+                              isActive
+                                ? {
+                                    borderBottom: `2px solid ${discipline.color}`,
+                                    color: discipline.color,
+                                  }
+                                : {}
+                            }
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span>{discipline.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {!currentDay && !isPreparationPhase && (
+                    <Card className="p-12 text-center">
+                      <p className="text-muted-foreground">No day data available. Please try refreshing the page.</p>
+                    </Card>
+                  )}
+                  {(currentDay || isPreparationPhase) && (
+                    <div className="space-y-6">
                 {/* Daily Quote/Motivation Card */}
                 {(() => {
                   const dailyQuote = getQuoteOfTheDay(journeyId, completedDays);
@@ -464,77 +754,178 @@ export function JourneyDetailV2({
                   );
                 })()}
 
-                {/* Day Header */}
-                <div className="glass-card rounded-xl p-6 border border-border/50">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h2 className="text-2xl font-bold text-display">Day {currentDay.dayNumber}</h2>
-                        {getDayProgress(currentDay) && (
-                          <span className="px-2 py-1 bg-primary/20 text-primary rounded text-xs font-semibold">
-                            Completed
-                          </span>
-                        )}
+                {/* Day Header or Preparation Header */}
+                {isPreparationPhase && preparationData ? (
+                  <div className="glass-card rounded-xl p-6 border border-border/50">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="text-5xl shrink-0">{preparationData.icon}</div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-display mb-2">{preparationData.title}</h2>
+                        <p className="text-muted-foreground mb-2">{preparationData.subtitle}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Thursday, January 1, 2026
+                        </p>
                       </div>
-                      <p className="text-muted-foreground">
-                        {currentDay.date && new Date(currentDay.date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
+                    </div>
+                    <div className="mt-4 p-4 bg-primary/10 rounded-lg border border-primary/20">
+                      <p className="text-sm text-foreground">
+                        <strong>Today's Focus:</strong> Use this day to structure the application, prepare your environment, and set up everything you need for a successful journey. Tomorrow (Day 1), the real journey begins!
                       </p>
                     </div>
-                    <Button
-                      onClick={() => updateProgress(journeyId, currentDay.dayNumber, !getDayProgress(currentDay))}
-                      className={getDayProgress(currentDay) ? 'bg-muted' : ''}
-                    >
-                      {getDayProgress(currentDay) ? (
-                        <>
-                          <Check className="w-4 h-4 mr-2" />
-                          Completed
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4 mr-2" />
-                          Mark Complete
-                        </>
-                      )}
-                    </Button>
                   </div>
-
-                  {/* Day Theme */}
-                  {currentDay.theme && (
-                    <div className={`p-4 rounded-lg ${colors.bg} border ${colors.border}`}>
-                      <p className="text-sm font-medium text-foreground">{currentDay.theme}</p>
+                ) : currentDay ? (
+                  <div className="glass-card rounded-xl p-6 border border-border/50">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h2 className="text-2xl font-bold text-display flex items-center gap-2">
+                            Day {currentDay.dayNumber}
+                            {isTomorrow(currentDay.dayNumber) && (
+                              <span className="text-sm px-2 py-1 rounded bg-primary/20 text-primary font-normal">
+                                Tomorrow
+                              </span>
+                            )}
+                          </h2>
+                          {getDayProgress(currentDay) && (
+                            <span className="px-2 py-1 bg-primary/20 text-primary rounded text-xs font-semibold">
+                              Completed
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-muted-foreground">
+                          {currentDay.date && new Date(currentDay.date).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      {canCompleteDay(currentDay.dayNumber) ? (
+                        <Button
+                          onClick={() => updateProgress(journeyId, currentDay.dayNumber, !getDayProgress(currentDay))}
+                          className={getDayProgress(currentDay) ? 'bg-muted' : ''}
+                        >
+                          {getDayProgress(currentDay) ? (
+                            <>
+                              <Check className="w-4 h-4 mr-2" />
+                              Completed
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-4 h-4 mr-2" />
+                              Mark Complete
+                            </>
+                          )}
+                        </Button>
+                      ) : isTomorrow(currentDay.dayNumber) ? (
+                        <div className="text-sm text-muted-foreground flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 border border-border/50">
+                          <span>Preview Only</span>
+                          <span className="text-xs">• Complete tomorrow</span>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 border border-border/50">
+                          <span>Locked</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+
+                    {/* Day Theme */}
+                    {currentDay.theme && (
+                      <div className={`p-4 rounded-lg ${colors.bg} border ${colors.border}`}>
+                        <p className="text-sm font-medium text-foreground">{currentDay.theme}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
 
                 {/* Content Tabs */}
                 <div className="border-b border-border/50">
                   <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                    {['learning', 'project', 'resources', 'reflection'].map((tab) => (
+                    {isPreparationPhase ? (
                       <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`
-                          px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
-                          ${activeTab === tab
-                            ? `border-primary text-primary`
-                            : 'border-transparent text-muted-foreground hover:text-foreground'
-                          }
-                        `}
+                        className="px-4 py-3 text-sm font-medium border-b-2 border-primary text-primary whitespace-nowrap"
                       >
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        Preparation
                       </button>
-                    ))}
+                    ) : (
+                      ['learning', 'project', 'resources', 'reflection'].map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setActiveTab(tab)}
+                          className={`
+                            px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+                            ${activeTab === tab
+                              ? `border-primary text-primary`
+                              : 'border-transparent text-muted-foreground hover:text-foreground'
+                            }
+                          `}
+                        >
+                          {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        </button>
+                      ))
+                    )}
                   </div>
                 </div>
 
                 {/* Tab Content */}
                 <AnimatePresence mode="wait">
-                  {activeTab === 'learning' && (
+                  {/* Preparation Phase Content */}
+                  {isPreparationPhase && preparationData ? (
+                    <motion.div
+                      key="preparation"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-6 mt-6"
+                    >
+                      {preparationData.sections.map((section, idx) => (
+                        <Card key={idx} className="p-6 border border-border/50">
+                          <div className="flex items-center gap-3 mb-4">
+                            <span className="text-2xl">{section.icon}</span>
+                            <h3 className="text-lg font-semibold text-foreground">{section.title}</h3>
+                          </div>
+                          <ul className="space-y-2">
+                            {section.tasks.map((task, taskIdx) => (
+                              <li key={taskIdx} className="flex items-start gap-2 text-sm text-foreground">
+                                <span className="text-primary mt-1">•</span>
+                                <span>{task}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </Card>
+                      ))}
+                      
+                      {/* Resources Section */}
+                      {preparationData.resources && preparationData.resources.length > 0 && (
+                        <Card className="p-6 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <BookOpen className="w-5 h-5 text-primary" />
+                            <h3 className="text-lg font-semibold">Preparation Resources</h3>
+                          </div>
+                          <ul className="space-y-3">
+                            {preparationData.resources.map((resource, idx) => (
+                              <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                                <div>
+                                  <a
+                                    href={resource.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-foreground hover:text-primary transition-colors font-medium"
+                                  >
+                                    {resource.title}
+                                  </a>
+                                  {resource.time && (
+                                    <span className="text-xs text-muted-foreground ml-2">({resource.time})</span>
+                                  )}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </Card>
+                      )}
+                    </motion.div>
+                  ) : activeTab === 'learning' && (
                     <motion.div
                       key="learning"
                       initial={{ opacity: 0, y: 10 }}
@@ -547,7 +938,9 @@ export function JourneyDetailV2({
                         <Card className="p-6 border border-border/50">
                           <div className="flex items-center gap-2 mb-4">
                             <Target className="w-5 h-5 text-primary" />
-                            <h3 className="text-lg font-semibold">Today's Focus</h3>
+                            <h3 className="text-lg font-semibold">
+                              {isTomorrow(currentDay.dayNumber) ? "Tomorrow's Focus" : "Today's Focus"}
+                            </h3>
                           </div>
                           <p className="text-foreground">{currentDay.focus}</p>
                           {currentDay.workout && (
@@ -577,7 +970,12 @@ export function JourneyDetailV2({
                               {disciplineContent.deepLearning.map((session, idx) => (
                                 <Card key={idx} className="p-6 border border-border/50">
                                   <div className="space-y-3">
-                                    <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                      {session.isRevision && (
+                                        <span className="text-xs px-2 py-1 bg-orange-500/20 text-orange-400 rounded font-semibold">
+                                          🔄 Revision
+                                        </span>
+                                      )}
                                       {session.time && (
                                         <span className="text-sm font-mono font-semibold text-primary">
                                           {session.time}
@@ -588,9 +986,16 @@ export function JourneyDetailV2({
                                           {session.duration}
                                         </span>
                                       )}
+                                      {session.discipline && (
+                                        <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded">
+                                          {session.discipline}
+                                        </span>
+                                      )}
                                     </div>
                                     {session.content?.title && (
-                                      <h4 className="text-md font-semibold text-foreground">{session.content.title}</h4>
+                                      <h4 className="text-md font-semibold text-foreground">
+                                        {session.isRevision ? '🔄 ' : ''}{session.content.title}
+                                      </h4>
                                     )}
                                     {session.content?.topics && Array.isArray(session.content.topics) && session.content.topics.length > 0 && (
                                       <ul className="space-y-2">
@@ -621,7 +1026,12 @@ export function JourneyDetailV2({
                               {disciplineContent.implementation.map((session, idx) => (
                                 <Card key={idx} className="p-6 border border-border/50">
                                   <div className="space-y-3">
-                                    <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                      {session.isRevision && (
+                                        <span className="text-xs px-2 py-1 bg-orange-500/20 text-orange-400 rounded font-semibold">
+                                          🔄 Revision
+                                        </span>
+                                      )}
                                       {session.time && (
                                         <span className="text-sm font-mono font-semibold text-primary">
                                           {session.time}
@@ -632,9 +1042,19 @@ export function JourneyDetailV2({
                                           {session.duration}
                                         </span>
                                       )}
+                                      {session.discipline && (
+                                        <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded">
+                                          {session.discipline}
+                                        </span>
+                                      )}
                                     </div>
                                     {session.content?.title && (
-                                      <h4 className="text-md font-semibold text-foreground">{session.content.title}</h4>
+                                      <h4 className="text-md font-semibold text-foreground">
+                                        {session.isRevision ? '🔄 ' : ''}{session.content.title}
+                                        {session.isRevision && session.revisionType && (
+                                          <span className="text-xs text-muted-foreground ml-2">({session.revisionType})</span>
+                                        )}
+                                      </h4>
                                     )}
                                     {session.content?.description && (
                                       <p className="text-sm text-muted-foreground mb-2">{session.content.description}</p>
@@ -1118,7 +1538,11 @@ export function JourneyDetailV2({
                               <p className="text-foreground">{String(currentDay.reflection)}</p>
                             )
                           ) : (
-                            <p className="text-muted-foreground">Reflect on today's {activeDiscipline.toLowerCase()} learning and implementation.</p>
+                            <p className="text-muted-foreground">
+                              {isTomorrow(currentDay.dayNumber) 
+                                ? `Preview tomorrow's ${activeDiscipline.toLowerCase()} learning and implementation.` 
+                                : `Reflect on today's ${activeDiscipline.toLowerCase()} learning and implementation.`}
+                            </p>
                           )}
                         </Card>
                       ) : currentDay.reflection ? (
@@ -1150,10 +1574,10 @@ export function JourneyDetailV2({
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
-            )}
+                    </div>
+                  )}
+            </div>
           </main>
-        </div>
         </div>
       </div>
     </div>
