@@ -1,0 +1,71 @@
+# ============================================
+# INSTRUCTIONS: Copy this file to .env and fill in your values
+# ============================================
+# 1. Copy this file: copy ENV_TEMPLATE.txt .env
+# 2. Get your Supabase connection string (see SUPABASE_CONNECTION_GUIDE.md)
+# 3. Generate JWT secrets (see instructions below)
+# 4. Update all values marked with [YOUR-...] or your_...
+
+# ============================================
+# SUPABASE DATABASE CONNECTION
+# ============================================
+# Get from: Supabase Dashboard → Settings → Database → Connection string (URI)
+# Format: postgresql://postgres:YOUR_PASSWORD@db.xxxxx.supabase.co:5432/postgres?pgbouncer=true&connection_limit=1
+# IMPORTANT: Replace [YOUR-PASSWORD] with your actual database password
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres?pgbouncer=true&connection_limit=1
+
+# Optional: Direct connection for migrations (without connection pooling)
+# Use this if you encounter connection issues with pgbouncer during migrations
+# DIRECT_URL=postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres
+
+# ============================================
+# SERVER CONFIGURATION
+# ============================================
+# For local development, use:
+PORT=4000
+HOST=127.0.0.1
+NODE_ENV=development
+
+# For production, use:
+# PORT=4000
+# HOST=0.0.0.0
+# NODE_ENV=production
+
+# ============================================
+# JWT SECRETS (Generate secure random strings)
+# ============================================
+# Generate using PowerShell:
+# -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 64 | ForEach-Object {[char]$_})
+JWT_ACCESS_SECRET=your-secure-access-secret-min-32-chars-generate-random
+JWT_REFRESH_SECRET=your-secure-refresh-secret-min-32-chars-generate-random
+
+# ============================================
+# CORS & FRONTEND URL
+# ============================================
+# For local development, use:
+APP_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5173
+
+# For production, use your deployed frontend URL:
+# APP_URL=https://your-frontend-url.vercel.app
+# FRONTEND_URL=https://your-frontend-url.vercel.app
+
+# ============================================
+# EMAIL (Optional - for password reset)
+# ============================================
+# Get from: https://sendgrid.com or use Supabase Auth
+MAIL_API_KEY=your-sendgrid-api-key-if-needed
+
+# ============================================
+# FILE STORAGE (Optional)
+# ============================================
+# Can use Supabase Storage later, leave empty for now
+S3_ENDPOINT=
+S3_BUCKET=
+S3_REGION=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+S3_FORCE_PATH_STYLE=false
+CDN_URL=
+FILE_MAX_BYTES=5242880
+
