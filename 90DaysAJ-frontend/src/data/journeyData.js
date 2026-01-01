@@ -1777,6 +1777,179 @@ function getCrashCourseDisciplineRotation(dayNum) {
   }
 }
 
+// ============================================================================
+// PROJECT-DRIVEN SOFTWARE ENGINEERING JOURNEY
+// ============================================================================
+// Flagship Project: Transport/Service App
+// A production-ready application with:
+// - Web Frontend (React): Customer-facing dashboard
+// - Mobile App (React Native): iOS/Android app
+// - Backend API (Node.js): REST API serving web and mobile
+// - Admin/CMS (WordPress): Content and resource management
+//
+// Each day builds toward this project with clear:
+// - What you're building (component/feature/endpoint)
+// - Which part of the project it affects
+// - Key technical concepts used
+// - Expected output
+// ============================================================================
+
+// Project Structure Definition
+const TRANSPORT_APP_PROJECT = {
+  name: 'Transport/Service App',
+  description: 'A production-ready transport and service booking platform',
+  components: {
+    frontend: {
+      name: 'Customer Web Dashboard',
+      parts: [
+        'Layout (Header, Sidebar, Footer)',
+        'Auth Pages (Login, Register)',
+        'Dashboard Home',
+        'Booking Interface',
+        'Service List Views',
+        'Service Detail Pages',
+        'User Profile',
+        'Booking History',
+        'Payment UI (ready)',
+        'Forms (controlled inputs)',
+        'Modals & Alerts',
+        'Loading & Error States'
+      ]
+    },
+    mobile: {
+      name: 'Mobile App',
+      parts: [
+        'Splash & Onboarding',
+        'Login/Register Screens',
+        'Home Dashboard',
+        'Booking Flow',
+        'Service History',
+        'Profile Screen',
+        'Navigation (Stack/Tabs)',
+        'Offline Support'
+      ]
+    },
+    backend: {
+      name: 'REST API',
+      parts: [
+        'Authentication Endpoints',
+        'User Management',
+        'Service CRUD Operations',
+        'Booking Management',
+        'Payment Processing (ready)',
+        'File Upload Handling',
+        'API Security',
+        'Error Handling'
+      ]
+    },
+    wordpress: {
+      name: 'Admin/CMS Layer',
+      parts: [
+        'Content Management',
+        'Resource Upload',
+        'Admin Dashboards',
+        'Client Updates',
+        'Custom Post Types',
+        'User Roles & Permissions'
+      ]
+    }
+  },
+  buildPhases: {
+    weeks1_2: 'Foundation: Setup, Auth, Basic Layouts',
+    weeks3_4: 'Core Features: Booking, Lists, Navigation',
+    weeks5_6: 'Integration: API Connections, State Management',
+    weeks7_8: 'Enhancement: Advanced Features, Performance',
+    weeks9_10: 'Polish: UX Improvements, Error Handling',
+    weeks11_12: 'Production: Security, Testing, Deployment',
+    week13: 'Finalization: Documentation, Optimization'
+  }
+}
+
+// Get build phase for week
+function getBuildPhaseForWeek(weekNum) {
+  if (weekNum <= 2) return TRANSPORT_APP_PROJECT.buildPhases.weeks1_2
+  if (weekNum <= 4) return TRANSPORT_APP_PROJECT.buildPhases.weeks3_4
+  if (weekNum <= 6) return TRANSPORT_APP_PROJECT.buildPhases.weeks5_6
+  if (weekNum <= 8) return TRANSPORT_APP_PROJECT.buildPhases.weeks7_8
+  if (weekNum <= 10) return TRANSPORT_APP_PROJECT.buildPhases.weeks9_10
+  if (weekNum <= 12) return TRANSPORT_APP_PROJECT.buildPhases.weeks11_12
+  return TRANSPORT_APP_PROJECT.buildPhases.week13
+}
+
+// Map day number to project component being built
+function getProjectComponentForDay(dayNumber, discipline) {
+  const dayIndex = dayNumber - 1
+  
+  // Frontend components progression
+  if (discipline === 'Frontend') {
+    if (dayNumber <= 3) return { component: 'Project Setup & HTML Structure', part: 'Foundation' }
+    if (dayNumber <= 7) return { component: 'Layout Components', part: 'Layout (Header, Sidebar, Footer)' }
+    if (dayNumber <= 14) return { component: 'Auth Pages', part: 'Auth Pages (Login, Register)' }
+    if (dayNumber <= 21) return { component: 'Dashboard', part: 'Dashboard Home' }
+    if (dayNumber <= 28) return { component: 'List Views', part: 'Service List Views' }
+    if (dayNumber <= 35) return { component: 'Detail Pages', part: 'Service Detail Pages' }
+    if (dayNumber <= 42) return { component: 'Forms', part: 'Forms (controlled inputs)' }
+    if (dayNumber <= 49) return { component: 'Modals & Alerts', part: 'Modals & Alerts' }
+    if (dayNumber <= 56) return { component: 'Booking Interface', part: 'Booking Interface' }
+    if (dayNumber <= 63) return { component: 'Profile & History', part: 'User Profile, Booking History' }
+    if (dayNumber <= 70) return { component: 'Loading & Error States', part: 'Loading & Error States' }
+    if (dayNumber <= 77) return { component: 'Payment UI', part: 'Payment UI (ready)' }
+    if (dayNumber <= 84) return { component: 'Performance Optimization', part: 'All Components' }
+    return { component: 'Final Polish', part: 'All Components' }
+  }
+  
+  // Mobile screens progression
+  if (discipline === 'Mobile') {
+    if (dayNumber <= 3) return { component: 'Project Setup', part: 'Foundation' }
+    if (dayNumber <= 7) return { component: 'Splash & Onboarding', part: 'Splash & Onboarding' }
+    if (dayNumber <= 14) return { component: 'Auth Screens', part: 'Login/Register Screens' }
+    if (dayNumber <= 21) return { component: 'Home Dashboard', part: 'Home Dashboard' }
+    if (dayNumber <= 28) return { component: 'Navigation', part: 'Navigation (Stack/Tabs)' }
+    if (dayNumber <= 35) return { component: 'Booking Flow', part: 'Booking Flow' }
+    if (dayNumber <= 42) return { component: 'Service History', part: 'Service History' }
+    if (dayNumber <= 49) return { component: 'Profile Screen', part: 'Profile Screen' }
+    if (dayNumber <= 56) return { component: 'Offline Support', part: 'Offline Support' }
+    if (dayNumber <= 63) return { component: 'API Integration', part: 'All Screens' }
+    if (dayNumber <= 70) return { component: 'Performance', part: 'All Screens' }
+    if (dayNumber <= 77) return { component: 'Platform Optimization', part: 'All Screens' }
+    return { component: 'Final Polish', part: 'All Screens' }
+  }
+  
+  // Backend endpoints progression
+  if (discipline === 'Backend') {
+    if (dayNumber <= 3) return { component: 'Project Setup', part: 'Foundation' }
+    if (dayNumber <= 7) return { component: 'Express Setup', part: 'Foundation' }
+    if (dayNumber <= 14) return { component: 'Auth Endpoints', part: 'Authentication Endpoints' }
+    if (dayNumber <= 21) return { component: 'User Management', part: 'User Management' }
+    if (dayNumber <= 28) return { component: 'Service CRUD', part: 'Service CRUD Operations' }
+    if (dayNumber <= 35) return { component: 'Booking Endpoints', part: 'Booking Management' }
+    if (dayNumber <= 42) return { component: 'File Upload', part: 'File Upload Handling' }
+    if (dayNumber <= 49) return { component: 'API Security', part: 'API Security' }
+    if (dayNumber <= 56) return { component: 'Error Handling', part: 'Error Handling' }
+    if (dayNumber <= 63) return { component: 'Payment Endpoints', part: 'Payment Processing (ready)' }
+    if (dayNumber <= 70) return { component: 'Performance', part: 'All Endpoints' }
+    if (dayNumber <= 77) return { component: 'Testing', part: 'All Endpoints' }
+    return { component: 'Documentation', part: 'All Endpoints' }
+  }
+  
+  // WordPress features progression
+  if (discipline === 'WordPress') {
+    if (dayNumber <= 7) return { component: 'WordPress Setup', part: 'Foundation' }
+    if (dayNumber <= 14) return { component: 'Custom Post Types', part: 'Custom Post Types' }
+    if (dayNumber <= 21) return { component: 'Content Management', part: 'Content Management' }
+    if (dayNumber <= 28) return { component: 'User Roles', part: 'User Roles & Permissions' }
+    if (dayNumber <= 35) return { component: 'Resource Upload', part: 'Resource Upload' }
+    if (dayNumber <= 42) return { component: 'Admin Dashboards', part: 'Admin Dashboards' }
+    if (dayNumber <= 49) return { component: 'Client Updates', part: 'Client Updates' }
+    if (dayNumber <= 56) return { component: 'Theme Customization', part: 'All Features' }
+    if (dayNumber <= 63) return { component: 'Plugin Development', part: 'All Features' }
+    if (dayNumber <= 70) return { component: 'Security', part: 'All Features' }
+    return { component: 'Final Polish', part: 'All Features' }
+  }
+  
+  return { component: 'Project Work', part: 'General' }
+}
+
 // Software Engineering Journey - Full 13-Week Journey
 // January 1, 2026 - March 31, 2026 (90 days)
 // Official Ascension Phase - Day 1 = January 1, 2026
@@ -1798,9 +1971,30 @@ export const softwareEngineeringWeeks = generateWeeks('2026-01-02', 13).map((wee
     // Get learning content for this week and day
     const learningData = getSoftwareEngineeringLearning(weekNum, i)
     const workflowData = getSoftwareEngineeringCursorWorkflow(weekNum, i)
-    const projectData = getSoftwareEngineeringProject(weekNum, i)
+    let projectData = getSoftwareEngineeringProject(weekNum, i)
     const disciplineRotation = getDisciplineRotation(weekNum, i)
     const timeBlocks = getTimeBlocks(i) // dayIndex only
+    
+    // Enrich project data with project-driven information for each discipline
+    if (projectData && typeof projectData === 'object') {
+      // If projectData has discipline-specific data, enrich each
+      if (projectData.frontend || projectData.mobile || projectData.backend || projectData.wordpress) {
+        ['frontend', 'mobile', 'backend', 'wordpress'].forEach(discipline => {
+          if (projectData[discipline]) {
+            const capitalized = discipline.charAt(0).toUpperCase() + discipline.slice(1)
+            projectData[discipline] = enrichProjectWithProjectInfo(
+              projectData[discipline], 
+              dayNumber, 
+              capitalized
+            )
+          }
+        })
+      } else {
+        // Single project data - enrich based on primary discipline for the day
+        const primaryDiscipline = disciplineRotation.primaryDiscipline || 'Frontend'
+        projectData = enrichProjectWithProjectInfo(projectData, dayNumber, primaryDiscipline)
+      }
+    }
     
     // Map content to time blocks
     const scheduledContent = organizeContentBySchedule(
@@ -1812,6 +2006,14 @@ export const softwareEngineeringWeeks = generateWeeks('2026-01-02', 13).map((wee
       disciplineRotation,
       timeBlocks
     )
+    
+    // Get project component information for each discipline
+    const projectInfo = {
+      frontend: getProjectComponentForDay(dayNumber, 'Frontend'),
+      mobile: getProjectComponentForDay(dayNumber, 'Mobile'),
+      backend: getProjectComponentForDay(dayNumber, 'Backend'),
+      wordpress: getProjectComponentForDay(dayNumber, 'WordPress')
+    }
     
     days.push({
       dayNumber: dayNumber,
@@ -1832,6 +2034,13 @@ export const softwareEngineeringWeeks = generateWeeks('2026-01-02', 13).map((wee
         timeBlocks: timeBlocks,
         disciplineRotation: disciplineRotation,
         scheduledContent: scheduledContent
+      },
+      // Project-driven information
+      project: {
+        name: TRANSPORT_APP_PROJECT.name,
+        description: TRANSPORT_APP_PROJECT.description,
+        components: projectInfo,
+        buildPhase: getBuildPhaseForWeek(weekNum)
       },
       isTestRun: false,
       testRunNote: null,
@@ -3590,7 +3799,30 @@ function getSoftwareEngineeringCursorWorkflow(weekNum, dayIndex) {
   }
 }
 
+// Helper function to enrich project data with project-driven information
+function enrichProjectWithProjectInfo(projectData, dayNumber, discipline) {
+  const projectComponent = getProjectComponentForDay(dayNumber, discipline)
+  
+  return {
+    ...projectData,
+    // Project-driven metadata
+    projectComponent: projectComponent.component,
+    projectPart: projectComponent.part,
+    projectName: TRANSPORT_APP_PROJECT.name,
+    // Enhanced description that connects to project
+    description: projectData.description || `Build ${projectComponent.component} for the ${TRANSPORT_APP_PROJECT.name}`,
+    // Add what you're building today
+    buildingToday: {
+      component: projectComponent.component,
+      part: projectComponent.part,
+      connectsTo: `This ${projectComponent.component} is part of the ${projectComponent.part} in the ${TRANSPORT_APP_PROJECT.name}`,
+      expectedOutput: projectData.expectedOutput || `A working ${projectComponent.component} that integrates with the ${TRANSPORT_APP_PROJECT.name}`
+    }
+  }
+}
+
 function getSoftwareEngineeringProject(weekNum, dayIndex) {
+  const dayNumber = (weekNum - 1) * 7 + dayIndex + 1
   const projects = {
     1: {
       0:       {

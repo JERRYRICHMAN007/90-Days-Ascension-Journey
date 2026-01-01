@@ -28,7 +28,7 @@ export function JourneyCard({ journey, journeyProgress, index }) {
         rotateX: 5,
       }}
       onClick={() => navigate(`/journey/${journey.id}`)}
-      className="glass-card rounded-2xl p-6 cursor-pointer relative overflow-hidden group"
+      className="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6 cursor-pointer relative overflow-hidden group"
       style={{
         transformStyle: 'preserve-3d',
         perspective: '1000px',
@@ -43,33 +43,33 @@ export function JourneyCard({ journey, journeyProgress, index }) {
       <div className="relative z-10">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
-          <div className="text-5xl mb-2 float-animation">{journey.icon}</div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="text-3xl sm:text-4xl md:text-5xl mb-2 float-animation">{journey.icon}</div>
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
             <span>{journeyProgress.completed}/{journeyProgress.total} days</span>
           </div>
         </div>
 
         {/* Content */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div>
-            <h3 className="text-xl font-bold mb-2 group-hover:gradient-text transition-all">
+            <h3 className="text-lg sm:text-xl font-bold mb-2 group-hover:gradient-text transition-all">
               {journey.title}
             </h3>
-            <p className="text-sm text-muted-foreground line-clamp-2">
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
               {journey.description}
             </p>
           </div>
 
           {/* Progress */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Progress</span>
               <span className="font-semibold">{journeyProgress.percentage}%</span>
             </div>
             <div className="relative">
-              <Progress value={journeyProgress.percentage} className="h-2" />
+              <Progress value={journeyProgress.percentage} className="h-1.5 sm:h-2" />
               <div 
-                className={`absolute top-0 left-0 h-2 bg-gradient-to-r ${gradientClass} rounded-full transition-all duration-500`}
+                className={`absolute top-0 left-0 h-1.5 sm:h-2 bg-gradient-to-r ${gradientClass} rounded-full transition-all duration-500`}
                 style={{ width: `${journeyProgress.percentage}%` }}
               />
             </div>
@@ -77,17 +77,17 @@ export function JourneyCard({ journey, journeyProgress, index }) {
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-2">
-            <span className="text-xs px-3 py-1 rounded-full bg-muted text-muted-foreground">
+            <span className="text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-muted text-muted-foreground truncate max-w-[60%]">
               {journey.timeBlock}
             </span>
-            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-blue-500 group-hover:translate-x-1 transition-all shrink-0" />
           </div>
         </div>
       </div>
 
       {/* Radial progress indicator */}
-      <div className="absolute top-4 right-4 w-12 h-12">
-        <svg className="transform -rotate-90 w-12 h-12">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-10 h-10 sm:w-12 sm:h-12">
+        <svg className="transform -rotate-90 w-10 h-10 sm:w-12 sm:h-12">
           <circle
             cx="24"
             cy="24"

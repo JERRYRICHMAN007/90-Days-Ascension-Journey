@@ -252,62 +252,62 @@ export function HomePage({ userProgress }) {
   }, []); // Empty dependency array - recalculate only on mount
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Hero Section - Day Number */}
-      <div className="text-center space-y-2 py-6 border-b">
+      <div className="text-center space-y-2 py-4 sm:py-6 border-b px-4">
         {currentPhase === "preparation" && currentDay === 0 && (
           <>
-            <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               {formatDayNumber(currentDay)}
             </div>
-            <div className="text-lg text-muted-foreground">
+            <div className="text-base sm:text-lg text-muted-foreground">
               {daysRemaining} days remaining • Journey starts tomorrow
             </div>
-            <div className="text-sm font-medium text-foreground mt-2">
+            <div className="text-xs sm:text-sm font-medium text-foreground mt-2">
               "Preparation is the foundation of success"
             </div>
           </>
         )}
         {currentPhase === "preparation" && currentDay !== 0 && (
           <>
-            <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Preparation Phase
             </div>
-            <div className="text-2xl font-bold text-muted-foreground">
+            <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
               Getting Ready for Your Ascension
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground">
               Your journey begins January 1, 2026
             </div>
           </>
         )}
         {currentPhase === "ascension" && currentDay && currentDay > 0 && (
           <>
-            <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               {formatDayNumber(currentDay)}
             </div>
-            <div className="text-lg text-muted-foreground">
+            <div className="text-base sm:text-lg text-muted-foreground">
               {progress}% Complete • {daysRemaining} days remaining
             </div>
-            <div className="text-sm font-medium text-foreground mt-2">
+            <div className="text-xs sm:text-sm font-medium text-foreground mt-2">
               "Discipline compounds daily"
             </div>
           </>
         )}
         {currentPhase === "before" && (
           <>
-            <div className="text-2xl font-bold text-muted-foreground">
+            <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
               Your Ascension Journey
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground">
               Official start: January 1, 2026
             </div>
           </>
         )}
         {currentPhase === "after" && (
           <>
-            <div className="text-2xl font-bold">🎉 Journey Complete</div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xl sm:text-2xl font-bold">🎉 Journey Complete</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">
               You've completed the 90-day ascension journey
             </div>
           </>
@@ -316,9 +316,9 @@ export function HomePage({ userProgress }) {
 
       {/* Header (PRD v2.0) */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-display">Good morning! 🌟</h1>
-          <p className="text-muted-foreground mt-1 text-lg">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-display">Good morning! 🌟</h1>
+          <p className="text-muted-foreground mt-1 text-base sm:text-lg">
             {currentPhase === "ascension"
               ? "Continue your ascension journey"
               : currentPhase === "preparation"
@@ -326,13 +326,13 @@ export function HomePage({ userProgress }) {
               : "Your transformation awaits"}
           </p>
           {(currentPhase === "ascension" || (currentPhase === "preparation" && currentDay === 0)) && currentDay !== null && (
-            <p className="text-sm text-muted-foreground mt-1">{todayDate}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{todayDate}</p>
           )}
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="p-4">
           <LevelBar
             level={globalLevel.level}
@@ -360,7 +360,7 @@ export function HomePage({ userProgress }) {
       {/* Today's Focus (PRD v2.0) */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-display">Today's Focus</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-display">Today's Focus</h2>
           {currentPhase === "ascension" && todayTasks.length > 0 && (
             <div className="text-sm text-muted-foreground">
               {todayTasks.filter((t) => t.completed).length} /{" "}
@@ -467,8 +467,8 @@ export function HomePage({ userProgress }) {
 
       {/* Your Journeys (PRD v2.0) */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-display">Your Journeys</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        <h2 className="text-xl sm:text-2xl font-bold text-display">Your Journeys</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
           {journeyCards.map((journey, index) => {
             const journeyProgress = userProgress[journey.id] || {};
             const completedDays =
