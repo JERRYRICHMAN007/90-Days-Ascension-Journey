@@ -15,13 +15,17 @@ import {
   Code,
   FileText,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Server,
+  Smartphone,
+  Globe
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useGamification } from '../../hooks/useGamification';
 import { getCurrentDayNumber } from '../../utils/dates';
 import { getQuoteOfTheDay } from '../../data/quotes';
+import { cn } from '../../lib/utils';
 
 /**
  * Journey Detail Page v2.0 - PRD Redesign
@@ -101,6 +105,45 @@ export function JourneyDetailV2({
     reflection: false
   });
 
+  // Discipline state for Software Engineering
+  const [activeDiscipline, setActiveDiscipline] = useState('Frontend');
+  
+  const disciplines = [
+    { id: 'Frontend', label: 'Frontend', icon: Code, color: '#667eea' },
+    { id: 'Backend', label: 'Backend', icon: Server, color: '#10b981' },
+    { id: 'Mobile', label: 'Mobile', icon: Smartphone, color: '#f59e0b' },
+    { id: 'WordPress', label: 'WordPress', icon: Globe, color: '#8b5cf6' },
+  ];
+
+  // Filter schedule content by active discipline for Software Engineering
+  const getDisciplineContent = () => {
+    if (journeyId !== 'software-engineering' || !currentDay?.schedule) {
+      return null;
+    }
+
+    const schedule = currentDay.schedule;
+    const deepLearningSessions = schedule?.scheduledContent?.deepLearning?.filter(
+      (block) => block.discipline === activeDiscipline
+    ) || [];
+    
+    const implementationSessions = schedule?.scheduledContent?.focusedImplementation?.filter(
+      (block) => block.discipline === activeDiscipline
+    ) || [];
+
+    // Get resources and reflection filtered by discipline
+    const disciplineResources = currentDay.resources || [];
+    const disciplineReflection = currentDay.reflection;
+
+    return {
+      deepLearning: deepLearningSessions,
+      implementation: implementationSessions,
+      resources: disciplineResources,
+      reflection: disciplineReflection
+    };
+  };
+
+  const disciplineContent = getDisciplineContent();
+
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -174,10 +217,10 @@ export function JourneyDetailV2({
   const Icon = journey.icon || (() => <span>{journey.icon}</span>);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header Section */}
-      <div className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Header Section - Fixed */}
+      <div className="border-b border-border/50 bg-card/50 backdrop-blur-sm shrink-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           {/* Back Button & Title */}
           <div className="flex items-center gap-4 mb-6">
             <Button
@@ -261,9 +304,9 @@ export function JourneyDetailV2({
         </div>
       </div>
 
-      {/* Week Navigation Tabs */}
-      <div className="border-b border-border/50 bg-card/30 sticky top-[180px] z-30">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* Week Navigation Tabs - Fixed */}
+      <div className="border-b border-border/50 bg-card/30 shrink-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-4">
             {weeks.map((week) => {
               const weekProgress = getWeekProgress(week);
@@ -298,13 +341,52 @@ export function JourneyDetailV2({
         </div>
       </div>
 
+      {/* Discipline Tabs - Only for Software Engineering */}
+      {journeyId === 'software-engineering' && (
+        <div className="border-b border-border/50 bg-card/20 shrink-0 z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-3">
+              {disciplines.map((discipline) => {
+                const Icon = discipline.icon;
+                const isActive = activeDiscipline === discipline.id;
+                
+                return (
+                  <button
+                    key={discipline.id}
+                    onClick={() => setActiveDiscipline(discipline.id)}
+                    className={cn(
+                      'flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm',
+                      'whitespace-nowrap shrink-0 transition-all relative',
+                      isActive
+                        ? 'text-foreground bg-muted/50'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
+                    )}
+                    style={
+                      isActive
+                        ? {
+                            borderBottom: `2px solid ${discipline.color}`,
+                            color: discipline.color,
+                          }
+                        : {}
+                    }
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{discipline.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content - Single Scroll Container */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Days Sidebar - No Sticky, Part of Main Scroll */}
-          <aside className="lg:col-span-1">
-            <div className="glass-card rounded-xl p-4">
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+          {/* Days Sidebar - Part of Main Scroll - Compact */}
+          <aside className="lg:col-span-1 lg:sticky lg:top-0 lg:self-start">
+            <div className="glass-card rounded-xl p-4 lg:max-w-[280px]">
               <h3 className="text-sm font-semibold text-foreground mb-4">
                 Week {selectedWeek}
               </h3>
@@ -356,7 +438,7 @@ export function JourneyDetailV2({
           </aside>
 
           {/* Main Content Area - Single Scroll Container */}
-          <main className="lg:col-span-3">
+          <main className="lg:col-span-3 min-w-0">
             {!currentDay && (
               <Card className="p-12 text-center">
                 <p className="text-muted-foreground">No day data available. Please try refreshing the page.</p>
@@ -482,87 +564,113 @@ export function JourneyDetailV2({
                       )}
 
                       {/* Learning Content */}
-                      {currentDay.dailyLearning && (
+                      {/* For Software Engineering: Show schedule-based discipline content */}
+                      {journeyId === 'software-engineering' && currentDay?.schedule && disciplineContent ? (
                         <>
-                          {typeof currentDay.dailyLearning === 'object' && (
-                        <>
-                          {currentDay.dailyLearning.title && (
-                            <Card className="p-6 border border-border/50">
-                              <h3 className="text-lg font-semibold text-foreground mb-4">{currentDay.dailyLearning.title}</h3>
-                            </Card>
-                          )}
-                          
-                          {/* Frontend Section - Collapsible */}
-                          {currentDay.dailyLearning.frontend && (
-                            <Card className="p-0 border border-border/50 overflow-hidden">
-                              <button
-                                onClick={() => toggleSection('frontend')}
-                                className="w-full flex items-center justify-between p-6 hover:bg-muted/30 transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <Code className="w-5 h-5 text-primary" />
-                                  <h3 className="text-lg font-semibold text-foreground">
-                                    {currentDay.dailyLearning.frontend.title || 'Frontend Engineering'}
-                                  </h3>
-                                </div>
-                                {expandedSections.frontend ? (
-                                  <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                                ) : (
-                                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                                )}
-                              </button>
-                              {expandedSections.frontend && currentDay.dailyLearning.frontend.topics && Array.isArray(currentDay.dailyLearning.frontend.topics) && (
-                                <div className="px-6 pb-6">
-                                  <ul className="space-y-2">
-                                    {currentDay.dailyLearning.frontend.topics.map((topic, idx) => (
-                                      <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                                        <span className="text-primary mt-1">•</span>
-                                        <span>{topic}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </Card>
+                          {/* Deep Learning Sessions */}
+                          {disciplineContent.deepLearning.length > 0 && (
+                            <div className="space-y-4">
+                              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                                <BookOpen className="w-5 h-5 text-primary" />
+                                Deep Learning Sessions ({disciplineContent.deepLearning.length})
+                              </h3>
+                              {disciplineContent.deepLearning.map((session, idx) => (
+                                <Card key={idx} className="p-6 border border-border/50">
+                                  <div className="space-y-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      {session.time && (
+                                        <span className="text-sm font-mono font-semibold text-primary">
+                                          {session.time}
+                                        </span>
+                                      )}
+                                      {session.duration && (
+                                        <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
+                                          {session.duration}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {session.content?.title && (
+                                      <h4 className="text-md font-semibold text-foreground">{session.content.title}</h4>
+                                    )}
+                                    {session.content?.topics && Array.isArray(session.content.topics) && session.content.topics.length > 0 && (
+                                      <ul className="space-y-2">
+                                        {session.content.topics.map((topic, topicIdx) => (
+                                          <li key={topicIdx} className="flex items-start gap-2 text-sm text-foreground">
+                                            <span className="text-primary mt-1">•</span>
+                                            <span>{topic}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                    {session.content?.description && (
+                                      <p className="text-sm text-muted-foreground">{session.content.description}</p>
+                                    )}
+                                  </div>
+                                </Card>
+                              ))}
+                            </div>
                           )}
 
-                          {/* Backend Section - Collapsible */}
-                          {currentDay.dailyLearning.backend && (
-                            <Card className="p-0 border border-border/50 overflow-hidden">
-                              <button
-                                onClick={() => toggleSection('backend')}
-                                className="w-full flex items-center justify-between p-6 hover:bg-muted/30 transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <Code className="w-5 h-5 text-primary" />
-                                  <h3 className="text-lg font-semibold text-foreground">
-                                    {currentDay.dailyLearning.backend.title || 'Backend Engineering'}
-                                  </h3>
-                                </div>
-                                {expandedSections.backend ? (
-                                  <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                                ) : (
-                                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                                )}
-                              </button>
-                              {expandedSections.backend && currentDay.dailyLearning.backend.topics && Array.isArray(currentDay.dailyLearning.backend.topics) && (
-                                <div className="px-6 pb-6">
-                                  <ul className="space-y-2">
-                                    {currentDay.dailyLearning.backend.topics.map((topic, idx) => (
-                                      <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                                        <span className="text-primary mt-1">•</span>
-                                        <span>{topic}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </Card>
+                          {/* Focused Implementation Sessions */}
+                          {disciplineContent.implementation.length > 0 && (
+                            <div className="space-y-4 mt-6">
+                              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                                <Code className="w-5 h-5 text-primary" />
+                                Focused Implementation ({disciplineContent.implementation.length})
+                              </h3>
+                              {disciplineContent.implementation.map((session, idx) => (
+                                <Card key={idx} className="p-6 border border-border/50">
+                                  <div className="space-y-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      {session.time && (
+                                        <span className="text-sm font-mono font-semibold text-primary">
+                                          {session.time}
+                                        </span>
+                                      )}
+                                      {session.duration && (
+                                        <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
+                                          {session.duration}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {session.content?.title && (
+                                      <h4 className="text-md font-semibold text-foreground">{session.content.title}</h4>
+                                    )}
+                                    {session.content?.description && (
+                                      <p className="text-sm text-muted-foreground mb-2">{session.content.description}</p>
+                                    )}
+                                    {session.content?.requirements && Array.isArray(session.content.requirements) && session.content.requirements.length > 0 && (
+                                      <div>
+                                        <p className="text-sm font-semibold text-foreground mb-2">Requirements:</p>
+                                        <ul className="space-y-2">
+                                          {session.content.requirements.map((req, reqIdx) => (
+                                            <li key={reqIdx} className="flex items-start gap-2 text-sm text-foreground">
+                                              <span className="text-primary mt-1">•</span>
+                                              <span>{req}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {session.content?.topics && Array.isArray(session.content.topics) && session.content.topics.length > 0 && (
+                                      <ul className="space-y-2">
+                                        {session.content.topics.map((topic, topicIdx) => (
+                                          <li key={topicIdx} className="flex items-start gap-2 text-sm text-foreground">
+                                            <span className="text-primary mt-1">•</span>
+                                            <span>{topic}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </div>
+                                </Card>
+                              ))}
+                            </div>
                           )}
 
-                          {/* Systems Thinking Section - Collapsible */}
-                          {currentDay.dailyLearning.systems && (
-                            <Card className="p-0 border border-border/50 overflow-hidden">
+                          {/* Systems Section - Always visible */}
+                          {currentDay.dailyLearning?.systems && (
+                            <Card className="p-0 border border-border/50 overflow-hidden mt-6">
                               <button
                                 onClick={() => toggleSection('systems')}
                                 className="w-full flex items-center justify-between p-6 hover:bg-muted/30 transition-colors"
@@ -593,114 +701,452 @@ export function JourneyDetailV2({
                               )}
                             </Card>
                           )}
-                        </>
+
+                          {/* Fallback: Show dailyLearning if no schedule content */}
+                          {disciplineContent.deepLearning.length === 0 && disciplineContent.implementation.length === 0 && currentDay.dailyLearning && (
+                            <>
+                              {typeof currentDay.dailyLearning === 'object' && (
+                                <>
+                                  {currentDay.dailyLearning.title && (
+                                    <Card className="p-6 border border-border/50">
+                                      <h3 className="text-lg font-semibold text-foreground mb-4">{currentDay.dailyLearning.title}</h3>
+                                    </Card>
+                                  )}
+                                  
+                                  {/* Show discipline-specific content from dailyLearning */}
+                                  {activeDiscipline === 'Frontend' && currentDay.dailyLearning.frontend && (
+                                    <Card className="p-0 border border-border/50 overflow-hidden">
+                                      <div className="p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                          <Code className="w-5 h-5 text-primary" />
+                                          <h3 className="text-lg font-semibold text-foreground">
+                                            {currentDay.dailyLearning.frontend.title || 'Frontend Engineering'}
+                                          </h3>
+                                        </div>
+                                        {currentDay.dailyLearning.frontend.topics && Array.isArray(currentDay.dailyLearning.frontend.topics) && (
+                                          <ul className="space-y-2">
+                                            {currentDay.dailyLearning.frontend.topics.map((topic, idx) => (
+                                              <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                                <span className="text-primary mt-1">•</span>
+                                                <span>{topic}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                      </div>
+                                    </Card>
+                                  )}
+
+                                  {activeDiscipline === 'Backend' && currentDay.dailyLearning.backend && (
+                                    <Card className="p-0 border border-border/50 overflow-hidden">
+                                      <div className="p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                          <Server className="w-5 h-5 text-primary" />
+                                          <h3 className="text-lg font-semibold text-foreground">
+                                            {currentDay.dailyLearning.backend.title || 'Backend Engineering'}
+                                          </h3>
+                                        </div>
+                                        {currentDay.dailyLearning.backend.topics && Array.isArray(currentDay.dailyLearning.backend.topics) && (
+                                          <ul className="space-y-2">
+                                            {currentDay.dailyLearning.backend.topics.map((topic, idx) => (
+                                              <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                                <span className="text-primary mt-1">•</span>
+                                                <span>{topic}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                      </div>
+                                    </Card>
+                                  )}
+
+                                  {activeDiscipline === 'Mobile' && currentDay.dailyLearning.mobile && (
+                                    <Card className="p-0 border border-border/50 overflow-hidden">
+                                      <div className="p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                          <Smartphone className="w-5 h-5 text-primary" />
+                                          <h3 className="text-lg font-semibold text-foreground">
+                                            {currentDay.dailyLearning.mobile.title || 'Mobile Engineering'}
+                                          </h3>
+                                        </div>
+                                        {currentDay.dailyLearning.mobile.topics && Array.isArray(currentDay.dailyLearning.mobile.topics) && (
+                                          <ul className="space-y-2">
+                                            {currentDay.dailyLearning.mobile.topics.map((topic, idx) => (
+                                              <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                                <span className="text-primary mt-1">•</span>
+                                                <span>{topic}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                      </div>
+                                    </Card>
+                                  )}
+                                </>
+                              )}
+                            </>
                           )}
-                          {!currentDay.dailyLearning && !currentDay.focus && (
-                            <Card className="p-12 text-center border border-border/50">
-                              <p className="text-muted-foreground">No learning content for this day.</p>
-                            </Card>
+                        </>
+                      ) : currentDay.dailyLearning ? (
+                        <>
+                          {typeof currentDay.dailyLearning === 'object' && (
+                            <>
+                              {currentDay.dailyLearning.title && (
+                                <Card className="p-6 border border-border/50">
+                                  <h3 className="text-lg font-semibold text-foreground mb-4">{currentDay.dailyLearning.title}</h3>
+                                </Card>
+                              )}
+                              
+                              {/* For other journeys: Show all sections as collapsible */}
+                              {/* Frontend Section - Collapsible */}
+                              {currentDay.dailyLearning.frontend && (
+                                <Card className="p-0 border border-border/50 overflow-hidden">
+                                  <button
+                                    onClick={() => toggleSection('frontend')}
+                                    className="w-full flex items-center justify-between p-6 hover:bg-muted/30 transition-colors"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <Code className="w-5 h-5 text-primary" />
+                                      <h3 className="text-lg font-semibold text-foreground">
+                                        {currentDay.dailyLearning.frontend.title || 'Frontend Engineering'}
+                                      </h3>
+                                    </div>
+                                    {expandedSections.frontend ? (
+                                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                                    ) : (
+                                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                                    )}
+                                  </button>
+                                  {expandedSections.frontend && currentDay.dailyLearning.frontend.topics && Array.isArray(currentDay.dailyLearning.frontend.topics) && (
+                                    <div className="px-6 pb-6">
+                                      <ul className="space-y-2">
+                                        {currentDay.dailyLearning.frontend.topics.map((topic, idx) => (
+                                          <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                            <span className="text-primary mt-1">•</span>
+                                            <span>{topic}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </Card>
+                              )}
+
+                              {/* Backend Section - Collapsible */}
+                              {currentDay.dailyLearning.backend && (
+                                <Card className="p-0 border border-border/50 overflow-hidden">
+                                  <button
+                                    onClick={() => toggleSection('backend')}
+                                    className="w-full flex items-center justify-between p-6 hover:bg-muted/30 transition-colors"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <Code className="w-5 h-5 text-primary" />
+                                      <h3 className="text-lg font-semibold text-foreground">
+                                        {currentDay.dailyLearning.backend.title || 'Backend Engineering'}
+                                      </h3>
+                                    </div>
+                                    {expandedSections.backend ? (
+                                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                                    ) : (
+                                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                                    )}
+                                  </button>
+                                  {expandedSections.backend && currentDay.dailyLearning.backend.topics && Array.isArray(currentDay.dailyLearning.backend.topics) && (
+                                    <div className="px-6 pb-6">
+                                      <ul className="space-y-2">
+                                        {currentDay.dailyLearning.backend.topics.map((topic, idx) => (
+                                          <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                            <span className="text-primary mt-1">•</span>
+                                            <span>{topic}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </Card>
+                              )}
+
+                              {/* Systems Thinking Section - Collapsible */}
+                              {currentDay.dailyLearning.systems && (
+                                <Card className="p-0 border border-border/50 overflow-hidden">
+                                  <button
+                                    onClick={() => toggleSection('systems')}
+                                    className="w-full flex items-center justify-between p-6 hover:bg-muted/30 transition-colors"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <Target className="w-5 h-5 text-primary" />
+                                      <h3 className="text-lg font-semibold text-foreground">
+                                        {currentDay.dailyLearning.systems.title || 'Systems & Engineering Mindset'}
+                                      </h3>
+                                    </div>
+                                    {expandedSections.systems ? (
+                                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                                    ) : (
+                                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                                    )}
+                                  </button>
+                                  {expandedSections.systems && currentDay.dailyLearning.systems.topics && Array.isArray(currentDay.dailyLearning.systems.topics) && (
+                                    <div className="px-6 pb-6">
+                                      <ul className="space-y-2">
+                                        {currentDay.dailyLearning.systems.topics.map((topic, idx) => (
+                                          <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                            <span className="text-primary mt-1">•</span>
+                                            <span>{topic}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </Card>
+                              )}
+                            </>
                           )}
                         </>
+                      ) : null}
+                      
+                      {!currentDay.dailyLearning && !currentDay.focus && (
+                        <Card className="p-12 text-center border border-border/50">
+                          <p className="text-muted-foreground">No learning content for this day.</p>
+                        </Card>
                       )}
                     </motion.div>
                   )}
 
-                  {activeTab === 'project' && currentDay.miniProject && (
+                  {activeTab === 'project' && (
                     <motion.div
                       key="project"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                     >
-                      <Card className="p-6 border border-border/50">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Code className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">{currentDay.miniProject.title}</h3>
+                      {/* For Software Engineering: Show discipline-specific project from schedule */}
+                      {journeyId === 'software-engineering' && disciplineContent && disciplineContent.implementation.length > 0 ? (
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <Code className="w-5 h-5 text-primary" />
+                            {activeDiscipline} Project
+                          </h3>
+                          {disciplineContent.implementation.map((session, idx) => (
+                            <Card key={idx} className="p-6 border border-border/50">
+                              {session.content?.title && (
+                                <h4 className="text-md font-semibold text-foreground mb-3">{session.content.title}</h4>
+                              )}
+                              {session.content?.description && (
+                                <p className="text-foreground mb-4">{session.content.description}</p>
+                              )}
+                              {session.content?.requirements && Array.isArray(session.content.requirements) && session.content.requirements.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-semibold text-foreground mb-2">Requirements:</h4>
+                                  <ul className="space-y-2">
+                                    {session.content.requirements.map((req, reqIdx) => (
+                                      <li key={reqIdx} className="flex items-start gap-2 text-sm text-foreground">
+                                        <span className="text-primary mt-1">•</span>
+                                        <span>{req}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              {session.content?.topics && Array.isArray(session.content.topics) && session.content.topics.length > 0 && (
+                                <div className="mt-4">
+                                  <h4 className="text-sm font-semibold text-foreground mb-2">Topics:</h4>
+                                  <ul className="space-y-2">
+                                    {session.content.topics.map((topic, topicIdx) => (
+                                      <li key={topicIdx} className="flex items-start gap-2 text-sm text-foreground">
+                                        <span className="text-primary mt-1">•</span>
+                                        <span>{topic}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </Card>
+                          ))}
                         </div>
-                        <p className="text-foreground mb-4">{currentDay.miniProject.description}</p>
-                        {currentDay.miniProject.requirements && Array.isArray(currentDay.miniProject.requirements) && (
-                          <div>
-                            <h4 className="text-sm font-semibold text-foreground mb-2">Requirements:</h4>
-                            <ul className="space-y-2">
-                              {currentDay.miniProject.requirements.map((req, idx) => (
-                                <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                                  <span className="text-primary mt-1">•</span>
-                                  <span>{req}</span>
-                                </li>
-                              ))}
-                            </ul>
+                      ) : currentDay.miniProject ? (
+                        <Card className="p-6 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Code className="w-5 h-5 text-primary" />
+                            <h3 className="text-lg font-semibold">{currentDay.miniProject.title}</h3>
                           </div>
-                        )}
-                      </Card>
+                          <p className="text-foreground mb-4">{currentDay.miniProject.description}</p>
+                          {currentDay.miniProject.requirements && Array.isArray(currentDay.miniProject.requirements) && (
+                            <div>
+                              <h4 className="text-sm font-semibold text-foreground mb-2">Requirements:</h4>
+                              <ul className="space-y-2">
+                                {currentDay.miniProject.requirements.map((req, idx) => (
+                                  <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                    <span className="text-primary mt-1">•</span>
+                                    <span>{req}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </Card>
+                      ) : (
+                        <Card className="p-12 text-center border border-border/50">
+                          <p className="text-muted-foreground">No project content for this day.</p>
+                        </Card>
+                      )}
                     </motion.div>
                   )}
 
-                  {activeTab === 'resources' && currentDay.resources && (
+                  {activeTab === 'resources' && (
                     <motion.div
                       key="resources"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                     >
-                      <Card className="p-6 border border-border/50">
-                        <div className="flex items-center gap-2 mb-4">
-                          <BookOpen className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">Resources</h3>
-                        </div>
-                        {Array.isArray(currentDay.resources) && currentDay.resources.length > 0 ? (
-                          <ul className="space-y-3">
-                            {currentDay.resources.map((resource, idx) => (
-                              <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                                <div>
-                                  <a
-                                    href={resource.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-foreground hover:text-primary transition-colors font-medium"
-                                  >
-                                    {resource.title}
-                                  </a>
-                                  {resource.time && (
-                                    <span className="text-xs text-muted-foreground ml-2">({resource.time})</span>
-                                  )}
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
+                      {/* For Software Engineering: Show discipline-specific resources */}
+                      {journeyId === 'software-engineering' && disciplineContent ? (
+                        <Card className="p-6 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <BookOpen className="w-5 h-5 text-primary" />
+                            <h3 className="text-lg font-semibold">{activeDiscipline} Resources</h3>
+                          </div>
+                          {/* Get resources from schedule sessions */}
+                          {(() => {
+                            const allResources = [];
+                            disciplineContent.deepLearning.forEach(session => {
+                              if (session.content?.resources && Array.isArray(session.content.resources)) {
+                                allResources.push(...session.content.resources);
+                              }
+                            });
+                            disciplineContent.implementation.forEach(session => {
+                              if (session.content?.resources && Array.isArray(session.content.resources)) {
+                                allResources.push(...session.content.resources);
+                              }
+                            });
+                            
+                            // Also include general resources if available
+                            if (Array.isArray(currentDay.resources)) {
+                              allResources.push(...currentDay.resources);
+                            }
+                            
+                            return allResources.length > 0 ? (
+                              <ul className="space-y-3">
+                                {allResources.map((resource, idx) => (
+                                  <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                                    <div>
+                                      <a
+                                        href={resource.url || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-foreground hover:text-primary transition-colors font-medium"
+                                      >
+                                        {resource.title || resource}
+                                      </a>
+                                      {resource.time && (
+                                        <span className="text-xs text-muted-foreground ml-2">({resource.time})</span>
+                                      )}
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-muted-foreground">No resources available for {activeDiscipline}.</p>
+                            );
+                          })()}
+                        </Card>
+                      ) : currentDay.resources ? (
+                        <Card className="p-6 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <BookOpen className="w-5 h-5 text-primary" />
+                            <h3 className="text-lg font-semibold">Resources</h3>
+                          </div>
+                          {Array.isArray(currentDay.resources) && currentDay.resources.length > 0 ? (
+                            <ul className="space-y-3">
+                              {currentDay.resources.map((resource, idx) => (
+                                <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                                  <div>
+                                    <a
+                                      href={resource.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-foreground hover:text-primary transition-colors font-medium"
+                                    >
+                                      {resource.title}
+                                    </a>
+                                    {resource.time && (
+                                      <span className="text-xs text-muted-foreground ml-2">({resource.time})</span>
+                                    )}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-muted-foreground">No resources for this day.</p>
+                          )}
+                        </Card>
+                      ) : (
+                        <Card className="p-12 text-center border border-border/50">
                           <p className="text-muted-foreground">No resources for this day.</p>
-                        )}
-                      </Card>
+                        </Card>
+                      )}
                     </motion.div>
                   )}
 
-                  {activeTab === 'reflection' && currentDay.reflection && (
+                  {activeTab === 'reflection' && (
                     <motion.div
                       key="reflection"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                     >
-                      <Card className="p-6 border border-border/50">
-                        <div className="flex items-center gap-2 mb-4">
-                          <FileText className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-semibold">Reflection</h3>
-                        </div>
-                        {typeof currentDay.reflection === 'string' ? (
-                          <p className="text-foreground">{currentDay.reflection}</p>
-                        ) : currentDay.reflection.questions && Array.isArray(currentDay.reflection.questions) ? (
-                          <ul className="space-y-3">
-                            {currentDay.reflection.questions.map((question, idx) => (
-                              <li key={idx} className="flex items-start gap-2 text-foreground">
-                                <span className="text-primary mt-1">•</span>
-                                <span>{question}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-foreground">{String(currentDay.reflection)}</p>
-                        )}
-                      </Card>
+                      {/* For Software Engineering: Show discipline-specific reflection */}
+                      {journeyId === 'software-engineering' && disciplineContent ? (
+                        <Card className="p-6 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <FileText className="w-5 h-5 text-primary" />
+                            <h3 className="text-lg font-semibold">{activeDiscipline} Reflection</h3>
+                          </div>
+                          {currentDay.reflection ? (
+                            typeof currentDay.reflection === 'string' ? (
+                              <p className="text-foreground">{currentDay.reflection}</p>
+                            ) : currentDay.reflection.questions && Array.isArray(currentDay.reflection.questions) ? (
+                              <ul className="space-y-3">
+                                {currentDay.reflection.questions.map((question, idx) => (
+                                  <li key={idx} className="flex items-start gap-2 text-foreground">
+                                    <span className="text-primary mt-1">•</span>
+                                    <span>{question}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-foreground">{String(currentDay.reflection)}</p>
+                            )
+                          ) : (
+                            <p className="text-muted-foreground">Reflect on today's {activeDiscipline.toLowerCase()} learning and implementation.</p>
+                          )}
+                        </Card>
+                      ) : currentDay.reflection ? (
+                        <Card className="p-6 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <FileText className="w-5 h-5 text-primary" />
+                            <h3 className="text-lg font-semibold">Reflection</h3>
+                          </div>
+                          {typeof currentDay.reflection === 'string' ? (
+                            <p className="text-foreground">{currentDay.reflection}</p>
+                          ) : currentDay.reflection.questions && Array.isArray(currentDay.reflection.questions) ? (
+                            <ul className="space-y-3">
+                              {currentDay.reflection.questions.map((question, idx) => (
+                                <li key={idx} className="flex items-start gap-2 text-foreground">
+                                  <span className="text-primary mt-1">•</span>
+                                  <span>{question}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-foreground">{String(currentDay.reflection)}</p>
+                          )}
+                        </Card>
+                      ) : (
+                        <Card className="p-12 text-center border border-border/50">
+                          <p className="text-muted-foreground">No reflection content for this day.</p>
+                        </Card>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>

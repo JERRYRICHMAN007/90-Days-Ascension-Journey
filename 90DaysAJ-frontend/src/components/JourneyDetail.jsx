@@ -8,7 +8,6 @@ import {
   getSkillQuiz,
   getSkillTopics,
 } from "../data/journeyData";
-import CourseraLayout from "./CourseraLayout";
 import MinimalDashboard from "./MinimalDashboard";
 import SimpleDashboard from "./SimpleDashboard";
 import DisciplineRoadmapPage from "./DisciplineRoadmapPage";
@@ -563,116 +562,65 @@ function JourneyDetail({
     );
   };
 
+  // For default journey view, let JourneyDetailV2 handle everything
+  // This removes duplicate sidebars and ensures consistent layout
+  if (!discipline && !lessonId && !projectId && !activeSection && !location.pathname.includes("/reflections")) {
+    return (
+      <JourneyDetailV2
+        journey={journey}
+        weeks={weeks}
+        selectedWeek={selectedWeek}
+        selectedDay={selectedDay}
+        onWeekChange={setSelectedWeek}
+        onDayChange={setSelectedDay}
+        userProgress={userProgress}
+        updateProgress={updateProgress}
+        journeyId={journeyId}
+      />
+    );
+  }
+
+  // For special routes (lessons, projects, etc.), use minimal wrapper
   return (
-    <div className="min-h-screen flex flex-col relative z-0">
-      {/* Top Progress Bar */}
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Minimal Header for Special Routes */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4 mb-3">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/")}
+              onClick={() => navigate(`/${journeyId}`)}
               className="shrink-0"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">{journey.icon}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{journey.icon}</span>
                 <h1 className="text-lg font-bold truncate">{journey.title}</h1>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                {currentWeek && (
-                  <span className="font-semibold">
-                    Week {currentWeek.weekNumber}
-                  </span>
-                )}
-                {currentDay && (
-                  <>
-                    <span>•</span>
-                    <span className="font-semibold">
-                      Day {currentDay.dayNumber}
-                    </span>
-                    {currentDay.date && (
-                      <>
-                        <span>•</span>
-                        <span className="font-semibold text-primary">
-                          {formatDateForDisplay(currentDay.date)}
-                        </span>
-                      </>
-                    )}
-                    {currentDay.dayName && !currentDay.date && (
-                      <>
-                        <span>•</span>
-                        <span className="truncate">{currentDay.dayName}</span>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
             </div>
-
-            <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden">
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-80 p-0">
-                <JourneySidebar
-                  weeks={weeks}
-                  selectedWeek={selectedWeek}
-                  selectedDay={selectedDay}
-                  onSelectDay={handleSelectDay}
-                  getDayProgress={getDayProgress}
-                  getWeekProgress={getWeekProgress}
-                />
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          <div className="relative">
-            <Progress value={progressPercentage} className="h-2" />
-            <div
-              className="absolute top-0 left-0 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
-              style={{ width: `${progressPercentage}%` }}
-            />
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-80 border-r bg-muted/20 overflow-y-auto">
-          <JourneySidebar
-            weeks={weeks}
-            selectedWeek={selectedWeek}
-            selectedDay={selectedDay}
-            onSelectDay={handleSelectDay}
-            getDayProgress={getDayProgress}
-            getWeekProgress={getWeekProgress}
-          />
-        </aside>
-
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto relative z-0">
+      {/* Content - Single Scroll Container */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="container mx-auto px-4 py-8 max-w-4xl"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
               {renderContent()}
             </motion.div>
           </AnimatePresence>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
