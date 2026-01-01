@@ -1,0 +1,680 @@
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, Menu } from "lucide-react";
+import {
+  getJourneyData,
+  getSkillResources,
+  getSkillQuiz,
+  getSkillTopics,
+} from "../data/journeyData";
+import CourseraLayout from "./CourseraLayout";
+import MinimalDashboard from "./MinimalDashboard";
+import SimpleDashboard from "./SimpleDashboard";
+import DisciplineRoadmapPage from "./DisciplineRoadmapPage";
+import SimpleRoadmap from "./SimpleRoadmap";
+import LessonSlide from "./LessonSlide";
+import SimpleLessonView from "./SimpleLessonView";
+import ProjectPage from "./ProjectPage";
+import ReflectionPage from "./ReflectionPage";
+import DailyQuiz from "./DailyQuiz";
+import PracticalAssessment from "./PracticalAssessment";
+import { Button } from "./ui/button";
+import { Progress } from "./ui/progress";
+import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { JourneySidebar } from "./journey/JourneySidebar";
+import { JourneyDetailV2 } from "./journey/JourneyDetailV2";
+import "./JourneyDetail.css";
+
+function JourneyDetail({
+  journeyId: propJourneyId,
+  userProgress,
+  updateProgress,
+}) {
+  const {
+    journeyId: paramJourneyId,
+    discipline,
+    lessonId,
+    projectId,
+    dayNumber,
+  } = useParams();
+  const location = useLocation();
+  const journeyId = propJourneyId || paramJourneyId;
+  const navigate = useNavigate();
+  const { weeks, journey } = getJourneyData(journeyId);
+  // Initialize with first available week/day, or default to 1
+  const firstWeek = weeks && weeks.length > 0 ? weeks[0] : null;
+  const firstDay = firstWeek?.days && firstWeek.days.length > 0 ? firstWeek.days[0] : null;
+  const [selectedWeek, setSelectedWeek] = useState(firstWeek?.weekNumber || 1);
+  const [selectedDay, setSelectedDay] = useState(firstDay?.dayNumber || 1);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+  const [activeSection, setActiveSection] = useState(null); // 'quiz' or 'assessment'
+
+  if (!journey) {
+    return <div>Journey not found</div>;
+  }
+
+  const journeyProgress = userProgress[journeyId] || {};
+  const completedDays = Object.values(journeyProgress).filter(Boolean).length;
+  const progressPercentage = Math.round(
+    (completedDays / journey.totalDays) * 100
+  );
+
+  const getDayProgress = (day) => {
+    return journeyProgress[day.dayNumber] || false;
+  };
+
+  const getWeekProgress = (week) => {
+    const weekDays = week.days || [];
+    const completed = weekDays.filter(
+      (d) => journeyProgress[d.dayNumber]
+    ).length;
+    return Math.round((completed / weekDays.length) * 100);
+  };
+
+  const handleSelectDay = (weekIdx, dayIdx) => {
+    const week = weeks[weekIdx];
+    if (week && week.days && week.days[dayIdx]) {
+      setSelectedWeek(week.weekNumber);
+      setSelectedDay(week.days[dayIdx].dayNumber);
+      setIsSidebarOpen(false);
+    }
+  };
+
+  const currentWeek =
+    weeks.find((w) => w.weekNumber === selectedWeek) || weeks[0];
+  const currentDay =
+    currentWeek?.days?.find((d) => d.dayNumber === selectedDay) ||
+    currentWeek?.days?.[0];
+
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  // Handle URL parameters for section navigation
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const section = params.get("section");
+    const dayParam = params.get("day");
+
+    if (section === "quiz" || section === "assessment") {
+      setActiveSection(section);
+      if (dayParam) {
+        const dayNum = parseInt(dayParam);
+        setSelectedDay(dayNum);
+        const weekNum = Math.ceil(dayNum / 7);
+        setSelectedWeek(weekNum);
+      }
+    } else {
+      setActiveSection(null);
+    }
+  }, [location.search, location.pathname]);
+
+  // Handle URL parameters for section navigation
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const section = params.get("section");
+    const dayParam = params.get("day");
+
+    if (section === "quiz" || section === "assessment") {
+      setActiveSection(section);
+      if (dayParam) {
+        const dayNum = parseInt(dayParam);
+        setSelectedDay(dayNum);
+        const weekNum = Math.ceil(dayNum / 7);
+        setSelectedWeek(weekNum);
+      }
+    } else {
+      setActiveSection(null);
+    }
+  }, [location.search, location.pathname]);
+
+  // Handle lessonId from URL to set correct lesson index
+  useEffect(() => {
+    if (lessonId && discipline && journeyId === "software-engineering") {
+      const disciplineMap = {
+        frontend: "Frontend",
+        backend: "Backend",
+        mobile: "Mobile",
+        wordpress: "WordPress",
+      };
+      const disciplineName = disciplineMap[discipline?.toLowerCase()] || "Frontend";
+      
+      // Get roadmap to find the skill
+      const roadmap =
+        currentDay?.schedule?.scheduledContent?.deepLearning?.find(
+          (b) => b.discipline === disciplineName
+        )?.content?.roadmap || [];
+
+      // Find the index of the lesson that matches the lessonId
+      const lessonIndex = roadmap.findIndex((node) => {
+        const lessonKey = node.skill.toLowerCase().replace(/\s+/g, "-");
+        return lessonKey === lessonId.toLowerCase();
+      });
+
+      if (lessonIndex !== -1) {
+        setCurrentLessonIndex(lessonIndex);
+      }
+    }
+  }, [lessonId, discipline, journeyId, currentDay]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Arrow keys for lesson navigation
+      if (location.pathname.includes("/lesson/")) {
+        if (e.key === "ArrowLeft") {
+          // Navigate to previous lesson
+        } else if (e.key === "ArrowRight") {
+          // Navigate to next lesson
+        }
+      }
+      // Tab navigation for discipline tabs
+      if (
+        location.pathname.includes("/discipline/") &&
+        !location.pathname.includes("/lesson/")
+      ) {
+        if (e.key === "Tab" && !e.shiftKey) {
+          // Tab through discipline tabs
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [location.pathname]);
+
+  // Route-based rendering
+  const renderContent = () => {
+    // Handle quiz/assessment sections
+    if (activeSection === "quiz" && currentDay?.dailyQuiz) {
+      return (
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setActiveSection(null);
+              navigate(location.pathname);
+            }}
+            className="mb-6"
+          >
+            ← Back to Dashboard
+          </Button>
+          <DailyQuiz
+            dailyQuiz={currentDay.dailyQuiz}
+            onComplete={(results) => {
+              console.log("Daily quiz completed:", results);
+              try {
+                const saved =
+                  localStorage.getItem(`dailyQuizzes_${journeyId}`) || "[]";
+                const quizzes = JSON.parse(saved);
+                quizzes.push({
+                  day: currentDay.dayNumber,
+                  ...results,
+                  completedAt: new Date().toISOString(),
+                });
+                localStorage.setItem(
+                  `dailyQuizzes_${journeyId}`,
+                  JSON.stringify(quizzes)
+                );
+              } catch (error) {
+                console.error("Error saving quiz results:", error);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (activeSection === "assessment" && currentDay?.practicalAssessment) {
+      return (
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setActiveSection(null);
+              navigate(location.pathname);
+            }}
+            className="mb-6"
+          >
+            ← Back to Dashboard
+          </Button>
+          <PracticalAssessment
+            assessment={currentDay.practicalAssessment}
+            onComplete={(results) => {
+              console.log("Practical assessment completed:", results);
+              try {
+                const saved =
+                  localStorage.getItem(`practicalAssessments_${journeyId}`) ||
+                  "[]";
+                const assessments = JSON.parse(saved);
+                assessments.push({
+                  ...results,
+                  completedAt: new Date().toISOString(),
+                });
+                localStorage.setItem(
+                  `practicalAssessments_${journeyId}`,
+                  JSON.stringify(assessments)
+                );
+                updateProgress(journeyId, currentDay.dayNumber, true);
+              } catch (error) {
+                console.error("Error saving assessment:", error);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+
+    // Simple Dashboard (for software-engineering)
+    if (
+      journeyId === "software-engineering" &&
+      (location.pathname === "/software-engineering" ||
+        location.pathname === "/dashboard" ||
+        location.pathname === "/home")
+    ) {
+      return (
+        <SimpleDashboard currentDay={currentDay} userProgress={userProgress} />
+      );
+    }
+
+    // Minimal Dashboard (for other journeys)
+    if (location.pathname === "/dashboard" || location.pathname === "/home") {
+      return (
+        <MinimalDashboard
+          currentDay={currentDay}
+          journeyProgress={journeyProgress}
+          userProgress={userProgress}
+        />
+      );
+    }
+
+    // Discipline Roadmap Page
+    if (discipline && !lessonId && !projectId) {
+      const disciplineMap = {
+        frontend: "Frontend",
+        backend: "Backend",
+        mobile: "Mobile",
+        wordpress: "WordPress",
+      };
+      const disciplineName =
+        disciplineMap[discipline.toLowerCase()] || discipline;
+      const roadmap =
+        currentDay?.schedule?.scheduledContent?.deepLearning?.find(
+          (b) => b.discipline === disciplineName
+        )?.content?.roadmap || [];
+
+      // Use SimpleRoadmap for software-engineering, DisciplineRoadmapPage for others
+      if (journeyId === "software-engineering") {
+        return (
+          <SimpleRoadmap
+            discipline={disciplineName}
+            roadmap={roadmap}
+            currentDay={currentDay}
+            userProgress={userProgress}
+            journeyId={journeyId}
+            onStartLesson={(node) => {
+              navigate(
+                `/discipline/${discipline}/lesson/${node.skill
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}`
+              );
+            }}
+          />
+        );
+      }
+
+      return (
+        <DisciplineRoadmapPage
+          discipline={disciplineName}
+          roadmap={roadmap}
+          currentDay={currentDay}
+          onStartLesson={(node) => {
+            navigate(
+              `/discipline/${discipline}/lesson/${node.skill
+                .toLowerCase()
+                .replace(/\s+/g, "-")}`
+            );
+          }}
+        />
+      );
+    }
+
+    // Lesson Page
+    if (lessonId) {
+      // Get lessons for the discipline
+      const disciplineMap = {
+        frontend: "Frontend",
+        backend: "Backend",
+        mobile: "Mobile",
+        wordpress: "WordPress",
+      };
+      const disciplineName =
+        disciplineMap[discipline?.toLowerCase()] || "Frontend";
+      
+      // Get roadmap to find skill name (for software-engineering)
+      const roadmap =
+        currentDay?.schedule?.scheduledContent?.deepLearning?.find(
+          (b) => b.discipline === disciplineName
+        )?.content?.roadmap || [];
+
+      // Find the skill that matches the lessonId
+      const matchedSkill = roadmap.find((node) => {
+        const lessonKey = node.skill.toLowerCase().replace(/\s+/g, "-");
+        return lessonKey === lessonId.toLowerCase();
+      });
+
+      // Get lessons for the discipline
+      const lessons =
+        currentDay?.schedule?.scheduledContent?.deepLearning?.filter(
+          (b) => b.discipline === disciplineName
+        ) || [];
+
+      // For software-engineering, use roadmap index; otherwise use lessons array
+      let lessonIndexToUse = currentLessonIndex;
+      if (journeyId === "software-engineering" && matchedSkill) {
+        lessonIndexToUse = roadmap.findIndex((node) => {
+          const lessonKey = node.skill.toLowerCase().replace(/\s+/g, "-");
+          return lessonKey === lessonId.toLowerCase();
+        });
+        if (lessonIndexToUse === -1) lessonIndexToUse = 0;
+      }
+
+      const currentLesson = lessons[lessonIndexToUse] || lessons[0];
+      const resources = currentLesson?.content?.resources || [];
+
+      // Use SimpleLessonView for software-engineering, LessonSlide for others
+      if (journeyId === "software-engineering") {
+        // Use the matched skill name
+        const skillName = matchedSkill?.skill;
+        const skillResources = skillName
+          ? getSkillResources(skillName)
+          : currentLesson?.content?.resources || [];
+        const skillQuiz = skillName ? getSkillQuiz(skillName) : [];
+        const skillTopics = skillName ? getSkillTopics(skillName) : [];
+        const deepLearningTime = skillName
+          ? roadmap.find((r) => r.skill === skillName)?.deepLearningTime
+          : currentLesson?.duration || "30 min";
+
+        return (
+          <SimpleLessonView
+            lesson={{
+              title: skillName || currentLesson?.content?.title || "Lesson",
+              topics: skillTopics.length > 0 ? skillTopics : (currentLesson?.content?.topics || []),
+              content: currentLesson?.content,
+              estimatedTime: deepLearningTime,
+              resources: skillResources,
+              quiz: skillQuiz,
+            }}
+            lessonIndex={lessonIndexToUse}
+            totalLessons={roadmap.length || lessons.length}
+            journeyId={journeyId}
+            discipline={disciplineName}
+            currentDay={currentDay}
+            skillName={skillName}
+            lessonKey={lessonId}
+            onPrevious={() => {
+              if (lessonIndexToUse > 0) {
+                const prevSkill = roadmap[lessonIndexToUse - 1];
+                if (prevSkill) {
+                  const prevKey = prevSkill.skill.toLowerCase().replace(/\s+/g, "-");
+                  navigate(`/discipline/${discipline}/lesson/${prevKey}`);
+                }
+              }
+            }}
+            onNext={() => {
+              // Check if current lesson is completed before allowing next
+              const currentLessonKey = lessonId?.toLowerCase();
+              try {
+                const saved = localStorage.getItem(`lessonProgress_${journeyId}_${disciplineName}`) || "{}";
+                const lessonProgress = JSON.parse(saved);
+                const isCurrentCompleted = lessonProgress[currentLessonKey] === true;
+                
+                if (!isCurrentCompleted) {
+                  alert("Please complete all steps in this lesson before moving to the next one.");
+                  return;
+                }
+              } catch (error) {
+                console.error("Error checking lesson progress:", error);
+              }
+              
+              if (lessonIndexToUse < roadmap.length - 1) {
+                const nextSkill = roadmap[lessonIndexToUse + 1];
+                if (nextSkill) {
+                  const nextKey = nextSkill.skill.toLowerCase().replace(/\s+/g, "-");
+                  navigate(`/discipline/${discipline}/lesson/${nextKey}`);
+                }
+              }
+            }}
+            isCurrentLessonCompleted={() => {
+              // Check if current lesson is completed
+              const currentLessonKey = lessonId?.toLowerCase();
+              try {
+                const saved = localStorage.getItem(`lessonProgress_${journeyId}_${disciplineName}`) || "{}";
+                const lessonProgress = JSON.parse(saved);
+                return lessonProgress[currentLessonKey] === true;
+              } catch {
+                return false;
+              }
+            }}
+            onComplete={() => {
+              // Only mark day complete if all lessons are done
+              // For now, we'll track lesson completion separately
+              // updateProgress(journeyId, currentDay?.dayNumber, true);
+            }}
+          />
+        );
+      }
+
+      return (
+        <LessonSlide
+          lesson={{
+            title: currentLesson?.content?.title || "Lesson",
+            summary: currentLesson?.content?.topics || [],
+            topics: currentLesson?.content?.topics || [],
+            content: currentLesson?.content,
+            estimatedTime: currentLesson?.duration || "30 min",
+          }}
+          lessonIndex={currentLessonIndex}
+          totalLessons={lessons.length}
+          onPrevious={() => {
+            if (currentLessonIndex > 0) {
+              setCurrentLessonIndex(currentLessonIndex - 1);
+            }
+          }}
+          onNext={() => {
+            if (currentLessonIndex < lessons.length - 1) {
+              setCurrentLessonIndex(currentLessonIndex + 1);
+            }
+          }}
+          onStartProject={(project) => {
+            navigate(
+              `/project/${
+                project.id || project.title.toLowerCase().replace(/\s+/g, "-")
+              }`
+            );
+          }}
+          onOpenQuiz={(quiz) => {
+            // Handle quiz opening
+          }}
+          resources={resources}
+        />
+      );
+    }
+
+    // Project Page
+    if (projectId) {
+      const project = currentDay?.miniProject || {};
+      return (
+        <ProjectPage
+          project={project}
+          onComplete={(project) => {
+            updateProgress(journeyId, currentDay?.dayNumber, true);
+            navigate(-1);
+          }}
+          onBack={() => navigate(-1)}
+        />
+      );
+    }
+
+    // Reflection Page
+    if (location.pathname.includes("/reflections")) {
+      const reflectionDay = dayNumber
+        ? weeks
+            .flatMap((w) => w.days || [])
+            .find((d) => d.dayNumber === parseInt(dayNumber))
+        : currentDay;
+
+      return (
+        <ReflectionPage
+          currentDay={reflectionDay || currentDay}
+          onSave={(reflectionData) => {
+            console.log("Reflection saved:", reflectionData);
+          }}
+        />
+      );
+    }
+
+    // Default: JourneyDetailV2 (new PRD v2.0 design)
+    return (
+      <JourneyDetailV2
+        journey={journey}
+        weeks={weeks}
+        selectedWeek={selectedWeek}
+        selectedDay={selectedDay}
+        onWeekChange={setSelectedWeek}
+        onDayChange={setSelectedDay}
+        userProgress={userProgress}
+        updateProgress={updateProgress}
+        journeyId={journeyId}
+      />
+    );
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col relative z-0">
+      {/* Top Progress Bar */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4 mb-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+              className="shrink-0"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">{journey.icon}</span>
+                <h1 className="text-lg font-bold truncate">{journey.title}</h1>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                {currentWeek && (
+                  <span className="font-semibold">
+                    Week {currentWeek.weekNumber}
+                  </span>
+                )}
+                {currentDay && (
+                  <>
+                    <span>•</span>
+                    <span className="font-semibold">
+                      Day {currentDay.dayNumber}
+                    </span>
+                    {currentDay.date && (
+                      <>
+                        <span>•</span>
+                        <span className="font-semibold text-primary">
+                          {formatDateForDisplay(currentDay.date)}
+                        </span>
+                      </>
+                    )}
+                    {currentDay.dayName && !currentDay.date && (
+                      <>
+                        <span>•</span>
+                        <span className="truncate">{currentDay.dayName}</span>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0">
+                <JourneySidebar
+                  weeks={weeks}
+                  selectedWeek={selectedWeek}
+                  selectedDay={selectedDay}
+                  onSelectDay={handleSelectDay}
+                  getDayProgress={getDayProgress}
+                  getWeekProgress={getWeekProgress}
+                />
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          <div className="relative">
+            <Progress value={progressPercentage} className="h-2" />
+            <div
+              className="absolute top-0 left-0 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:block w-80 border-r bg-muted/20 overflow-y-auto">
+          <JourneySidebar
+            weeks={weeks}
+            selectedWeek={selectedWeek}
+            selectedDay={selectedDay}
+            onSelectDay={handleSelectDay}
+            getDayProgress={getDayProgress}
+            getWeekProgress={getWeekProgress}
+          />
+        </aside>
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto relative z-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="container mx-auto px-4 py-8 max-w-4xl"
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export default JourneyDetail;
