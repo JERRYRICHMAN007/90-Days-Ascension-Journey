@@ -148,36 +148,37 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Navigation */}
+      {/* Navigation - Better Mobile Layout */}
       <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border/50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 sm:gap-2.5"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-accent to-secondary flex items-center justify-center shadow-lg">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary via-accent to-secondary flex items-center justify-center shadow-lg">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
               90 Days Ascension
             </span>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-4"
+            className="flex items-center gap-2 sm:gap-3 md:gap-4"
           >
             <ThemeToggle />
-            <Link to="/signin">
-              <Button variant="ghost" className="hover:text-blue-500">
+            <Link to="/signin" className="hidden sm:block">
+              <Button variant="ghost" size="sm" className="hover:text-blue-500 text-xs sm:text-sm">
                 Sign In
               </Button>
             </Link>
             <Link to="/signup">
-              <Button className="bg-gradient-to-r from-primary via-accent to-secondary text-white hover:shadow-lg transition-all">
-                Get Started
-                <ArrowRight className="w-4 h-4 ml-2" />
+              <Button size="sm" className="bg-gradient-to-r from-primary via-accent to-secondary text-white hover:shadow-lg transition-all text-xs sm:text-sm px-3 sm:px-4">
+                <span className="hidden sm:inline">Get Started</span>
+                <span className="sm:hidden">Start</span>
+                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1.5 sm:ml-2" />
               </Button>
             </Link>
           </motion.div>

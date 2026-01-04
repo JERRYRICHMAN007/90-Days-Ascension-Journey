@@ -55,7 +55,7 @@ export function Sidebar() {
         {!collapsed && (
           <div className="flex items-center gap-2">
             <div className="text-2xl">🚀</div>
-            <span className="text-xl font-bold gradient-text">Ascension</span>
+            <span className="text-base sm:text-lg md:text-xl font-bold gradient-text">Ascension</span>
           </div>
         )}
         <button

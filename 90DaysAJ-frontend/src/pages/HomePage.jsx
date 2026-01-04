@@ -252,18 +252,18 @@ export function HomePage({ userProgress }) {
   }, []); // Empty dependency array - recalculate only on mount
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Hero Section - Day Number */}
-      <div className="text-center space-y-2 py-4 sm:py-6 border-b px-4">
+    <div className="space-y-4 sm:space-y-5 md:space-y-6">
+      {/* Hero Section - Day Number - Better Mobile Layout */}
+      <div className="text-center space-y-2 py-5 sm:py-6 border-b px-3 sm:px-4">
         {currentPhase === "preparation" && currentDay === 0 && (
           <>
-            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               {formatDayNumber(currentDay)}
             </div>
-            <div className="text-base sm:text-lg text-muted-foreground">
+            <div className="text-sm sm:text-base md:text-lg text-muted-foreground px-2">
               {daysRemaining} days remaining • Journey starts tomorrow
             </div>
-            <div className="text-xs sm:text-sm font-medium text-foreground mt-2">
+            <div className="text-xs sm:text-sm font-medium text-foreground mt-2 px-2">
               "Preparation is the foundation of success"
             </div>
           </>
@@ -273,52 +273,52 @@ export function HomePage({ userProgress }) {
             <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Preparation Phase
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground px-2">
               Getting Ready for Your Ascension
             </div>
-            <div className="text-xs sm:text-sm text-muted-foreground">
-              Your journey begins January 1, 2026
+            <div className="text-xs sm:text-sm text-muted-foreground px-2">
+              Your journey begins January 4, 2026
             </div>
           </>
         )}
         {currentPhase === "ascension" && currentDay && currentDay > 0 && (
           <>
-            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               {formatDayNumber(currentDay)}
             </div>
-            <div className="text-base sm:text-lg text-muted-foreground">
+            <div className="text-sm sm:text-base md:text-lg text-muted-foreground px-2">
               {progress}% Complete • {daysRemaining} days remaining
             </div>
-            <div className="text-xs sm:text-sm font-medium text-foreground mt-2">
+            <div className="text-xs sm:text-sm font-medium text-foreground mt-2 px-2">
               "Discipline compounds daily"
             </div>
           </>
         )}
         {currentPhase === "before" && (
           <>
-            <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground px-2">
               Your Ascension Journey
             </div>
-            <div className="text-xs sm:text-sm text-muted-foreground">
-              Official start: January 1, 2026
+            <div className="text-xs sm:text-sm text-muted-foreground px-2">
+              Official start: January 4, 2026
             </div>
           </>
         )}
         {currentPhase === "after" && (
           <>
-            <div className="text-xl sm:text-2xl font-bold">🎉 Journey Complete</div>
-            <div className="text-xs sm:text-sm text-muted-foreground">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold px-2">🎉 Journey Complete</div>
+            <div className="text-xs sm:text-sm text-muted-foreground px-2">
               You've completed the 90-day ascension journey
             </div>
           </>
         )}
       </div>
 
-      {/* Header (PRD v2.0) */}
-      <div className="flex items-center justify-between">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold text-display">Good morning! 🌟</h1>
-          <p className="text-muted-foreground mt-1 text-base sm:text-lg">
+      {/* Header (PRD v2.0) - Better Mobile Spacing */}
+      <div className="px-3 sm:px-4 md:px-0">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-display break-words">Good morning! 🌟</h1>
+          <p className="text-muted-foreground mt-1.5 sm:mt-2 text-sm sm:text-base md:text-lg break-words">
             {currentPhase === "ascension"
               ? "Continue your ascension journey"
               : currentPhase === "preparation"
@@ -326,14 +326,14 @@ export function HomePage({ userProgress }) {
               : "Your transformation awaits"}
           </p>
           {(currentPhase === "ascension" || (currentPhase === "preparation" && currentDay === 0)) && currentDay !== null && (
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{todayDate}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 break-words">{todayDate}</p>
           )}
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4">
+      {/* Stats Grid - Better Mobile Layout */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4 px-3 sm:px-4 md:px-0">
+        <Card className="p-3 sm:p-4">
           <LevelBar
             level={globalLevel.level}
             currentXP={globalLevel.currentXP}
@@ -357,14 +357,14 @@ export function HomePage({ userProgress }) {
         />
       </div>
 
-      {/* Today's Focus (PRD v2.0) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-display">Today's Focus</h2>
+      {/* Today's Focus (PRD v2.0) - Better Mobile Layout */}
+      <div className="space-y-3 sm:space-y-4 px-3 sm:px-4 md:px-0">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-display break-words">Today's Focus</h2>
           {currentPhase === "ascension" && todayTasks.length > 0 && (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap shrink-0 px-2 py-1 bg-muted/50 rounded-md">
               {todayTasks.filter((t) => t.completed).length} /{" "}
-              {todayTasks.length} complete
+              {todayTasks.length}
             </div>
           )}
         </div>
@@ -374,7 +374,7 @@ export function HomePage({ userProgress }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="glass-card rounded-xl p-6 space-y-3"
+            className="glass-card rounded-xl p-4 sm:p-5 md:p-6 space-y-2.5 sm:space-y-3"
           >
             {todayTasks.map((task, index) => (
               <TaskCardV2
@@ -436,10 +436,10 @@ export function HomePage({ userProgress }) {
               <p className="text-lg font-semibold">Preparation Phase</p>
               <p className="text-sm text-muted-foreground">
                 Use this time to familiarize yourself with the system, review
-                your journey plans, and prepare for January 1st.
+                your journey plans, and prepare for January 4th.
               </p>
               <p className="text-xs text-muted-foreground mt-4">
-                Your ascension journey begins January 1, 2026
+                Your ascension journey begins January 4, 2026
               </p>
             </div>
           </Card>
@@ -448,10 +448,10 @@ export function HomePage({ userProgress }) {
           <Card className="p-6">
             <div className="text-center space-y-2">
               <p className="text-lg font-semibold">
-                Official start: January 1, 2026
+                Official start: January 4, 2026
               </p>
               <p className="text-sm text-muted-foreground">
-                Your ascension journey will begin January 1, 2026
+                Your ascension journey will begin January 4, 2026
               </p>
             </div>
           </Card>
@@ -465,46 +465,51 @@ export function HomePage({ userProgress }) {
         )}
       </div>
 
-      {/* Your Journeys (PRD v2.0) */}
-      <div className="space-y-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-display">Your Journeys</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
+      {/* Your Journeys (PRD v2.0) - Better Mobile Layout */}
+      <div className="space-y-3 sm:space-y-4 px-3 sm:px-4 md:px-0">
+        <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-display break-words">Your Journeys</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 items-stretch">
           {journeyCards.map((journey, index) => {
-            const journeyProgress = userProgress[journey.id] || {};
-            const completedDays =
-              Object.values(journeyProgress).filter(Boolean).length;
-            const journeyData = getJourneyData(journey.id);
-            const totalDays = journeyData?.journey?.totalDays || 90;
-            const progressPercentage = Math.round(
-              (completedDays / totalDays) * 100
-            );
+            try {
+              const journeyProgress = userProgress[journey.id] || {};
+              const completedDays =
+                Object.values(journeyProgress).filter(Boolean).length;
+              const journeyData = getJourneyData(journey.id);
+              const totalDays = journeyData?.journey?.totalDays || 90;
+              const progressPercentage = Math.round(
+                (completedDays / totalDays) * 100
+              );
 
-            // Get journey stats
-            const journeyXP = xp.domains[journey.id] || 0;
-            const journeyLevel = getLevel(journey.id);
+              // Get journey stats
+              const journeyXP = xp.domains[journey.id] || 0;
+              const journeyLevel = getLevel(journey.id);
 
-            return (
-              <JourneyCardV2
-                key={journey.id}
-                journey={{
-                  id: journey.id,
-                  title: journey.label,
-                  description: journeyData?.journey?.description || "",
-                  icon: journey.icon,
-                }}
-                progress={{
-                  completed: completedDays,
-                  total: totalDays,
-                  percentage: progressPercentage,
-                }}
-                stats={{
-                  streak: streaks.current,
-                  xp: journeyXP,
-                  level: journeyLevel.level,
-                }}
-                index={index}
-              />
-            );
+              return (
+                <JourneyCardV2
+                  key={journey.id}
+                  journey={{
+                    id: journey.id,
+                    title: journey.label,
+                    description: journeyData?.journey?.description || "",
+                    icon: journey.icon,
+                  }}
+                  progress={{
+                    completed: completedDays,
+                    total: totalDays,
+                    percentage: progressPercentage,
+                  }}
+                  stats={{
+                    streak: streaks.current,
+                    xp: journeyXP,
+                    level: journeyLevel.level,
+                  }}
+                  index={index}
+                />
+              );
+            } catch (error) {
+              console.error(`Error loading journey ${journey.id}:`, error);
+              return null;
+            }
           })}
         </div>
       </div>

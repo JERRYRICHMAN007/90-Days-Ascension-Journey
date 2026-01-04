@@ -54,7 +54,7 @@ export function JourneyCardV2({ journey, progress, stats, index }) {
       <Link to={`/${journey.id}`} className="h-full block">
         <motion.div
           className={`
-            glass-card rounded-xl p-4 sm:p-6 cursor-pointer
+            glass-card rounded-lg sm:rounded-xl p-3.5 sm:p-4 md:p-5 lg:p-6 cursor-pointer
             ${colors.border}
             card-lift
             relative overflow-hidden
@@ -68,26 +68,26 @@ export function JourneyCardV2({ journey, progress, stats, index }) {
           
           <div className="relative z-10 flex flex-col flex-1">
             {/* Header */}
-            <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
-              <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${colors.iconBg} flex items-center justify-center shrink-0`}>
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="flex items-start justify-between mb-2.5 sm:mb-3 md:mb-4 gap-2">
+              <div className="flex items-start gap-2 sm:gap-2.5 md:gap-3 flex-1 min-w-0">
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg ${colors.iconBg} flex items-center justify-center shrink-0`}>
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-1 line-clamp-1">{journey.title}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{journey.description}</p>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-foreground mb-0.5 sm:mb-1 line-clamp-1 break-words">{journey.title}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 break-words">{journey.description}</p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground shrink-0 ml-1 sm:ml-2" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground shrink-0 ml-1" />
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-3 sm:mb-4 flex-shrink-0">
+            <div className="mb-2.5 sm:mb-3 md:mb-4 flex-shrink-0">
               <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                 <span className="text-xs sm:text-sm font-semibold text-foreground">
                   {progress.percentage}%
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[10px] sm:text-xs text-muted-foreground">
                   Day {progress.completed} of {progress.total}
                 </span>
               </div>
@@ -104,24 +104,24 @@ export function JourneyCardV2({ journey, progress, stats, index }) {
             </div>
 
             {/* Mini Stats - Push to bottom */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-auto">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 mt-auto">
               <div className="flex flex-col items-center p-1.5 sm:p-2 rounded-lg bg-muted/30">
                 <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-streak mb-0.5 sm:mb-1" />
-                <span className="text-base sm:text-lg font-bold text-foreground tabular-nums">
+                <span className="text-sm sm:text-base md:text-lg font-bold text-foreground tabular-nums">
                   {stats.streak || 0}
                 </span>
                 <span className="text-[10px] sm:text-xs text-muted-foreground">Streak</span>
               </div>
               <div className="flex flex-col items-center p-1.5 sm:p-2 rounded-lg bg-muted/30">
                 <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-xp mb-0.5 sm:mb-1" />
-                <span className="text-base sm:text-lg font-bold text-foreground tabular-nums">
+                <span className="text-sm sm:text-base md:text-lg font-bold text-foreground tabular-nums">
                   {stats.xp?.toLocaleString() || 0}
                 </span>
                 <span className="text-[10px] sm:text-xs text-muted-foreground">XP</span>
               </div>
               <div className="flex flex-col items-center p-1.5 sm:p-2 rounded-lg bg-muted/30">
                 <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-levelup mb-0.5 sm:mb-1" />
-                <span className="text-base sm:text-lg font-bold text-foreground tabular-nums">
+                <span className="text-sm sm:text-base md:text-lg font-bold text-foreground tabular-nums">
                   Lv.{stats.level || 1}
                 </span>
                 <span className="text-[10px] sm:text-xs text-muted-foreground">Level</span>

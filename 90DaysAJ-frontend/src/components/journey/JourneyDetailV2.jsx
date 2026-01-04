@@ -108,15 +108,15 @@ export function JourneyDetailV2({
   const currentPhase = getCurrentPhase();
   const currentDayNumber = getCurrentDayNumber();
   
-  // Day 0 is January 1, 2026 - accessible on that date or when explicitly selected
+  // Day 0 is January 4, 2026 - accessible on that date or when explicitly selected
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const day0Date = new Date('2026-01-01');
+  const day0Date = new Date('2026-01-04');
   day0Date.setHours(0, 0, 0, 0);
   const isDay0Date = today.getTime() === day0Date.getTime();
   
   // Show preparation ONLY if Day 0 is explicitly selected
-  // Day 1 and other days should show their content even if it's January 1, 2026 (preview mode)
+  // Day 1 and other days should show their content even if it's January 4, 2026 (preview mode)
   const isPreparationPhase = selectedDay === 0;
   
   // Always get preparation data so Day 0 is always available
@@ -165,6 +165,7 @@ export function JourneyDetailV2({
 
   // Tab state for content sections
   const [activeTab, setActiveTab] = useState('learning');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     frontend: true,
     backend: true,
@@ -322,28 +323,34 @@ export function JourneyDetailV2({
   };
 
   const colors = journeyColors[journeyId] || journeyColors['body-transformation'];
-  const Icon = journey.icon || (() => <span>{journey.icon}</span>);
+  // Handle icon - can be either a React component or a string (emoji)
+  const IconComponent = typeof journey.icon === 'string' 
+    ? null 
+    : journey.icon;
+  const iconEmoji = typeof journey.icon === 'string' 
+    ? journey.icon 
+    : null;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Section A - Personalized Header */}
+      {/* Section A - Personalized Header - Better Mobile Layout */}
       <div className="bg-background border-b border-border/50 shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 lg:py-8">
+          <div className="flex items-start justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 flex-1 min-w-0">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/dashboard')}
-                className="shrink-0"
+                className="shrink-0 h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 touch-manipulation"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-1">
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-semibold text-foreground mb-1 break-words leading-tight">
                   {getGreeting()}, {user?.name?.split(' ')[0] || 'there'} 👋
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-base">
+                <p className="text-xs sm:text-sm md:text-base text-muted-foreground break-words leading-relaxed">
                   {getTodayFocus()}
                 </p>
               </div>
@@ -352,11 +359,11 @@ export function JourneyDetailV2({
           
           {/* Lightweight Helper Banner */}
           {currentDay && !isPreparationPhase && (
-            <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-              <div className="flex items-start gap-3">
-                <Target className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm text-foreground">
+            <div className="mt-3 sm:mt-4 p-3 sm:p-3.5 md:p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="flex items-start gap-2.5 sm:gap-3">
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm md:text-base text-foreground leading-relaxed break-words">
                     {isTomorrow(currentDay.dayNumber) 
                       ? "You're previewing tomorrow's content. Complete today's tasks first to maintain your streak."
                       : "Focus on today's tasks. You can preview tomorrow's content to plan ahead."}
@@ -368,16 +375,20 @@ export function JourneyDetailV2({
         </div>
       </div>
 
-      {/* Section B - Learning / Journey Overview */}
+      {/* Section B - Learning / Journey Overview - Better Mobile Layout */}
       <div className="bg-muted/30 border-b border-border/50 shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center shrink-0`}>
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 lg:py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 sm:mb-4">
+            <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 min-w-0 flex-1">
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center shrink-0`}>
+                {IconComponent ? (
+                  <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
+                ) : (
+                  <span className="text-base sm:text-lg md:text-xl text-white">{iconEmoji}</span>
+                )}
               </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-xl font-semibold text-foreground truncate">{journey.title}</h2>
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-foreground truncate">{journey.title}</h2>
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">{journey.description}</p>
               </div>
             </div>
@@ -385,21 +396,21 @@ export function JourneyDetailV2({
             {/* Status Pills */}
             <div className="flex items-center gap-2 shrink-0">
               {progressPercentage === 100 ? (
-                <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-green-500/10 text-green-700 dark:text-green-400 text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2">
-                  <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">Completed</span>
-                  <span className="xs:hidden">Done</span>
+                <span className="px-2.5 sm:px-3 py-1.5 rounded-full bg-green-500/10 text-green-700 dark:text-green-400 text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                  <span className="hidden sm:inline">Completed</span>
+                  <span className="sm:hidden">Done</span>
                 </span>
               ) : (
-                <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium">
+                <span className="px-2.5 sm:px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium whitespace-nowrap">
                   In Progress
                 </span>
               )}
             </div>
           </div>
 
-          {/* Progress Indicator */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {/* Progress Indicator - Better Mobile Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Progress</span>
@@ -444,8 +455,9 @@ export function JourneyDetailV2({
         {/* Mobile Sidebar Toggle Button */}
         <button
           onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-card border border-border shadow-lg"
+          className="lg:hidden fixed top-16 sm:top-20 left-3 sm:left-4 z-50 p-2.5 sm:p-3 rounded-lg bg-card border border-border shadow-lg touch-manipulation"
           aria-label="Toggle navigation"
+          style={{ minWidth: '44px', minHeight: '44px' }}
         >
           {isMobileSidebarOpen ? (
             <X className="w-5 h-5" />
@@ -462,27 +474,28 @@ export function JourneyDetailV2({
           />
         )}
         
-        <div className="max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-4 sm:gap-6 px-4 sm:px-6 py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-3 sm:gap-4 md:gap-6 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 lg:py-6 overflow-x-hidden">
           {/* Left Column - Navigation (Sticky, Non-scrolling) */}
           <aside className={cn(
             "w-full lg:w-64 shrink-0 lg:block",
             isMobileSidebarOpen ? "block fixed left-0 top-0 h-full z-50 bg-card border-r overflow-y-auto" : "hidden"
           )}>
-            <div className="lg:sticky lg:top-6 space-y-4 lg:h-[calc(100vh-200px)] overflow-y-auto p-4 lg:p-0">
+            <div className="lg:sticky lg:top-6 space-y-3 sm:space-y-4 lg:h-[calc(100vh-200px)] overflow-y-auto p-3 sm:p-4 lg:p-0">
               {/* Mobile Sidebar Header */}
-              <div className="lg:hidden flex items-center justify-between mb-4 pb-4 border-b">
-                <h2 className="text-lg font-semibold">Navigation</h2>
+              <div className="lg:hidden flex items-center justify-between mb-3 sm:mb-4 pb-3 sm:pb-4 border-b">
+                <h2 className="text-base sm:text-lg font-semibold">Navigation</h2>
                 <button
                   onClick={() => setIsMobileSidebarOpen(false)}
-                  className="p-2 rounded-lg hover:bg-muted"
+                  className="p-2 rounded-lg hover:bg-muted touch-manipulation"
+                  style={{ minWidth: '44px', minHeight: '44px' }}
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               {/* Week Navigation */}
-              <Card className="p-4">
-                <h3 className="text-sm font-semibold text-foreground mb-3">Learning Plan</h3>
-                <div className="space-y-1">
+              <Card className="p-2.5 sm:p-3 md:p-4">
+                <h3 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 sm:mb-2.5 md:mb-3">Learning Plan</h3>
+                <div className="space-y-1.5 sm:space-y-2">
                   {weeks.map((week) => {
                     const weekProgress = getWeekProgress(week);
                     const isActive = week.weekNumber === selectedWeek;
@@ -495,16 +508,17 @@ export function JourneyDetailV2({
                           setIsMobileSidebarOpen(false);
                         }}
                         className={cn(
-                          'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all',
+                          'w-full flex items-center justify-between px-3 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base transition-all touch-manipulation',
                           isActive 
                             ? `bg-gradient-to-r ${colors.gradient} text-white` 
                             : 'text-muted-foreground hover:bg-muted/50'
                         )}
+                        style={{ minHeight: '44px' }}
                       >
-                        <span>Week {week.weekNumber}</span>
+                        <span className="font-medium">Week {week.weekNumber}</span>
                         {weekProgress > 0 && (
                           <span className={cn(
-                            'text-xs px-1.5 py-0.5 rounded',
+                            'text-xs sm:text-sm px-2 py-0.5 rounded font-medium',
                             isActive ? 'bg-white/20' : 'bg-muted'
                           )}>
                             {weekProgress}%
@@ -517,11 +531,11 @@ export function JourneyDetailV2({
               </Card>
 
               {/* Days List */}
-              <Card className="p-4">
-                <h3 className="text-sm font-semibold text-foreground mb-3">
+              <Card className="p-2.5 sm:p-3 md:p-4">
+                <h3 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 sm:mb-2.5 md:mb-3">
                   {isPreparationPhase ? 'Preparation' : `Week ${selectedWeek}`}
                 </h3>
-                <div className="space-y-1">
+                <div className="space-y-1.5 sm:space-y-2">
                 {/* Day 0 - Preparation Button - Always Available */}
                 {preparationData && (
                   <button
@@ -529,27 +543,26 @@ export function JourneyDetailV2({
                       onDayChange(0);
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`
-                      w-full flex items-center gap-3 p-3 rounded-lg text-left
-                      transition-all group
-                      ${selectedDay === 0
+                    className={cn(
+                      'w-full flex items-center gap-2 sm:gap-2.5 md:gap-3 p-2.5 sm:p-3 md:p-3.5 rounded-lg text-left transition-all group touch-manipulation',
+                      selectedDay === 0
                         ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg` 
                         : 'hover:bg-muted/50 border border-border/50'
-                      }
-                    `}
+                    )}
+                    style={{ minHeight: '52px' }}
                   >
-                    <div className={`
-                      w-6 h-6 rounded-full flex items-center justify-center shrink-0
-                      ${selectedDay === 0 ? 'bg-white/20' : 'bg-muted border-2 border-border'}
-                    `}>
-                      <span className="text-xs font-semibold">0</span>
+                    <div className={cn(
+                      'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0',
+                      selectedDay === 0 ? 'bg-white/20' : 'bg-muted border-2 border-border'
+                    )}>
+                      <span className="text-[10px] sm:text-xs md:text-sm font-semibold">0</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium ${selectedDay === 0 ? 'text-white' : 'text-foreground'}`}>
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className={cn('text-xs sm:text-sm md:text-base font-medium truncate', selectedDay === 0 ? 'text-white' : 'text-foreground')}>
                         Day 0 - Preparation
                       </div>
-                      <div className={`text-xs ${selectedDay === 0 ? 'text-white/80' : 'text-muted-foreground'}`}>
-                        Jan 1, 2026 • Setup & Environment
+                      <div className={cn('text-[10px] sm:text-xs md:text-sm truncate', selectedDay === 0 ? 'text-white/80' : 'text-muted-foreground')}>
+                        Jan 4, 2026 • Setup & Environment
                       </div>
                     </div>
                   </button>
@@ -636,10 +649,9 @@ export function JourneyDetailV2({
                         }
                       }}
                       disabled={isLocked}
-                      className={`
-                        w-full flex items-center gap-3 p-3 rounded-lg text-left
-                        transition-all group
-                        ${isLocked 
+                      className={cn(
+                        'w-full flex items-center gap-2 sm:gap-2.5 md:gap-3 p-2.5 sm:p-3 md:p-3.5 rounded-lg text-left transition-all group touch-manipulation',
+                        isLocked 
                           ? 'opacity-50 cursor-not-allowed' 
                           : isActive 
                           ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg` 
@@ -648,35 +660,35 @@ export function JourneyDetailV2({
                           : dayIsTomorrow
                           ? 'hover:bg-primary/5 border border-primary/20 bg-primary/5'
                           : 'hover:bg-muted/50'
-                        }
-                      `}
+                      )}
+                      style={{ minHeight: '52px' }}
                     >
-                      <div className={`
-                        w-6 h-6 rounded-full flex items-center justify-center shrink-0
-                        ${isActive ? 'bg-white/20' : isCompleted ? 'bg-primary' : dayIsTomorrow ? 'bg-primary/20 border-2 border-primary/40' : 'bg-muted border-2 border-border'}
-                      `}>
+                      <div className={cn(
+                        'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0',
+                        isActive ? 'bg-white/20' : isCompleted ? 'bg-primary' : dayIsTomorrow ? 'bg-primary/20 border-2 border-primary/40' : 'bg-muted border-2 border-border'
+                      )}>
                         {isCompleted && (
-                          <Check className="w-4 h-4 text-white" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-white" />
                         )}
                         {!isCompleted && !isActive && (
-                          <span className={`text-xs font-semibold ${dayIsTomorrow ? 'text-primary' : ''}`}>{day.dayNumber}</span>
+                          <span className={cn('text-[10px] sm:text-xs md:text-sm font-semibold', dayIsTomorrow ? 'text-primary' : '')}>{day.dayNumber}</span>
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-medium flex items-center gap-2 ${isActive ? 'text-white' : 'text-foreground'}`}>
-                          Day {day.dayNumber}
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className={cn('text-xs sm:text-sm md:text-base font-medium flex items-center gap-1.5 sm:gap-2 flex-wrap', isActive ? 'text-white' : 'text-foreground')}>
+                          <span className="truncate">Day {day.dayNumber}</span>
                           {dayIsTomorrow && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal">
+                            <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal whitespace-nowrap shrink-0">
                               Tomorrow
                             </span>
                           )}
                           {isLocked && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-normal">
+                            <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-normal whitespace-nowrap shrink-0">
                               Locked
                             </span>
                           )}
                         </div>
-                        <div className={`text-xs ${isActive ? 'text-white/80' : 'text-muted-foreground'}`}>
+                        <div className={cn('text-[10px] sm:text-xs md:text-sm truncate', isActive ? 'text-white/80' : 'text-muted-foreground')}>
                           {formatDateShort(day.date)} • {formatDayName(day.date)}
                         </div>
                       </div>
@@ -739,11 +751,11 @@ export function JourneyDetailV2({
           </aside>
 
           {/* Right Column - Content (Scrollable) */}
-          <main className="flex-1 min-w-0 overflow-y-auto">
-            <div className="max-w-4xl space-y-6 pb-8">
+          <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
+            <div className="max-w-4xl space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 pb-4 sm:pb-6 md:pb-8 px-0">
                   {/* Discipline Tabs - Only for Software Engineering (Inside Content Area) */}
                   {journeyId === 'software-engineering' && (
-                    <div className="flex items-center gap-2 border-b border-border/50 pb-3 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 border-b border-border/50 pb-2 sm:pb-3 overflow-x-auto scrollbar-hide -mx-1 sm:mx-0 px-1 sm:px-0">
                       {disciplines.map((discipline) => {
                         const Icon = discipline.icon;
                         const isActive = activeDiscipline === discipline.id;
@@ -753,21 +765,22 @@ export function JourneyDetailV2({
                             key={discipline.id}
                             onClick={() => setActiveDiscipline(discipline.id)}
                             className={cn(
-                              'flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all shrink-0',
+                              'flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base transition-all shrink-0 touch-manipulation',
                               isActive
                                 ? 'text-foreground bg-muted/50'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
                             )}
-                            style={
-                              isActive
+                            style={{
+                              minHeight: '44px',
+                              ...(isActive
                                 ? {
                                     borderBottom: `2px solid ${discipline.color}`,
                                     color: discipline.color,
                                   }
-                                : {}
-                            }
+                                : {})
+                            }}
                           >
-                            <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <Icon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                             <span className="whitespace-nowrap">{discipline.label}</span>
                           </button>
                         );
@@ -786,14 +799,14 @@ export function JourneyDetailV2({
                 {(() => {
                   const dailyQuote = getQuoteOfTheDay(journeyId, completedDays);
                   return (
-                    <Card className={`p-4 sm:p-6 md:p-8 bg-gradient-to-br ${colors.gradient} border-0 text-white`}>
+                    <Card className={`p-4 sm:p-5 md:p-6 lg:p-8 bg-gradient-to-br ${colors.gradient} border-0 text-white`}>
                       <div className="flex items-start gap-3 sm:gap-4">
                         <div className="text-2xl sm:text-3xl md:text-4xl shrink-0">{dailyQuote.icon}</div>
-                        <div className="flex-1 min-w-0">
-                          <blockquote className="text-base sm:text-lg md:text-xl font-medium mb-2 sm:mb-3 leading-relaxed">
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <blockquote className="text-sm sm:text-base md:text-lg lg:text-xl font-medium mb-2 sm:mb-3 leading-relaxed break-words">
                             "{dailyQuote.quote}"
                           </blockquote>
-                          <cite className="text-sm text-white/80 italic">— {dailyQuote.author}</cite>
+                          <cite className="text-xs sm:text-sm text-white/80 italic break-words">— {dailyQuote.author}</cite>
                         </div>
                       </div>
                     </Card>
@@ -802,43 +815,43 @@ export function JourneyDetailV2({
 
                 {/* Day Header or Preparation Header */}
                 {isPreparationPhase && preparationData ? (
-                  <div className="glass-card rounded-xl p-4 sm:p-6 border border-border/50">
-                    <div className="flex items-start gap-3 sm:gap-4 mb-4">
+                  <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 border border-border/50">
+                    <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                       <div className="text-3xl sm:text-4xl md:text-5xl shrink-0">{preparationData.icon}</div>
-                      <div className="flex-1 min-w-0">
-                        <h2 className="text-xl sm:text-2xl font-bold text-display mb-2">{preparationData.title}</h2>
-                        <p className="text-sm sm:text-base text-muted-foreground mb-2">{preparationData.subtitle}</p>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display mb-2 break-words">{preparationData.title}</h2>
+                        <p className="text-sm sm:text-base text-muted-foreground mb-2 break-words">{preparationData.subtitle}</p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          Thursday, January 1, 2026
+                          Sunday, January 4, 2026
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4 p-3 sm:p-4 bg-primary/10 rounded-lg border border-primary/20">
-                      <p className="text-xs sm:text-sm text-foreground">
+                    <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-primary/10 rounded-lg border border-primary/20">
+                      <p className="text-sm sm:text-base text-foreground leading-relaxed break-words">
                         <strong>Today's Focus:</strong> Use this day to structure the application, prepare your environment, and set up everything you need for a successful journey. Tomorrow (Day 1), the real journey begins!
                       </p>
                     </div>
                   </div>
                 ) : currentDay ? (
-                  <div className="glass-card rounded-xl p-4 sm:p-6 border border-border/50">
-                    <div className="flex items-start justify-between mb-4 gap-4">
-                      <div className="min-w-0 flex-1">
+                  <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 border border-border/50">
+                    <div className="flex items-start justify-between mb-3 sm:mb-4 gap-3 sm:gap-4">
+                      <div className="min-w-0 flex-1 overflow-hidden">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h2 className="text-xl sm:text-2xl font-bold text-display flex items-center gap-2">
+                          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display flex items-center gap-2 break-words">
                             Day {currentDay.dayNumber}
                             {isTomorrow(currentDay.dayNumber) && (
-                              <span className="text-xs sm:text-sm px-2 py-1 rounded bg-primary/20 text-primary font-normal">
+                              <span className="text-xs sm:text-sm px-2 py-1 rounded bg-primary/20 text-primary font-normal whitespace-nowrap shrink-0">
                                 Tomorrow
                               </span>
                             )}
                           </h2>
                           {getDayProgress(currentDay) && (
-                            <span className="px-2 py-1 bg-primary/20 text-primary rounded text-xs font-semibold shrink-0">
+                            <span className="px-2 py-1 bg-primary/20 text-primary rounded text-xs sm:text-sm font-semibold shrink-0 whitespace-nowrap">
                               Completed
                             </span>
                           )}
                         </div>
-                        <p className="text-sm sm:text-base text-muted-foreground">
+                        <p className="text-sm sm:text-base text-muted-foreground break-words">
                           {currentDay.date && new Date(currentDay.date).toLocaleDateString('en-US', {
                             weekday: 'long',
                             month: 'long',
@@ -850,27 +863,31 @@ export function JourneyDetailV2({
                       {canCompleteDay(currentDay.dayNumber) ? (
                         <Button
                           onClick={() => updateProgress(journeyId, currentDay.dayNumber, !getDayProgress(currentDay))}
-                          className={getDayProgress(currentDay) ? 'bg-muted' : ''}
+                          className={cn(
+                            'touch-manipulation',
+                            getDayProgress(currentDay) ? 'bg-muted' : ''
+                          )}
+                          style={{ minHeight: '44px' }}
                         >
                           {getDayProgress(currentDay) ? (
                             <>
-                              <Check className="w-4 h-4 mr-2" />
-                              Completed
+                              <Check className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                              <span className="text-sm sm:text-base">Completed</span>
                             </>
                           ) : (
                             <>
-                              <Play className="w-4 h-4 mr-2" />
-                              Mark Complete
+                              <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                              <span className="text-sm sm:text-base">Mark Complete</span>
                             </>
                           )}
                         </Button>
                       ) : isTomorrow(currentDay.dayNumber) ? (
-                        <div className="text-sm text-muted-foreground flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 border border-border/50">
+                        <div className="text-sm sm:text-base text-muted-foreground flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-md bg-muted/50 border border-border/50">
                           <span>Preview Only</span>
-                          <span className="text-xs">• Complete tomorrow</span>
+                          <span className="text-xs sm:text-sm hidden sm:inline">• Complete tomorrow</span>
                         </div>
                       ) : (
-                        <div className="text-sm text-muted-foreground flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 border border-border/50">
+                        <div className="text-sm sm:text-base text-muted-foreground flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-md bg-muted/50 border border-border/50">
                           <span>Locked</span>
                         </div>
                       )}
@@ -887,10 +904,11 @@ export function JourneyDetailV2({
 
                 {/* Content Tabs */}
                 <div className="border-b border-border/50">
-                  <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
+                  <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide -mx-1 sm:mx-0 px-1 sm:px-0">
                     {isPreparationPhase ? (
                       <button
-                        className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium border-b-2 border-primary text-primary whitespace-nowrap shrink-0"
+                        className="px-4 py-3 text-sm sm:text-base font-medium border-b-2 border-primary text-primary whitespace-nowrap shrink-0 touch-manipulation"
+                        style={{ minHeight: '44px' }}
                       >
                         Preparation
                       </button>
@@ -900,11 +918,12 @@ export function JourneyDetailV2({
                           key={tab}
                           onClick={() => setActiveTab(tab)}
                           className={cn(
-                            'px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0',
+                            'px-4 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 touch-manipulation',
                             activeTab === tab
                               ? 'border-primary text-primary'
                               : 'border-transparent text-muted-foreground hover:text-foreground'
                           )}
+                          style={{ minHeight: '44px' }}
                         >
                           {tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </button>
@@ -1013,7 +1032,7 @@ export function JourneyDetailV2({
                                 Deep Learning Sessions ({disciplineContent.deepLearning.length})
                               </h3>
                               {disciplineContent.deepLearning.map((session, idx) => (
-                                <Card key={idx} className="p-4 sm:p-6 border border-border/50">
+                                <Card key={idx} className="p-4 sm:p-5 md:p-6 border border-border/50">
                                   <div className="space-y-3">
                                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                                       {session.isRevision && (
@@ -1069,7 +1088,7 @@ export function JourneyDetailV2({
                                 Focused Implementation ({disciplineContent.implementation.length})
                               </h3>
                               {disciplineContent.implementation.map((session, idx) => (
-                                <Card key={idx} className="p-4 sm:p-6 border border-border/50">
+                                <Card key={idx} className="p-4 sm:p-5 md:p-6 border border-border/50">
                                   <div className="space-y-3">
                                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                                       {session.isRevision && (

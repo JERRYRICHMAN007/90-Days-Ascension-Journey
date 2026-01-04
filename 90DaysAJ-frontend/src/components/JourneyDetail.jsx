@@ -46,13 +46,13 @@ function JourneyDetail({
   const firstWeek = weeks && weeks.length > 0 ? weeks[0] : null;
   const firstDay = firstWeek?.days && firstWeek.days.length > 0 ? firstWeek.days[0] : null;
   const currentPhase = getCurrentPhase();
-  // Check if today is January 1, 2026 (Day 0)
+  // Check if today is January 4, 2026 (Day 0)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const day0Date = new Date('2026-01-01');
+  const day0Date = new Date('2026-01-04');
   day0Date.setHours(0, 0, 0, 0);
   const isDay0Date = today.getTime() === day0Date.getTime();
-  // Default to Day 0 if it's January 1, 2026, or in preparation phase, otherwise use first day
+  // Default to Day 0 if it's January 4, 2026, or in preparation phase, otherwise use first day
   const defaultDay = (isDay0Date || currentPhase === 'preparation' || currentPhase === 'before') ? 0 : (firstDay?.dayNumber || 1);
   const [selectedWeek, setSelectedWeek] = useState(firstWeek?.weekNumber || 1);
   const [selectedDay, setSelectedDay] = useState(defaultDay);

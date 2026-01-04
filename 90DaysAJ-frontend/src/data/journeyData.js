@@ -48,10 +48,10 @@ export const journeys = [
   }
 ]
 
-// OFFICIAL START DATE: January 1, 2026 (Day 0 - Preparation)
-// Day 0 = January 1, 2026 (Preparation)
-// Day 1 = January 2, 2026 (First actual day)
-// All journeys start January 2, 2026 - Official Ascension Phase begins!
+// OFFICIAL START DATE: January 4, 2026 (Day 0 - Preparation - Sunday)
+// Day 0 = January 4, 2026 (Preparation - Sunday)
+// Day 1 = January 5, 2026 (First actual day - Monday)
+// All journeys start January 5, 2026 - Official Ascension Phase begins!
 
 // Helper function to generate all weeks
 function generateWeeks(startDate, numWeeks) {
@@ -95,7 +95,7 @@ function getWeekTheme(weekNum) {
 }
 
 // Body Transformation Journey - Complete 13 weeks
-export const bodyTransformationWeeks = generateWeeks('2026-01-02', 13).map((week, idx) => {
+export const bodyTransformationWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
   const days = []
   const workoutTypes = [
     'Rest & Recovery',
@@ -233,7 +233,7 @@ function getWorkoutResources(weekNum, dayIndex) {
 }
 
 // Reading Journey - Complete 13 weeks
-export const readingWeeks = generateWeeks('2026-01-02', 13).map((week, idx) => {
+export const readingWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 7; i++) {
@@ -425,7 +425,7 @@ function getReadingResources(weekNum, dayIndex) {
 }
 
 // Dual Brand Journey - Complete 13 weeks
-export const dualBrandWeeks = generateWeeks('2026-01-02', 13).map((week, idx) => {
+export const dualBrandWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 7; i++) {
@@ -724,7 +724,7 @@ function getDualBrandOutcome(weekNum, dayIndex) {
 }
 
 // Writer's Journey - Complete 12 weeks (60 days, Mon-Fri only)
-export const writersWeeks = generateWeeks('2026-01-02', 12).map((week, idx) => {
+export const writersWeeks = generateWeeks('2026-01-05', 12).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 5; i++) {
@@ -1951,9 +1951,9 @@ function getProjectComponentForDay(dayNumber, discipline) {
 }
 
 // Software Engineering Journey - Full 13-Week Journey
-// January 1, 2026 - March 31, 2026 (90 days)
-// Official Ascension Phase - Day 1 = January 1, 2026
-export const softwareEngineeringWeeks = generateWeeks('2026-01-02', 13).map((week, idx) => {
+// January 5, 2026 - April 4, 2026 (90 days)
+// Official Ascension Phase - Day 1 = January 5, 2026 (Monday)
+export const softwareEngineeringWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
   const days = []
   const weekNum = idx + 1
   

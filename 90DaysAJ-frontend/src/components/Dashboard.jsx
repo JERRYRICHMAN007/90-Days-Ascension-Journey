@@ -88,10 +88,10 @@ function Dashboard({ userProgress }) {
           </p>
           <div className="space-y-1">
             <p className="text-base font-semibold text-foreground">
-              Start Date: Thursday, January 1, 2026
+              Start Date: Sunday, January 4, 2026
             </p>
             <p className="text-base font-semibold text-foreground">
-              End Date: Tuesday, March 31, 2026
+              End Date: Saturday, April 4, 2026
             </p>
           </div>
         </motion.div>
