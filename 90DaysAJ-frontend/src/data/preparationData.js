@@ -25,8 +25,8 @@ export const journeyPreparationData = {
         title: 'Schedule & Time Blocks',
         icon: '⏰',
         tasks: [
-          'Block 5:30-6:30 AM daily in your calendar',
-          'Set morning alarms for consistent wake-up time',
+          'Block 5:30-6:00 AM (Weekdays & Sunday) in your calendar',
+          'Set morning alarms for consistent wake-up time (Weekdays & Sunday)',
           'Plan your pre-workout routine (wake up, hydrate, warm-up)',
           'Schedule post-workout recovery time',
           'Plan meal prep schedule for nutrition goals'
@@ -105,7 +105,7 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Block 8:30-9:30 PM daily in your calendar',
+          'Block 5:00-6:00 PM (Weekdays & Saturday) in your calendar',
           'Plan content creation workflow',
           'Set up review and approval process',
           'Schedule brand consistency checks'
@@ -162,11 +162,11 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Plan multiple reading time blocks throughout the day',
-          'Set up morning reading routine',
-          'Plan evening reading routine',
-          'Schedule Bible reading time',
-          'Plan reading breaks and reflection time'
+          'Block 7:15-7:30 AM (Weekdays) for Bible Reading',
+          'Block 7:30-8:15 AM (Weekdays) for E-Book Reading',
+          'Block 8:00-9:00 PM (Weekends) for Physical Books',
+          'Set up morning alarms for consistent Bible reading time',
+          'Plan your reading routine and reflection time'
         ]
       }
     ],
@@ -220,7 +220,7 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Block 3:30-4:30 PM daily in your calendar',
+          'Block 4:15-5:00 PM (Weekdays) in your calendar',
           'Plan writing workflow and process',
           'Set up writing goals and milestones',
           'Plan review and editing time'
@@ -282,11 +282,12 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Block 3 hours daily for coding practice',
-          'Plan deep learning time blocks',
-          'Plan focused implementation time blocks',
-          'Schedule code review and reflection time',
-          'Plan discipline rotation schedule (Frontend, Backend, Mobile)'
+          'Mobile Engineering: Monday 4:00-5:30 AM, Tuesday-Friday 2:00-4:00 AM, Saturday 1:30-3:00 PM (Weekly revision)',
+          'Frontend Engineering: Monday-Friday 2:45-4:15 PM, Saturday 3:00-4:00 PM',
+          'Backend Engineering: Monday-Friday 8:00-9:30 PM, Saturday 4:00-5:00 PM',
+          'Systems Engineering: Sunday 3:00-5:30 AM',
+          'Block all time slots in your calendar accordingly',
+          'Plan discipline rotation schedule and code review time'
         ]
       },
       {
@@ -296,7 +297,7 @@ export const journeyPreparationData = {
           'Frontend: Set up React/Vue development environment',
           'Backend: Set up Node.js/Express or preferred backend framework',
           'Mobile: Set up React Native or Flutter environment',
-          'WordPress: Set up local WordPress development environment',
+          'Systems Engineering: Set up local WordPress development environment',
           'Prepare discipline-specific tools and libraries'
         ]
       }

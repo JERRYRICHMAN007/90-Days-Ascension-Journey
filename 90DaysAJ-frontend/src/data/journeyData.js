@@ -5,7 +5,7 @@ export const journeys = [
     id: 'body-transformation',
     title: 'Body Transformation',
     icon: '💪',
-    timeBlock: 'Time: 5:30-6:30 AM',
+    timeBlock: 'Time: 5:30-6:00 AM (Weekdays & Sunday)',
     description: 'Upper Body → Lower Body → Core → Functional → Mobility',
     totalDays: 90,
     color: '#667eea'
@@ -14,7 +14,7 @@ export const journeys = [
     id: 'dual-brand',
     title: 'Dual Brand',
     icon: '🎨',
-    timeBlock: 'Time: 8:30-9:30 PM',
+    timeBlock: 'Time: 5:00-6:00 PM (Weekdays & Saturday)',
     description: 'Ryxen + HavenX Brand Building',
     totalDays: 90,
     color: '#f093fb'
@@ -32,7 +32,7 @@ export const journeys = [
     id: 'writers',
     title: "Writer's Journey",
     icon: '✍️',
-    timeBlock: 'Time: 3:30-4:30 PM',
+    timeBlock: 'Time: 4:15-5:00 PM (Weekdays)',
     description: 'Learning → Execution → Reflection',
     totalDays: 60,
     color: '#43e97b'
@@ -48,10 +48,10 @@ export const journeys = [
   }
 ]
 
-// OFFICIAL START DATE: January 4, 2026 (Day 0 - Preparation - Sunday)
-// Day 0 = January 4, 2026 (Preparation - Sunday)
-// Day 1 = January 5, 2026 (First actual day - Monday)
-// All journeys start January 5, 2026 - Official Ascension Phase begins!
+// OFFICIAL START DATE: January 5, 2026 (Day 0 - Preparation - Monday)
+// Day 0 = January 5, 2026 (Preparation - Monday)
+// Day 1 = January 6, 2026 (First actual day - Tuesday)
+// All journeys start January 6, 2026 - Official Ascension Phase begins!
 
 // Helper function to generate all weeks
 function generateWeeks(startDate, numWeeks) {
@@ -95,7 +95,7 @@ function getWeekTheme(weekNum) {
 }
 
 // Body Transformation Journey - Complete 13 weeks
-export const bodyTransformationWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
+export const bodyTransformationWeeks = generateWeeks('2026-01-06', 13).map((week, idx) => {
   const days = []
   const workoutTypes = [
     'Rest & Recovery',
@@ -233,7 +233,7 @@ function getWorkoutResources(weekNum, dayIndex) {
 }
 
 // Reading Journey - Complete 13 weeks
-export const readingWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
+export const readingWeeks = generateWeeks('2026-01-06', 13).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 7; i++) {
@@ -269,22 +269,16 @@ export const readingWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
 function getWeekdayReading(weekNum, dayIndex) {
   return [
     {
-      time: '8:00-9:00 AM',
-      type: 'E-Reading',
-      material: getEBookForWeek(weekNum),
-      focus: 'Mindset, success, wealth, strategy'
-    },
-    {
-      time: '2:30-3:30 PM',
-      type: 'Physical Book',
-      material: getPhysicalBookForWeek(weekNum),
-      focus: 'Principles, systems, structure'
-    },
-    {
-      time: '5:30-6:00 PM',
+      time: '7:15-7:30 AM',
       type: 'Bible Reading',
       material: getBibleReading(weekNum, dayIndex),
       focus: 'Spiritual, financial, wisdom grounding'
+    },
+    {
+      time: '7:30-8:15 AM',
+      type: 'E-Reading',
+      material: getEBookForWeek(weekNum),
+      focus: 'Mindset, success, wealth, strategy'
     }
   ]
 }
@@ -302,16 +296,10 @@ function getWeekendReading(weekNum, dayIndex) {
   }
   return [
     {
-      time: '2:30-3:30 PM',
+      time: '8:00-9:00 PM',
       type: 'Physical Book',
       material: getPhysicalBookForWeek(weekNum),
       focus: 'Deep reflection and consolidation'
-    },
-    {
-      time: '5:30-6:00 PM',
-      type: 'Bible Reading',
-      material: getBibleReading(weekNum, dayIndex),
-      focus: 'Wisdom and application'
     }
   ]
 }
@@ -425,7 +413,7 @@ function getReadingResources(weekNum, dayIndex) {
 }
 
 // Dual Brand Journey - Complete 13 weeks
-export const dualBrandWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
+export const dualBrandWeeks = generateWeeks('2026-01-06', 13).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 7; i++) {
@@ -724,7 +712,7 @@ function getDualBrandOutcome(weekNum, dayIndex) {
 }
 
 // Writer's Journey - Complete 12 weeks (60 days, Mon-Fri only)
-export const writersWeeks = generateWeeks('2026-01-05', 12).map((week, idx) => {
+export const writersWeeks = generateWeeks('2026-01-06', 12).map((week, idx) => {
   const days = []
   
   for (let i = 0; i < 5; i++) {
@@ -1749,8 +1737,8 @@ function getCrashCourseDisciplineRotation(dayNum) {
       primary: 'Frontend',
       secondary: 'Backend',
       tertiary: 'Mobile',
-      quaternary: 'WordPress',
-      allDisciplines: ['Frontend', 'Backend', 'Mobile', 'WordPress'],
+      quaternary: 'Systems Engineering',
+      allDisciplines: ['Frontend', 'Backend', 'Mobile', 'Systems Engineering'],
       rotationOrder: ['Frontend', 'Backend'],
       earlyMorningDiscipline: 'Frontend'
     }
@@ -1759,8 +1747,8 @@ function getCrashCourseDisciplineRotation(dayNum) {
       primary: 'Frontend',
       secondary: 'Backend',
       tertiary: 'Mobile',
-      quaternary: 'WordPress',
-      allDisciplines: ['Frontend', 'Backend', 'Mobile', 'WordPress'],
+      quaternary: 'Systems Engineering',
+      allDisciplines: ['Frontend', 'Backend', 'Mobile', 'Systems Engineering'],
       rotationOrder: ['Frontend', 'Backend'],
       earlyMorningDiscipline: 'Frontend'
     }
@@ -1769,8 +1757,8 @@ function getCrashCourseDisciplineRotation(dayNum) {
       primary: 'Mobile',
       secondary: 'Backend',
       tertiary: 'Frontend',
-      quaternary: 'WordPress',
-      allDisciplines: ['Mobile', 'Backend', 'Frontend', 'WordPress'],
+      quaternary: 'Systems Engineering',
+      allDisciplines: ['Mobile', 'Backend', 'Frontend', 'Systems Engineering'],
       rotationOrder: ['Mobile', 'Backend'],
       earlyMorningDiscipline: 'Mobile'
     }
@@ -1785,7 +1773,7 @@ function getCrashCourseDisciplineRotation(dayNum) {
 // - Web Frontend (React): Customer-facing dashboard
 // - Mobile App (React Native): iOS/Android app
 // - Backend API (Node.js): REST API serving web and mobile
-// - Admin/CMS (WordPress): Content and resource management
+// - Admin/CMS (Systems Engineering): Content and resource management
 //
 // Each day builds toward this project with clear:
 // - What you're building (component/feature/endpoint)
@@ -1842,7 +1830,7 @@ const TRANSPORT_APP_PROJECT = {
         'Error Handling'
       ]
     },
-    wordpress: {
+    'systems-engineering': {
       name: 'Admin/CMS Layer',
       parts: [
         'Content Management',
@@ -1932,9 +1920,9 @@ function getProjectComponentForDay(dayNumber, discipline) {
     return { component: 'Documentation', part: 'All Endpoints' }
   }
   
-  // WordPress features progression
-  if (discipline === 'WordPress') {
-    if (dayNumber <= 7) return { component: 'WordPress Setup', part: 'Foundation' }
+  // Systems Engineering features progression
+  if (discipline === 'Systems Engineering') {
+    if (dayNumber <= 7) return { component: 'Systems Engineering Setup', part: 'Foundation' }
     if (dayNumber <= 14) return { component: 'Custom Post Types', part: 'Custom Post Types' }
     if (dayNumber <= 21) return { component: 'Content Management', part: 'Content Management' }
     if (dayNumber <= 28) return { component: 'User Roles', part: 'User Roles & Permissions' }
@@ -1951,9 +1939,9 @@ function getProjectComponentForDay(dayNumber, discipline) {
 }
 
 // Software Engineering Journey - Full 13-Week Journey
-// January 5, 2026 - April 4, 2026 (90 days)
-// Official Ascension Phase - Day 1 = January 5, 2026 (Monday)
-export const softwareEngineeringWeeks = generateWeeks('2026-01-05', 13).map((week, idx) => {
+// January 6, 2026 - April 5, 2026 (90 days)
+// Official Ascension Phase - Day 1 = January 6, 2026 (Tuesday)
+export const softwareEngineeringWeeks = generateWeeks('2026-01-06', 13).map((week, idx) => {
   const days = []
   const weekNum = idx + 1
   
@@ -1978,8 +1966,8 @@ export const softwareEngineeringWeeks = generateWeeks('2026-01-05', 13).map((wee
     // Enrich project data with project-driven information for each discipline
     if (projectData && typeof projectData === 'object') {
       // If projectData has discipline-specific data, enrich each
-      if (projectData.frontend || projectData.mobile || projectData.backend || projectData.wordpress) {
-        ['frontend', 'mobile', 'backend', 'wordpress'].forEach(discipline => {
+      if (projectData.frontend || projectData.mobile || projectData.backend || projectData['systems-engineering']) {
+        ['frontend', 'mobile', 'backend', 'systems-engineering'].forEach(discipline => {
           if (projectData[discipline]) {
             const capitalized = discipline.charAt(0).toUpperCase() + discipline.slice(1)
             projectData[discipline] = enrichProjectWithProjectInfo(
@@ -2012,7 +2000,7 @@ export const softwareEngineeringWeeks = generateWeeks('2026-01-05', 13).map((wee
       frontend: getProjectComponentForDay(dayNumber, 'Frontend'),
       mobile: getProjectComponentForDay(dayNumber, 'Mobile'),
       backend: getProjectComponentForDay(dayNumber, 'Backend'),
-      wordpress: getProjectComponentForDay(dayNumber, 'WordPress')
+      'systems-engineering': getProjectComponentForDay(dayNumber, 'Systems Engineering')
     }
     
     days.push({
@@ -2051,11 +2039,11 @@ export const softwareEngineeringWeeks = generateWeeks('2026-01-05', 13).map((wee
   return { ...week, theme: getSoftwareEngineeringTheme(weekNum), days }
 })
 
-// Syncing logic: Connect Frontend → Backend → Mobile → WordPress
+// Syncing logic: Connect Frontend → Backend → Mobile → Systems Engineering
 function getSyncedContent(discipline, weekNum, dayIndex, allDisciplinesContent) {
   // Ensure backend tasks relate to frontend material
   // Mobile tasks integrate APIs built in backend
-  // WordPress tasks align with real-world patterns
+  // Systems Engineering tasks align with real-world patterns
   
   const syncMap = {
     Frontend: {
@@ -2070,8 +2058,8 @@ function getSyncedContent(discipline, weekNum, dayIndex, allDisciplinesContent) 
       connectsTo: ['Backend'], // Mobile consumes backend APIs
       prepares: 'API integration, state management with backend data'
     },
-    WordPress: {
-      connectsTo: ['Frontend'], // WordPress uses frontend skills
+    'Systems Engineering': {
+      connectsTo: ['Frontend'], // Systems Engineering uses frontend skills
       prepares: 'Theme development, plugin UI, block development'
     }
   }
@@ -2107,14 +2095,14 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
   const isSunday = dayIndex === 6
   
   if (isSaturday) {
-    // Saturday: WordPress + Mobile Revision
-    // WordPress Learning
+    // Saturday: Mobile Revision, Frontend, Backend
+    // Mobile Revision Learning
     if (timeBlocks.deepLearning && timeBlocks.deepLearning.length > 0) {
       timeBlocks.deepLearning.forEach(block => {
         const disciplineContent = getDisciplineContent(learningData, block.discipline, weekNum, 'study')
-        scheduled.deepLearning.push({
+    scheduled.deepLearning.push({
           ...block,
-          content: {
+      content: {
             ...disciplineContent,
             isRevision: block.isRevision || false
           }
@@ -2129,9 +2117,9 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
         const revisionContent = block.isRevision 
           ? getRevisionContent(block.discipline, weekNum, dayIndex)
           : getDisciplineContent(projectData, block.discipline, weekNum, 'build')
-        scheduled.focusedImplementation.push({
+    scheduled.focusedImplementation.push({
           ...block,
-          content: {
+      content: {
             ...revisionContent,
             isRevision: block.isRevision || false,
             revisionType: 'practice'
@@ -2144,11 +2132,12 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
   }
   
   if (isSunday) {
-    // Sunday: WordPress + Frontend & Backend Revision
-    // WordPress Learning
+    // Sunday: Systems Engineering only
+    // Systems Engineering Learning
     if (timeBlocks.deepLearning && timeBlocks.deepLearning.length > 0) {
       timeBlocks.deepLearning.forEach(block => {
-        const disciplineContent = getDisciplineContent(learningData, block.discipline, weekNum, 'study')
+        const learningDataWithDayIndex = { ...learningData, dayIndex: dayIndex }
+        const disciplineContent = getDisciplineContent(learningDataWithDayIndex, block.discipline, weekNum, 'study', dayIndex)
         scheduled.deepLearning.push({
           ...block,
           content: {
@@ -2165,7 +2154,7 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
         // For revision sessions, use revision content instead of regular project content
         const revisionContent = block.isRevision 
           ? getRevisionContent(block.discipline, weekNum, dayIndex)
-          : getDisciplineContent(projectData, block.discipline, weekNum, 'build')
+          : getDisciplineContent({ ...projectData, dayIndex: dayIndex }, block.discipline, weekNum, 'build', dayIndex)
         scheduled.focusedImplementation.push({
           ...block,
           content: {
@@ -2181,21 +2170,25 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
   }
   
   // Monday-Friday: Mobile, Frontend, Backend
-  const allDisciplines = disciplineRotation.allDisciplines // ['Frontend', 'Backend', 'Mobile', 'WordPress']
+  const allDisciplines = disciplineRotation.allDisciplines // ['Frontend', 'Backend', 'Mobile', 'Systems Engineering']
   
   // Collect all discipline content for syncing
   const allDisciplinesContent = {}
+  const learningDataWithDayIndex = { ...learningData, dayIndex: dayIndex }
+  const projectDataWithDayIndex = { ...projectData, dayIndex: dayIndex }
   allDisciplines.forEach(disc => {
     allDisciplinesContent[disc] = {
-      learning: getDisciplineContent(learningData, disc, weekNum, 'study'),
-      project: getDisciplineContent(projectData, disc, weekNum, 'build')
+      learning: getDisciplineContent(learningDataWithDayIndex, disc, weekNum, 'study', dayIndex),
+      project: getDisciplineContent(projectDataWithDayIndex, disc, weekNum, 'build', dayIndex)
     }
   })
   
   // Map learning content to Deep Learning blocks with syncing
   timeBlocks.deepLearning.forEach((block) => {
     const discipline = block.discipline
-    const disciplineContent = getDisciplineContent(learningData, discipline, weekNum, 'study')
+    // Pass dayIndex for mobile content generation
+    const learningDataWithDayIndex = { ...learningData, dayIndex: dayIndex }
+    const disciplineContent = getDisciplineContent(learningDataWithDayIndex, discipline, weekNum, 'study', dayIndex)
     const syncInfo = getSyncedContent(discipline, weekNum, dayIndex, allDisciplinesContent)
     
     scheduled.deepLearning.push({
@@ -2211,7 +2204,9 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
   // Map project content to Focused Implementation blocks with syncing
   timeBlocks.focusedImplementation.forEach((block) => {
     const discipline = block.discipline
-    const disciplineContent = getDisciplineContent(projectData, discipline, weekNum, 'build')
+    // Pass dayIndex for mobile content generation
+    const projectDataWithDayIndex = { ...projectData, dayIndex: dayIndex }
+    const disciplineContent = getDisciplineContent(projectDataWithDayIndex, discipline, weekNum, 'build', dayIndex)
     const syncInfo = getSyncedContent(discipline, weekNum, dayIndex, allDisciplinesContent)
     
     scheduled.focusedImplementation.push({
@@ -2242,14 +2237,14 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
         if (studyBlock) {
           scheduled.deepLearning.push({
             ...studyBlock,
-            content: getDisciplineContent(learningData, discipline, weekNum, 'study')
+            content: getDisciplineContent({ ...learningData, dayIndex: dayIndex }, discipline, weekNum, 'study', dayIndex)
           })
         }
         
         if (buildBlock) {
           scheduled.focusedImplementation.push({
             ...buildBlock,
-            content: getDisciplineContent(projectData, discipline, weekNum, 'build')
+            content: getDisciplineContent({ ...projectData, dayIndex: dayIndex }, discipline, weekNum, 'build', dayIndex)
           })
         }
       } else {
@@ -2259,7 +2254,7 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
           discipline: discipline,
           type: 'study',
           duration: '30-60 min',
-          content: getDisciplineContent(learningData, discipline, weekNum, 'study')
+          content: getDisciplineContent({ ...learningData, dayIndex: dayIndex }, discipline, weekNum, 'study', dayIndex)
         })
         
         scheduled.focusedImplementation.push({
@@ -2267,7 +2262,7 @@ function organizeContentBySchedule(learningData, projectData, workflowData, week
           discipline: discipline,
           type: 'build',
           duration: '30-60 min',
-          content: getDisciplineContent(projectData, discipline, weekNum, 'build')
+          content: getDisciplineContent({ ...projectData, dayIndex: dayIndex }, discipline, weekNum, 'build', dayIndex)
         })
       }
     }
@@ -2453,7 +2448,7 @@ function getSkillResources(skillName) {
       { title: 'React Native Docs', url: 'https://reactnative.dev/docs/getting-started', category: 'Documentation', time: 'Reference', type: 'deep-learning' },
       { title: 'React Native Tutorial', url: 'https://www.youtube.com/watch?v=0-S5a0eXPoc', category: 'Video', time: '120 min', type: 'deep-learning' }
     ],
-    // WordPress Skills
+    // Systems Engineering Skills
     'WP Structure': [
       { title: 'WordPress File Structure', url: 'https://developer.wordpress.org/themes/basics/template-files/', category: 'Documentation', time: '30 min', type: 'deep-learning' },
       { title: 'WordPress Basics Course', url: 'https://wordpress.org/support/article/first-steps-with-wordpress/', category: 'Tutorial', time: '45 min', type: 'deep-learning' }
@@ -2618,7 +2613,7 @@ function getDisciplineResources(discipline, weekNum, skillName = null) {
       { title: 'React Native Maps', url: 'https://github.com/react-native-maps/react-native-maps', category: 'Library', time: 'Reference', type: 'deep-learning' },
       { title: 'Redux for React Native', url: 'https://redux.js.org', category: 'State Management', time: 'Reference', type: 'deep-learning' }
     ],
-    WordPress: [
+    'Systems Engineering': [
       { title: 'WordPress Developer Docs', url: 'https://developer.wordpress.org', category: 'CMS', time: 'Reference', type: 'deep-learning' },
       { title: 'Gutenberg Handbook', url: 'https://developer.wordpress.org/block-editor', category: 'Editor', time: 'Reference', type: 'deep-learning' }
     ]
@@ -2987,7 +2982,7 @@ function getDisciplineRoadmap(discipline) {
         deepLearningTime: '90 min'
       }
     ],
-    WordPress: [
+    'Systems Engineering': [
       { 
         skill: 'WP Structure', 
         status: 'foundation', 
@@ -3042,10 +3037,1788 @@ function getDisciplineRoadmap(discipline) {
   return roadmaps[discipline] || []
 }
 
-function getDisciplineContent(content, discipline, weekNum, type) {
+// ============================================================================
+// HELPER FUNCTIONS FOR DISCIPLINE-SPECIFIC LEARNING CONTENT
+// ============================================================================
+// These functions generate comprehensive, ground-up learning content for each
+// discipline, properly sized for their time allocations and covering all key
+// concepts progressively across 13 weeks (90 days)
+// ============================================================================
+
+// Helper function to generate Frontend learning content based on week and day
+// Covers HTML, CSS, React, Next.js progressively, sized for 90 minutes per day
+function getFrontendLearningContent(weekNum, dayIndex) {
+  const dayNumber = (weekNum - 1) * 7 + dayIndex + 1
+  
+  // Week 1: HTML & CSS Fundamentals (Ground Up)
+  if (weekNum === 1) {
+    const week1Content = {
+      0: {
+        title: 'Frontend: JavaScript Fundamentals (90 min)',
+        topics: [
+          'JavaScript basics: history, role in modern development',
+          'Variables: var, let, const (ES6+) - differences and best practices',
+          'Data Types: Primitives (number, string, boolean, undefined, null, symbol, bigint) and Objects',
+          'Type checking: typeof, instanceof',
+          'Type coercion and conversion',
+          'Operators: Arithmetic, Assignment, Comparison, Logical, Ternary',
+          'Template literals (ES6): backticks, interpolation, multi-line strings',
+          'Destructuring: arrays and objects',
+          'Spread and Rest operators',
+          'Arrow functions vs regular functions'
+        ]
+      },
+      1: {
+        title: 'Frontend: CSS Core Concepts & Selectors (90 min)',
+        topics: [
+          'Box Model Deep Dive: content-box vs border-box, calculating total dimensions',
+          'Display types: block, inline, inline-block, none',
+          'Positioning: static, relative, absolute, fixed, sticky',
+          'Z-index and stacking context',
+          'CSS Units: px, em, rem, %, vh, vw, fr',
+          'Typography: font-family, font-size, font-weight, line-height, text-transform',
+          'Colors: hex, rgb, rgba, hsl, hsla, named colors',
+          'Backgrounds: background-color, background-image, background-size, background-position',
+          'Borders and shadows: border, border-radius, box-shadow',
+          'Spacing: margin, padding (shorthand and longhand)',
+          'Advanced selectors: descendant, child (>), adjacent sibling (+), general sibling (~)',
+          'Attribute selectors: [attr], [attr="value"], [attr^="value"], [attr$="value"], [attr*="value"]',
+          'Pseudo-classes: :hover, :focus, :active, :first-child, :last-child, :nth-child()',
+          'Pseudo-elements: ::before, ::after, ::first-line, ::first-letter',
+          'Specificity calculation: inline styles (1000), IDs (100), classes (10), elements (1)'
+        ]
+      },
+      2: {
+        title: 'Frontend: Flexbox Fundamentals & Patterns (90 min)',
+        topics: [
+          'Flex container properties: display: flex, flex-direction, flex-wrap, justify-content, align-items, align-content, gap',
+          'Flex item properties: flex-grow, flex-shrink, flex-basis, flex (shorthand), align-self, order',
+          'Centering content (horizontal and vertical)',
+          'Navigation bars',
+          'Card grids',
+          'Holy Grail layout',
+          'Sticky footer',
+          'Equal height columns',
+          'Responsive image galleries'
+        ]
+      },
+      3: {
+        title: 'Frontend: CSS Grid Fundamentals & Patterns (90 min)',
+        topics: [
+          'Grid container properties: display: grid, grid-template-columns, grid-template-rows, grid-template-areas, gap',
+          'Grid item properties: grid-column, grid-row, grid-area, justify-self, align-self',
+          'Grid lines and tracks',
+          'Implicit vs explicit grid',
+          'Auto-placement',
+          'Responsive grid without media queries (auto-fit, auto-fill)',
+          'Magazine-style layouts',
+          'Overlapping grid items',
+          'Grid + Flexbox combination'
+        ]
+      },
+      4: {
+        title: 'Frontend: Responsive Design Principles (90 min)',
+        topics: [
+          'Mobile-first vs desktop-first approaches',
+          'Breakpoints: common sizes (320px, 768px, 1024px, 1440px)',
+          'Viewport meta tag',
+          'Media queries syntax',
+          'Responsive typography: fluid typography with clamp()',
+          'Responsive images: srcset, sizes, <picture> element',
+          'Container queries (modern approach)',
+          'CSS clamp() for fluid typography',
+          'Aspect ratio: aspect-ratio property',
+          'Touch-friendly targets (min 44x44px)'
+        ]
+      },
+      5: {
+        title: 'Frontend: Tailwind CSS Fundamentals (90 min)',
+        topics: [
+          'Utility-first CSS philosophy',
+          'Installation: CDN, npm, CLI',
+          'Configuration: tailwind.config.js',
+          'Core concepts: utility classes vs component classes',
+          'Responsive prefixes: sm:, md:, lg:, xl:, 2xl:',
+          'State variants: hover:, focus:, active:, disabled:',
+          'Dark mode: dark:',
+          'Spacing, typography, colors, layout utilities',
+          'Flexbox and Grid utilities',
+          'Custom configuration: colors, fonts, spacing',
+          'Extending default theme',
+          'Custom utilities with @apply',
+          'JIT (Just-In-Time) mode'
+        ]
+      },
+      6: {
+        title: 'Frontend: Week 1 Review & Consolidation (90 min)',
+        topics: [
+          'Review all Week 1 concepts',
+          'Identify knowledge gaps',
+          'Deep dive into any unclear topics',
+          'Practice with interactive resources',
+          'CSS animations and keyframes',
+          'CSS transforms and transitions',
+          'Advanced Tailwind patterns',
+          'Performance optimization',
+          'Accessibility best practices'
+        ]
+      }
+    }
+    return week1Content[dayIndex] || week1Content[0]
+  }
+  
+  // Week 2: React Fundamentals
+  if (weekNum === 2) {
+    const week2Content = {
+      0: {
+        title: 'Frontend: React Components Fundamentals (90 min)',
+        topics: [
+          'React Components: functional vs class components',
+          'JSX syntax: writing HTML-like code in JavaScript',
+          'Component structure: import, component function, export',
+          'Props: passing data to components',
+          'Props destructuring and default props',
+          'Component composition: building complex UIs from simple components',
+          'Rendering lists: map() function, keys',
+          'Conditional rendering: ternary operators, && operator',
+          'Event handling: onClick, onChange, onSubmit',
+          'Component state: useState hook basics'
+        ]
+      },
+      1: {
+        title: 'Frontend: React State Management & Forms (90 min)',
+        topics: [
+          'useState hook: managing component state',
+          'State updates: setState patterns, functional updates',
+          'Controlled components: form inputs with state',
+          'Form handling: onSubmit, preventDefault',
+          'Input types: text, email, password, number, date',
+          'Form validation: client-side validation basics',
+          'Multiple inputs: managing multiple form fields',
+          'Form submission: handling form data',
+          'Loading states: showing loading indicators',
+          'Error handling in forms: displaying errors'
+        ]
+      },
+      2: {
+        title: 'Frontend: React Hooks & Fetching Data (90 min)',
+        topics: [
+          'useEffect hook: side effects in React',
+          'Dependency array: when effects run',
+          'Fetch API: making HTTP requests',
+          'async/await: handling asynchronous operations',
+          'Loading states: useState for loading',
+          'Error states: handling API errors',
+          'Displaying data: rendering API responses',
+          'useEffect cleanup: preventing memory leaks',
+          'Custom hooks: extracting reusable logic',
+          'Data fetching patterns: best practices'
+        ]
+      },
+      3: {
+        title: 'Frontend: Context API for Global State (90 min)',
+        topics: [
+          'Context API: sharing state across components',
+          'createContext: creating a context',
+          'Provider component: wrapping components',
+          'useContext hook: consuming context',
+          'Context patterns: authentication context, theme context',
+          'Combining contexts: multiple contexts',
+          'Context vs Props: when to use each',
+          'Context performance: optimization tips',
+          'Custom context hooks: cleaner API',
+          'Context with TypeScript: type safety'
+        ]
+      },
+      4: {
+        title: 'Frontend: React Router Navigation (90 min)',
+        topics: [
+          'React Router: client-side routing',
+          'BrowserRouter: setting up router',
+          'Routes and Route: defining routes',
+          'Link component: navigation links',
+          'useNavigate hook: programmatic navigation',
+          'URL parameters: useParams hook',
+          'Nested routes: organizing route structure',
+          'Protected routes: authentication guards',
+          '404 pages: handling unknown routes',
+          'Route transitions: smooth navigation'
+        ]
+      },
+      5: {
+        title: 'Frontend: Advanced Form Handling (90 min)',
+        topics: [
+          'Form libraries: React Hook Form basics',
+          'Form validation: client-side validation rules',
+          'Error messages: displaying validation errors',
+          'Form submission: handling async submissions',
+          'File uploads: handling file inputs',
+          'Multi-step forms: wizard patterns',
+          'Form state management: complex form state',
+          'Form reset: clearing form after submission',
+          'Form accessibility: ARIA labels, error announcements',
+          'Form testing: testing form interactions'
+        ]
+      },
+      6: {
+        title: 'Frontend: Week 2 Review - Full-Stack Integration (90 min)',
+        topics: [
+          'Review React components, hooks, and state',
+          'Review form handling and API calls',
+          'Practice building components that consume APIs',
+          'Review Context API patterns',
+          'Review React Router navigation',
+          'Build a complete feature: component + API integration'
+        ]
+      }
+    }
+    return week2Content[dayIndex] || week2Content[0]
+  }
+  
+  // Week 3-4: Advanced React & Next.js
+  if (weekNum >= 3 && weekNum <= 4) {
+    const advancedContent = {
+      0: {
+        title: `Frontend: Advanced React Patterns - Week ${weekNum} (90 min)`,
+        topics: [
+          'Custom hooks: creating reusable hooks',
+          'useMemo and useCallback: performance optimization',
+          'React.memo: preventing unnecessary re-renders',
+          'Higher-order components (HOCs): component composition',
+          'Render props pattern: sharing code between components',
+          'Compound components: building complex components',
+          'Error boundaries: catching component errors',
+          'Portal: rendering outside component tree',
+          'Refs: accessing DOM elements and component instances'
+        ]
+      },
+      1: {
+        title: `Frontend: Next.js Fundamentals - Week ${weekNum} (90 min)`,
+        topics: [
+          'Next.js: React framework for production',
+          'Next.js vs Create React App: when to use each',
+          'File-based routing: pages directory',
+          'Server-side rendering (SSR): benefits and use cases',
+          'Static site generation (SSG): pre-rendering pages',
+          'API routes: creating backend endpoints in Next.js',
+          'Image optimization: next/image component',
+          'Link component: client-side navigation',
+          'Metadata: SEO optimization with Head component'
+        ]
+      },
+      2: {
+        title: `Frontend: Next.js Data Fetching - Week ${weekNum} (90 min)`,
+        topics: [
+          'getServerSideProps: server-side data fetching',
+          'getStaticProps: static data fetching',
+          'getStaticPaths: dynamic routes with SSG',
+          'Incremental Static Regeneration (ISR): updating static pages',
+          'API routes: creating REST endpoints',
+          'Middleware: request interception and modification',
+          'Environment variables: managing secrets',
+          'Data fetching patterns: when to use each method'
+        ]
+      },
+      3: {
+        title: `Frontend: State Management Libraries - Week ${weekNum} (90 min)`,
+        topics: [
+          'Redux: global state management',
+          'Redux Toolkit: modern Redux development',
+          'Zustand: lightweight state management',
+          'Jotai: atomic state management',
+          'When to use global state: state management decisions',
+          'State normalization: organizing complex state',
+          'State persistence: saving state to localStorage',
+          'State debugging: Redux DevTools'
+        ]
+      },
+      4: {
+        title: `Frontend: Performance Optimization - Week ${weekNum} (90 min)`,
+        topics: [
+          'Code splitting: lazy loading components',
+          'Bundle analysis: analyzing bundle size',
+          'Image optimization: WebP, lazy loading, responsive images',
+          'Memoization: useMemo, useCallback, React.memo',
+          'Virtual scrolling: rendering large lists efficiently',
+          'Debouncing and throttling: optimizing user interactions',
+          'Web Vitals: Core Web Vitals metrics',
+          'Performance monitoring: measuring and improving performance'
+        ]
+      },
+      5: {
+        title: `Frontend: Testing React Applications - Week ${weekNum} (90 min)`,
+        topics: [
+          'Testing: unit tests, integration tests, E2E tests',
+          'Jest: JavaScript testing framework',
+          'React Testing Library: testing React components',
+          'Component testing: testing component behavior',
+          'Mocking: mocking API calls, modules',
+          'Snapshot testing: testing component output',
+          'E2E testing: Cypress, Playwright',
+          'Test coverage: achieving good test coverage'
+        ]
+      },
+      6: {
+        title: `Frontend: Week ${weekNum} Review & Transport App Integration (90 min)`,
+        topics: [
+          `Review Week ${weekNum} concepts`,
+          'Transport App integration: integrating all features',
+          'Performance optimization: final performance tuning',
+          'Code review: comprehensive code review',
+          'Documentation: documenting architecture and decisions',
+          'Real-life practice: Complete Transport App frontend with all features'
+        ]
+      }
+    }
+    return advancedContent[dayIndex] || advancedContent[0]
+  }
+  
+  // Week 5-13: Production Ready Frontend
+  if (weekNum >= 5) {
+    const productionContent = {
+      0: {
+        title: `Frontend: Production Architecture - Week ${weekNum} (90 min)`,
+        topics: [
+          'Component architecture: organizing components for scale',
+          'Feature-based structure: organizing by features',
+          'Design systems: building reusable component libraries',
+          'TypeScript: type safety in React',
+          'Storybook: component development and documentation',
+          'Accessibility: WCAG guidelines, ARIA attributes',
+          'SEO optimization: meta tags, structured data'
+        ]
+      },
+      1: {
+        title: `Frontend: Advanced Next.js - Week ${weekNum} (90 min)`,
+        topics: [
+          'App Router: Next.js 13+ routing system',
+          'Server Components: React Server Components',
+          'Streaming: streaming SSR and SSG',
+          'Middleware: advanced middleware patterns',
+          'Edge Functions: running code at the edge',
+          'Internationalization: multi-language support',
+          'Authentication: NextAuth.js, authentication patterns'
+        ]
+      },
+      2: {
+        title: `Frontend: Advanced State Management - Week ${weekNum} (90 min)`,
+        topics: [
+          'State management patterns: choosing the right solution',
+          'Server state: React Query, SWR for server data',
+          'Form state: React Hook Form, Formik',
+          'URL state: managing state in URL',
+          'State synchronization: syncing state across components',
+          'State persistence: persisting state across sessions'
+        ]
+      },
+      3: {
+        title: `Frontend: Advanced Performance - Week ${weekNum} (90 min)`,
+        topics: [
+          'Bundle optimization: code splitting strategies',
+          'Image optimization: advanced image techniques',
+          'Caching strategies: browser caching, CDN caching',
+          'Prefetching: prefetching routes and data',
+          'Service Workers: offline support, PWA',
+          'Performance budgets: setting and maintaining performance targets'
+        ]
+      },
+      4: {
+        title: `Frontend: Advanced Testing - Week ${weekNum} (90 min)`,
+        topics: [
+          'Integration testing: testing feature integration',
+          'E2E testing: complete user flows',
+          'Visual regression testing: detecting UI changes',
+          'Accessibility testing: automated a11y testing',
+          'Performance testing: testing app performance',
+          'CI/CD integration: automated testing in CI/CD'
+        ]
+      },
+      5: {
+        title: `Frontend: Deployment & DevOps - Week ${weekNum} (90 min)`,
+        topics: [
+          'Deployment: Vercel, Netlify, AWS',
+          'Environment configuration: managing environments',
+          'CI/CD: automated deployment pipelines',
+          'Monitoring: error tracking, performance monitoring',
+          'Analytics: user analytics, performance analytics',
+          'Security: security best practices, vulnerability scanning'
+        ]
+      },
+      6: {
+        title: `Frontend: Week ${weekNum} Review & Transport App Polish (90 min)`,
+        topics: [
+          `Review Week ${weekNum} concepts`,
+          'Transport App polish: final UI/UX improvements',
+          'Performance audit: comprehensive performance review',
+          'Accessibility audit: ensuring WCAG compliance',
+          'Code review: final code review',
+          'Documentation: complete project documentation',
+          'Real-life practice: Production-ready Transport App frontend'
+        ]
+      }
+    }
+    return productionContent[dayIndex] || productionContent[0]
+  }
+  
+  // Fallback
+  return {
+    title: `Frontend: React/Next.js Learning - Week ${weekNum}, Day ${dayIndex + 1} (90 min)`,
+    topics: [
+      `Continue Frontend learning for Week ${weekNum}`,
+      'Review previous concepts',
+      'Practice building React/Next.js features',
+      'Work on Transport App project'
+    ]
+  }
+}
+
+// Helper function to generate Backend learning content based on week and day
+// Covers Node.js, Express, Databases, APIs progressively, sized for 90 minutes per day
+function getBackendLearningContent(weekNum, dayIndex) {
+  const dayNumber = (weekNum - 1) * 7 + dayIndex + 1
+  
+  // Week 1: Node.js Fundamentals
+  if (weekNum === 1) {
+    const week1Content = {
+      0: {
+        title: 'Backend: Node.js Fundamentals (90 min)',
+        topics: [
+          'Node.js basics: JavaScript runtime environment',
+          'Node.js vs Browser JavaScript: differences and similarities',
+          'Node.js modules: CommonJS (require/module.exports) vs ES6 modules',
+          'Global objects in Node.js: process, global, __dirname, __filename',
+          'File system operations: fs module basics',
+          'Path operations: path module for file paths',
+          'Environment variables: process.env',
+          'NPM basics: package.json, installing packages',
+          'Running Node.js scripts: node command',
+          'Node.js REPL: interactive JavaScript environment'
+        ]
+      },
+      1: {
+        title: 'Backend: Asynchronous JavaScript in Node.js (90 min)',
+        topics: [
+          'Callbacks: callback pattern, callback hell',
+          'Promises: creating and consuming promises',
+          'async/await: modern async syntax',
+          'Error handling: try-catch with async/await',
+          'Promise.all: running promises in parallel',
+          'Promise.race: first promise to resolve',
+          'Event Loop: understanding Node.js event loop',
+          'setTimeout, setInterval: timers in Node.js',
+          'Streams: readable, writable, transform streams'
+        ]
+      },
+      2: {
+        title: 'Backend: HTTP & Web Servers (90 min)',
+        topics: [
+          'HTTP basics: requests, responses, methods (GET, POST, PUT, DELETE)',
+          'HTTP status codes: 200, 201, 400, 404, 500, etc.',
+          'HTTP headers: Content-Type, Authorization, etc.',
+          'Creating HTTP server: http module',
+          'Request and Response objects: handling requests',
+          'URL parsing: parsing URLs and query strings',
+          'REST API concepts: RESTful principles',
+          'API design: designing RESTful APIs'
+        ]
+      },
+      3: {
+        title: 'Backend: Express.js Fundamentals (90 min)',
+        topics: [
+          'Express.js: Node.js web framework',
+          'Express setup: npm init, installing express',
+          'Creating Express server: app.listen(), basic server setup',
+          'API Routes: app.get(), app.post(), app.put(), app.delete()',
+          'Route parameters: req.params',
+          'Query parameters: req.query',
+          'Request body: req.body, body-parser middleware',
+          'Response methods: res.json(), res.send(), res.status()',
+          'Creating RESTful endpoints: GET, POST, PUT, DELETE',
+          'API endpoint structure: /api/users, /api/trips, etc.'
+        ]
+      },
+      4: {
+        title: 'Backend: Express Middleware (90 min)',
+        topics: [
+          'Middleware concept: request processing pipeline',
+          'Built-in middleware: express.json(), express.urlencoded()',
+          'Custom middleware: creating your own middleware',
+          'Middleware order: understanding execution order',
+          'Error handling middleware: centralized error handling',
+          'Request logging: morgan middleware',
+          'CORS: enabling cross-origin requests',
+          'Authentication middleware: protecting routes',
+          'Validation middleware: validating request data'
+        ]
+      },
+      5: {
+        title: 'Backend: Route Organization & Structure (90 min)',
+        topics: [
+          'Express Router: organizing routes',
+          'Route modules: separating routes into files',
+          'Route organization: /api/auth, /api/users, /api/trips',
+          'Middleware: applying to specific routes',
+          'Route versioning: /api/v1, /api/v2',
+          'API documentation: documenting endpoints',
+          'Route testing: testing API endpoints'
+        ]
+      },
+      6: {
+        title: 'Backend: Week 1 Review & API Building (90 min)',
+        topics: [
+          'Review Node.js and Express concepts',
+          'Review route organization and middleware',
+          'Practice building complete API endpoints',
+          'Review API endpoint creation',
+          'Build API endpoints that support frontend features',
+          'API testing: testing endpoints with Postman/Thunder Client'
+        ]
+      }
+    }
+    return week1Content[dayIndex] || week1Content[0]
+  }
+  
+  // Week 2: Database & Authentication
+  if (weekNum === 2) {
+    const week2Content = {
+      0: {
+        title: 'Backend: Database Setup & Connection (90 min)',
+        topics: [
+          'Database concepts: SQL vs NoSQL',
+          'PostgreSQL setup: installing and configuring',
+          'Database connection: connection pooling',
+          'Environment variables: database credentials',
+          'Database clients: pg (PostgreSQL) or Mongoose (MongoDB)',
+          'Connection strings: format and security',
+          'Database schemas: planning table structure',
+          'Migrations: version controlling database changes',
+          'Database tools: pgAdmin, MongoDB Compass',
+          'Testing database connection: verifying setup'
+        ]
+      },
+      1: {
+        title: 'Backend: SQL Fundamentals (90 min)',
+        topics: [
+          'SQL basics: SELECT, INSERT, UPDATE, DELETE',
+          'WHERE clause: filtering data',
+          'JOINs: INNER, LEFT, RIGHT, FULL OUTER joins',
+          'Aggregate functions: COUNT, SUM, AVG, MAX, MIN',
+          'GROUP BY: grouping data',
+          'ORDER BY: sorting results',
+          'LIMIT and OFFSET: pagination',
+          'Subqueries: nested queries',
+          'Indexes: improving query performance'
+        ]
+      },
+      2: {
+        title: 'Backend: Database Queries in Node.js (90 min)',
+        topics: [
+          'Querying database: executing SQL queries',
+          'Parameterized queries: preventing SQL injection',
+          'Connection pooling: managing database connections',
+          'Query results: handling query responses',
+          'Error handling: database error handling',
+          'Transactions: ensuring data consistency',
+          'Prepared statements: optimizing repeated queries',
+          'Query optimization: improving query performance'
+        ]
+      },
+      3: {
+        title: 'Backend: Authentication & JWT (90 min)',
+        topics: [
+          'Authentication concepts: login, registration',
+          'JWT (JSON Web Tokens): token-based auth',
+          'Password hashing: bcrypt basics',
+          'User registration endpoint: POST /api/auth/register',
+          'User login endpoint: POST /api/auth/login',
+          'Token generation: creating JWTs',
+          'Token verification: middleware for protected routes',
+          'Protected routes: requiring authentication',
+          'User sessions: managing authenticated users',
+          'Security best practices: password requirements, token expiration'
+        ]
+      },
+      4: {
+        title: 'Backend: Data Validation & File Uploads (90 min)',
+        topics: [
+          'Input validation: validating request data',
+          'Validation libraries: express-validator basics',
+          'Validation rules: required, email, min, max',
+          'Error responses: detailed validation errors',
+          'File uploads: multer middleware',
+          'File storage: saving uploaded files',
+          'File validation: checking file types, sizes',
+          'Sanitization: cleaning user input',
+          'Validation middleware: reusable validation',
+          'Error handling: comprehensive error responses'
+        ]
+      },
+      5: {
+        title: 'Backend: API Design & Documentation (90 min)',
+        topics: [
+          'RESTful API design: REST principles',
+          'API versioning: strategies, backward compatibility',
+          'Response formatting: consistent JSON responses',
+          'Error handling: consistent error format',
+          'Status codes: proper HTTP status codes',
+          'API documentation: OpenAPI, Swagger',
+          'API testing: Postman collections, automated testing',
+          'Rate limiting: protecting APIs from abuse'
+        ]
+      },
+      6: {
+        title: 'Backend: Week 2 Review - Database Integration (90 min)',
+        topics: [
+          'Review database concepts and queries',
+          'Review authentication and JWT',
+          'Review API design and validation',
+          'Practice building complete API with database',
+          'Practice building authenticated endpoints',
+          'Build API endpoints that support Transport App'
+        ]
+      }
+    }
+    return week2Content[dayIndex] || week2Content[0]
+  }
+  
+  // Week 3-4: Advanced Backend
+  if (weekNum >= 3 && weekNum <= 4) {
+    const advancedContent = {
+      0: {
+        title: `Backend: Advanced Database - Week ${weekNum} (90 min)`,
+        topics: [
+          'Database relationships: one-to-one, one-to-many, many-to-many',
+          'Complex queries: advanced SQL queries',
+          'Database indexes: optimizing queries',
+          'Database transactions: ACID properties',
+          'Database migrations: managing schema changes',
+          'ORM basics: Object-Relational Mapping concepts',
+          'Query optimization: analyzing and improving queries'
+        ]
+      },
+      1: {
+        title: `Backend: API Architecture - Week ${weekNum} (90 min)`,
+        topics: [
+          'API architecture: layered architecture',
+          'Service layer: separating business logic',
+          'Repository pattern: data access abstraction',
+          'Dependency injection: managing dependencies',
+          'Error handling: centralized error handling',
+          'Logging: structured logging',
+          'API security: authentication, authorization, rate limiting'
+        ]
+      },
+      2: {
+        title: `Backend: WebSockets & Real-time - Week ${weekNum} (90 min)`,
+        topics: [
+          'WebSockets: real-time bidirectional communication',
+          'Socket.io: WebSocket library for Node.js',
+          'WebSocket vs REST: when to use each',
+          'Real-time events: emitting and listening to events',
+          'Room management: organizing WebSocket connections',
+          'Authentication: securing WebSocket connections',
+          'Real-time use cases: chat, notifications, live updates'
+        ]
+      },
+      3: {
+        title: `Backend: Caching & Performance - Week ${weekNum} (90 min)`,
+        topics: [
+          'Caching strategies: when and what to cache',
+          'Redis: in-memory data store',
+          'Cache invalidation: keeping cache fresh',
+          'Response caching: caching API responses',
+          'Database query caching: caching query results',
+          'Performance optimization: improving API response times',
+          'Load balancing: distributing requests'
+        ]
+      },
+      4: {
+        title: `Backend: Testing Backend APIs - Week ${weekNum} (90 min)`,
+        topics: [
+          'Unit testing: testing individual functions',
+          'Integration testing: testing API endpoints',
+          'Test frameworks: Jest, Mocha, Chai',
+          'Mocking: mocking database, external services',
+          'API testing: testing HTTP endpoints',
+          'Test coverage: achieving good test coverage',
+          'E2E testing: testing complete API flows'
+        ]
+      },
+      5: {
+        title: `Backend: Security Best Practices - Week ${weekNum} (90 min)`,
+        topics: [
+          'Security threats: common vulnerabilities',
+          'SQL injection: preventing SQL injection attacks',
+          'XSS: Cross-Site Scripting prevention',
+          'CSRF: Cross-Site Request Forgery protection',
+          'Input sanitization: cleaning user input',
+          'HTTPS: securing API communication',
+          'Security headers: setting security headers',
+          'OAuth: third-party authentication'
+        ]
+      },
+      6: {
+        title: `Backend: Week ${weekNum} Review & Transport App API (90 min)`,
+        topics: [
+          `Review Week ${weekNum} concepts`,
+          'Transport App API: building complete API',
+          'API integration: integrating with frontend and mobile',
+          'Performance optimization: API performance tuning',
+          'Code review: comprehensive code review',
+          'Documentation: API documentation',
+          'Real-life practice: Production-ready Transport App API'
+        ]
+      }
+    }
+    return advancedContent[dayIndex] || advancedContent[0]
+  }
+  
+  // Week 5-13: Production Ready Backend
+  if (weekNum >= 5) {
+    const productionContent = {
+      0: {
+        title: `Backend: Production Architecture - Week ${weekNum} (90 min)`,
+        topics: [
+          'Microservices: microservices architecture',
+          'API Gateway: managing multiple services',
+          'Message queues: RabbitMQ, Kafka',
+          'Service communication: inter-service communication',
+          'Containerization: Docker basics',
+          'Orchestration: Kubernetes basics',
+          'Cloud deployment: AWS, Azure, GCP'
+        ]
+      },
+      1: {
+        title: `Backend: Advanced Database - Week ${weekNum} (90 min)`,
+        topics: [
+          'Database scaling: horizontal vs vertical scaling',
+          'Read replicas: improving read performance',
+          'Database sharding: partitioning data',
+          'NoSQL databases: MongoDB, Redis use cases',
+          'Database design: advanced schema design',
+          'Data modeling: modeling complex relationships'
+        ]
+      },
+      2: {
+        title: `Backend: Monitoring & Observability - Week ${weekNum} (90 min)`,
+        topics: [
+          'Logging: structured logging, log aggregation',
+          'Monitoring: application performance monitoring',
+          'Error tracking: Sentry, error tracking tools',
+          'Metrics: collecting and analyzing metrics',
+          'Alerting: setting up alerts',
+          'Distributed tracing: tracing requests across services'
+        ]
+      },
+      3: {
+        title: `Backend: DevOps & CI/CD - Week ${weekNum} (90 min)`,
+        topics: [
+          'CI/CD: continuous integration and deployment',
+          'GitHub Actions: automated workflows',
+          'Docker: containerizing applications',
+          'Deployment: deploying to production',
+          'Environment management: managing environments',
+          'Infrastructure as Code: Terraform, CloudFormation'
+        ]
+      },
+      4: {
+        title: `Backend: Advanced Security - Week ${weekNum} (90 min)`,
+        topics: [
+          'Authentication strategies: JWT, OAuth, session-based',
+          'Authorization: role-based access control (RBAC)',
+          'API security: API keys, rate limiting',
+          'Data encryption: encrypting sensitive data',
+          'Security auditing: security best practices',
+          'Compliance: GDPR, data protection'
+        ]
+      },
+      5: {
+        title: `Backend: Performance & Scalability - Week ${weekNum} (90 min)`,
+        topics: [
+          'Performance optimization: optimizing API performance',
+          'Scalability: horizontal and vertical scaling',
+          'Load testing: testing under load',
+          'Database optimization: query optimization',
+          'Caching strategies: advanced caching',
+          'CDN: content delivery networks'
+        ]
+      },
+      6: {
+        title: `Backend: Week ${weekNum} Review & Transport App API Polish (90 min)`,
+        topics: [
+          `Review Week ${weekNum} concepts`,
+          'Transport App API polish: final API improvements',
+          'Performance audit: comprehensive performance review',
+          'Security audit: security review',
+          'Code review: final code review',
+          'Documentation: complete API documentation',
+          'Real-life practice: Production-ready Transport App API'
+        ]
+      }
+    }
+    return productionContent[dayIndex] || productionContent[0]
+  }
+  
+  // Fallback
+  return {
+    title: `Backend: Node.js/Express Learning - Week ${weekNum}, Day ${dayIndex + 1} (90 min)`,
+    topics: [
+      `Continue Backend learning for Week ${weekNum}`,
+      'Review previous concepts',
+      'Practice building APIs',
+      'Work on Transport App project'
+    ]
+  }
+}
+
+// Helper function to generate WordPress learning content based on week and day
+// Covers WordPress development progressively, sized for variable time blocks
+function getWordPressLearningContent(weekNum, dayIndex) {
+  const dayNumber = (weekNum - 1) * 7 + dayIndex + 1
+  
+  // Week 1-2: WordPress Fundamentals
+  if (weekNum <= 2) {
+    const fundamentalsContent = {
+      0: {
+        title: 'Systems Engineering: Introduction & Setup (150 min)',
+        topics: [
+          'WordPress: content management system (CMS)',
+          'WordPress.com vs WordPress.org: differences',
+          'Local development: XAMPP, Local by Flywheel, MAMP',
+          'WordPress installation: installing WordPress locally',
+          'WordPress dashboard: navigating WordPress admin',
+          'WordPress file structure: understanding WordPress files',
+          'Themes vs Plugins: understanding the difference',
+          'WordPress database: understanding WordPress database structure',
+          'WordPress loop: how WordPress displays content'
+        ]
+      },
+      1: {
+        title: 'Systems Engineering: Theme Development Basics (150 min)',
+        topics: [
+          'Theme structure: understanding theme files',
+          'Template hierarchy: how WordPress chooses templates',
+          'Header, Footer, Sidebar: theme template files',
+          'The Loop: displaying posts',
+          'Template tags: WordPress template functions',
+          'WordPress functions: wp_head(), wp_footer(), etc.',
+          'Enqueue scripts and styles: properly loading assets',
+          'Theme activation: theme setup functions'
+        ]
+      },
+      2: {
+        title: 'Systems Engineering: Custom Post Types (150 min)',
+        topics: [
+          'Custom Post Types: creating custom content types',
+          'Registering post types: register_post_type()',
+          'Post type arguments: labels, supports, capabilities',
+          'Custom taxonomies: organizing custom post types',
+          'Meta boxes: adding custom fields',
+          'Custom fields: storing additional data',
+          'Displaying custom post types: querying and displaying',
+          'Use case: Transport App service listings as custom post type'
+        ]
+      },
+      3: {
+        title: 'Systems Engineering: Plugin Development Basics (150 min)',
+        topics: [
+          'Plugin structure: understanding plugin files',
+          'Plugin header: plugin information',
+          'Activation/Deactivation hooks: plugin lifecycle',
+          'WordPress hooks: actions and filters',
+          'add_action(): hooking into WordPress actions',
+          'add_filter(): modifying WordPress data',
+          'Plugin best practices: coding standards, security',
+          'Use case: Transport App booking plugin'
+        ]
+      },
+      4: {
+        title: 'Systems Engineering: User Roles & Permissions (150 min)',
+        topics: [
+          'WordPress user roles: Administrator, Editor, Author, etc.',
+          'Capabilities: what users can do',
+          'Custom user roles: creating custom roles',
+          'User permissions: managing access',
+          'Current user: checking user capabilities',
+          'User meta: storing user data',
+          'Use case: Transport App admin vs customer roles'
+        ]
+      },
+      5: {
+        title: 'Systems Engineering: REST API (150 min)',
+        topics: [
+          'WordPress REST API: accessing WordPress via API',
+          'REST API endpoints: /wp-json/wp/v2/',
+          'Custom endpoints: creating custom REST endpoints',
+          'Authentication: API authentication',
+          'API requests: making requests to WordPress API',
+          'Use case: Transport App consuming WordPress API for content'
+        ]
+      },
+      6: {
+        title: 'Systems Engineering: Week 1-2 Review (150 min)',
+        topics: [
+          'Review WordPress fundamentals',
+          'Review theme and plugin development',
+          'Practice building custom theme',
+          'Practice building custom plugin',
+          'WordPress best practices review'
+        ]
+      }
+    }
+    return fundamentalsContent[dayIndex] || fundamentalsContent[0]
+  }
+  
+  // Week 3-6: Advanced WordPress
+  if (weekNum >= 3 && weekNum <= 6) {
+    const advancedContent = {
+      0: {
+        title: `WordPress: Advanced Theme Development - Week ${weekNum} (150 min)`,
+        topics: [
+          'Child themes: extending parent themes',
+          'Template parts: reusable template components',
+          'Customizer API: theme customization options',
+          'Widget areas: creating widget-ready areas',
+          'Menu locations: registering menu locations',
+          'Theme options: creating theme settings page',
+          'Responsive themes: mobile-first theme development'
+        ]
+      },
+      1: {
+        title: `WordPress: Gutenberg Block Development - Week ${weekNum} (150 min)`,
+        topics: [
+          'Gutenberg: WordPress block editor',
+          'Block development: creating custom blocks',
+          'Block registration: registering custom blocks',
+          'Block attributes: block data structure',
+          'Block editor: React components in WordPress',
+          'Block patterns: reusable block layouts',
+          'Use case: Transport App booking block'
+        ]
+      },
+      2: {
+        title: `WordPress: Advanced Plugin Development - Week ${weekNum} (150 min)`,
+        topics: [
+          'Plugin architecture: organizing plugin code',
+          'Database operations: custom database tables',
+          'Cron jobs: scheduled tasks in WordPress',
+          'AJAX: handling AJAX requests',
+          'Admin pages: creating admin interface',
+          'Settings API: WordPress settings framework',
+          'Use case: Transport App admin dashboard plugin'
+        ]
+      },
+      3: {
+        title: `WordPress: Security & Performance - Week ${weekNum} (150 min)`,
+        topics: [
+          'WordPress security: common vulnerabilities',
+          'Data sanitization: cleaning user input',
+          'Nonces: preventing CSRF attacks',
+          'Capability checks: checking user permissions',
+          'Performance: optimizing WordPress',
+          'Caching: WordPress caching strategies',
+          'Database optimization: optimizing queries'
+        ]
+      },
+      4: {
+        title: `WordPress: Custom Fields & Meta Boxes - Week ${weekNum} (150 min)`,
+        topics: [
+          'Advanced Custom Fields (ACF): popular plugin',
+          'Custom meta boxes: creating meta boxes',
+          'Meta box API: WordPress meta box functions',
+          'Saving meta data: storing custom fields',
+          'Displaying meta data: showing custom fields',
+          'Use case: Transport App service details as custom fields'
+        ]
+      },
+      5: {
+        title: `WordPress: API Integration - Week ${weekNum} (150 min)`,
+        topics: [
+          'WordPress REST API: advanced usage',
+          'Custom endpoints: creating custom REST endpoints',
+          'API authentication: securing API endpoints',
+          'External APIs: consuming external APIs',
+          'Webhooks: receiving webhook data',
+          'Use case: Transport App syncing with WordPress CMS'
+        ]
+      },
+      6: {
+        title: `WordPress: Week ${weekNum} Review & Transport App CMS (150 min)`,
+        topics: [
+          `Review Week ${weekNum} concepts`,
+          'Transport App CMS: building admin interface',
+          'Content management: managing Transport App content',
+          'Code review: WordPress code review',
+          'Documentation: WordPress documentation',
+          'Real-life practice: Complete Transport App WordPress admin'
+        ]
+      }
+    }
+    return advancedContent[dayIndex] || advancedContent[0]
+  }
+  
+  // Week 7-13: Production WordPress
+  if (weekNum >= 7) {
+    const productionContent = {
+      0: {
+        title: `WordPress: Production Deployment - Week ${weekNum} (150 min)`,
+        topics: [
+          'WordPress hosting: choosing hosting provider',
+          'Domain setup: configuring domain',
+          'SSL certificates: securing WordPress site',
+          'Database migration: moving WordPress database',
+          'File migration: moving WordPress files',
+          'WordPress multisite: managing multiple sites'
+        ]
+      },
+      1: {
+        title: `WordPress: Advanced Customization - Week ${weekNum} (150 min)`,
+        topics: [
+          'Custom post type UI: improving admin interface',
+          'Custom admin pages: creating admin dashboards',
+          'Dashboard widgets: customizing WordPress dashboard',
+          'Admin columns: customizing list views',
+          'Bulk actions: custom bulk operations',
+          'Use case: Transport App admin dashboard customization'
+        ]
+      },
+      2: {
+        title: `WordPress: E-commerce Integration - Week ${weekNum} (150 min)`,
+        topics: [
+          'WooCommerce: WordPress e-commerce plugin',
+          'WooCommerce hooks: customizing WooCommerce',
+          'Payment gateways: integrating payment methods',
+          'Product management: managing products',
+          'Order management: handling orders',
+          'Use case: Transport App payment integration via WordPress'
+        ]
+      },
+      3: {
+        title: `WordPress: Performance Optimization - Week ${weekNum} (150 min)`,
+        topics: [
+          'Caching plugins: WP Super Cache, W3 Total Cache',
+          'CDN integration: Cloudflare, MaxCDN',
+          'Image optimization: optimizing images',
+          'Database optimization: optimizing WordPress database',
+          'Query optimization: optimizing WordPress queries',
+          'Performance monitoring: monitoring WordPress performance'
+        ]
+      },
+      4: {
+        title: `WordPress: Security Hardening - Week ${weekNum} (150 min)`,
+        topics: [
+          'Security plugins: Wordfence, Sucuri',
+          'Firewall: protecting WordPress',
+          'Malware scanning: scanning for malware',
+          'Backup strategies: backing up WordPress',
+          'Update management: keeping WordPress updated',
+          'Security best practices: WordPress security checklist'
+        ]
+      },
+      5: {
+        title: `WordPress: Monetization & Marketplace - Week ${weekNum} (150 min)`,
+        topics: [
+          'Theme marketplace: selling themes',
+          'Plugin marketplace: selling plugins',
+          'Freelancing: WordPress freelancing',
+          'Client management: managing WordPress clients',
+          'Pricing strategies: pricing WordPress work',
+          'Portfolio: building WordPress portfolio'
+        ]
+      },
+      6: {
+        title: `WordPress: Week ${weekNum} Review & Transport App CMS Polish (150 min)`,
+        topics: [
+          `Review Week ${weekNum} concepts`,
+          'Transport App CMS polish: final CMS improvements',
+          'Performance audit: WordPress performance review',
+          'Security audit: WordPress security review',
+          'Code review: final WordPress code review',
+          'Documentation: complete WordPress documentation',
+          'Real-life practice: Production-ready Transport App WordPress CMS'
+        ]
+      }
+    }
+    return productionContent[dayIndex] || productionContent[0]
+  }
+  
+  // Fallback
+  return {
+    title: `Systems Engineering: Systems Engineering Learning - Week ${weekNum}, Day ${dayIndex + 1} (150 min)`,
+    topics: [
+      `Continue Systems Engineering learning for Week ${weekNum}`,
+      'Review previous concepts',
+      'Practice building WordPress themes/plugins',
+      'Work on Transport App CMS project'
+    ]
+  }
+}
+
+// Helper function to generate Mobile learning content based on week and day
+// Covers all README concepts progressively, sized for 120 minutes per day
+function getMobileLearningContent(weekNum, dayIndex) {
+  const dayNumber = (weekNum - 1) * 7 + dayIndex + 1
+  const isMonday = dayIndex === 0
+  const isSaturday = dayIndex === 5
+  
+  // Helper function to get duration based on day
+  // Monday: 90 min, Tuesday-Friday: 120 min, Saturday: 90 min (revision)
+  const getDuration = () => {
+    if (isMonday) return 90
+    if (isSaturday) return 90
+    return 120 // Tuesday-Friday
+  }
+  const duration = getDuration()
+  
+  // Week 1: React Native Fundamentals (Ground Up)
+  if (weekNum === 1) {
+    const week1Content = {
+      0: {
+        title: `Mobile: React Native Introduction & Setup (${duration} min)`,
+        topics: [
+          'What is React Native: cross-platform mobile development',
+          'React Native vs native apps: when to use each',
+          'React Native architecture: JavaScript bridge, native modules',
+          'Development environment setup: Node.js, React Native CLI, Xcode (iOS), Android Studio',
+          'Expo vs React Native CLI: choosing the right approach',
+          'Creating your first React Native app: npx create-expo-app or npx react-native init',
+          'Project structure: understanding folders (src, components, screens, navigation)',
+          'Running on iOS simulator: xcode-select, simulator setup',
+          'Running on Android emulator: Android Studio, AVD setup',
+          'Hot reloading: Fast Refresh, live reloading',
+          'Platform differences: iOS vs Android considerations',
+          'React Native basics: View, Text, StyleSheet components',
+          'Styling in React Native: StyleSheet.create(), inline styles, Flexbox',
+          'Real-life analogy: Like learning to drive - understanding the car (React Native) before the road (complex features)'
+        ]
+      },
+      1: {
+        title: `Mobile: React Native Core Components & Styling (${duration} min)`,
+        topics: [
+          'React Native Core Components: View, Text, Image, ScrollView, TextInput, Button',
+          'View component: container component (like div in web)',
+          'Text component: displaying text (must wrap text in <Text>, not directly in <View>)',
+          'StyleSheet API: StyleSheet.create() for performance optimization',
+          'Flexbox in React Native: same as web but default flexDirection is column (not row)',
+          'Layout basics: justifyContent, alignItems, alignSelf, flex',
+          'Styling differences: no CSS classes, no CSS selectors, StyleSheet only',
+          'Platform-specific styles: Platform.select() for iOS vs Android differences',
+          'Dimensions API: getting screen width/height, responsive design',
+          'SafeAreaView: handling notches and status bars',
+          'TouchableOpacity, TouchableHighlight, Pressable: handling user interactions',
+          'Image component: local images (require()) vs network images (uri)',
+          'ScrollView: making content scrollable',
+          'Real-life analogy: Like learning HTML/CSS but for mobile - same concepts, different implementation'
+        ]
+      },
+      2: {
+        title: `Mobile: React Native State Management & User Input (${duration} min)`,
+        topics: [
+          'useState hook: managing component state in React Native',
+          'State updates: setState patterns, functional updates',
+          'TextInput component: handling user text input',
+          'Controlled components: TextInput with state',
+          'Keyboard handling: KeyboardAvoidingView, keyboard dismissal',
+          'Form handling: collecting user input, validation basics',
+          'Button component: TouchableOpacity vs Button vs Pressable',
+          'Event handling: onPress, onChange, onSubmit',
+          'State patterns: lifting state up, sharing state between components',
+          'Loading states: ActivityIndicator component',
+          'Error states: displaying errors to users',
+          'Platform-specific input: iOS vs Android keyboard differences',
+          'Real-life analogy: Like a form in a restaurant - collecting orders (input) and showing status (state)'
+        ]
+      },
+      3: {
+        title: `Mobile: Lists, Images & Performance (${duration} min)`,
+        topics: [
+          'FlatList component: rendering lists efficiently (like restaurant menu)',
+          'FlatList vs ScrollView: when to use each',
+          'List performance: keyExtractor, getItemLayout, removeClippedSubviews',
+          'Image optimization: caching, lazy loading, placeholder images',
+          'Image component: local vs network images, resizeMode',
+          'SectionList: grouped lists with headers',
+          'VirtualizedList: understanding virtualization for performance',
+          'List patterns: pull-to-refresh, infinite scroll basics',
+          'Memory management: avoiding memory leaks in lists',
+          'Performance tips: avoiding unnecessary re-renders',
+          'Real-life analogy: Like a restaurant menu - efficiently showing many items (FlatList) vs showing everything at once (ScrollView)'
+        ]
+      },
+      4: {
+        title: `Mobile: Navigation Architecture (${duration} min)`,
+        topics: [
+          'React Navigation: industry-standard navigation library',
+          'Navigation types: Stack, Tab, Drawer navigators',
+          'Stack Navigator: screen navigation (like pages in a book)',
+          'Tab Navigator: bottom tabs, top tabs',
+          'Navigation setup: installing @react-navigation/native, @react-navigation/stack',
+          'Screen components: creating multiple screens',
+          'Navigation props: navigation.navigate(), navigation.goBack()',
+          'Route parameters: passing data between screens',
+          'Navigation options: headers, titles, buttons',
+          'Deep linking basics: URL-based navigation',
+          'Navigation state: understanding navigation state structure',
+          'Real-life analogy: Like a restaurant with multiple rooms (screens) - navigation helps customers move between them'
+        ]
+      },
+      5: {
+        title: `Mobile: Project Structure & Architecture (${duration} min)`,
+        topics: [
+          'Mobile app architecture: UI Layer, Service Layer, Storage Layer (from README)',
+          'Project structure: organizing code for scale (screens/, components/, services/, store/, utils/)',
+          'Folder organization: feature-based vs type-based structure',
+          'Component organization: reusable vs screen-specific components',
+          'Service layer: separating business logic from UI',
+          'Storage layer: AsyncStorage vs Secure Storage (Keychain)',
+          'Platform differences: iOS vs Android, Platform.select()',
+          'Native modules: when to use native code',
+          'Error boundaries: catching crashes gracefully',
+          'Code organization best practices: single responsibility, separation of concerns',
+          'Real-life analogy: Like a restaurant - dining room (UI), kitchen (services), pantry (storage)'
+        ]
+      },
+      6: {
+        title: `Mobile: Week 1 Review & Building First Screen (${duration} min)`,
+        topics: [
+          'Review React Native fundamentals: components, state, styling',
+          'Review navigation basics: Stack Navigator, screen navigation',
+          'Review project structure: organizing mobile apps',
+          'Build your first complete screen: Home screen with navigation',
+          'Practice: Create a screen with TextInput, Button, and state',
+          'Practice: Add navigation between two screens',
+          'Identify knowledge gaps: what needs more practice?',
+          'Code review: review your Week 1 code, identify improvements',
+          'Real-life practice: Build a simple "Welcome" screen for Transport App'
+        ]
+      }
+    }
+    return week1Content[dayIndex] || week1Content[0]
+  }
+  
+  // Week 2: API Integration & State Management
+  if (weekNum === 2) {
+    const week2Content = {
+      0: {
+        title: `Mobile: API Integration & Fetch (${duration} min)`,
+        topics: [
+          'Fetch API in React Native: making HTTP requests',
+          'async/await: handling asynchronous operations',
+          'API service layer: creating centralized API client',
+          'REST API basics: GET, POST, PUT, DELETE requests',
+          'Request headers: Content-Type, Authorization',
+          'Response handling: parsing JSON, error handling',
+          'Loading states: showing ActivityIndicator during API calls',
+          'Error handling: try-catch, displaying errors to users',
+          'API endpoint structure: understanding backend API structure',
+          'Network debugging: using React Native Debugger, Flipper',
+          'Real-life analogy: Like ordering food - sending request (fetch), waiting for response (async), getting food (data)'
+        ]
+      },
+      1: {
+        title: `Mobile: Secure Storage & Authentication (${duration} min)`,
+        topics: [
+          'Secure Storage: react-native-keychain for JWT tokens (from README)',
+          'Keychain vs AsyncStorage: when to use each (security vs convenience)',
+          'JWT tokens: understanding token-based authentication',
+          'Token storage: storing tokens securely in Keychain',
+          'Token retrieval: getting tokens from secure storage',
+          'Authentication flow: login, token storage, authenticated requests',
+          'Protected API calls: adding Authorization header with Bearer token',
+          'Token expiration: handling expired tokens, refresh tokens basics',
+          'AsyncStorage: for non-sensitive data (cached data, preferences)',
+          'Security best practices: never store sensitive data in AsyncStorage',
+          'Real-life analogy: Keychain = bank vault (secure), AsyncStorage = drawer (convenient but not secure)'
+        ]
+      },
+      2: {
+        title: `Mobile: State Management with Zustand/Redux (${duration} min)`,
+        topics: [
+          'State management: local state vs global state (from README)',
+          'Zustand: lightweight state management library',
+          'Zustand store: creating stores, actions, selectors',
+          'Redux basics: store, actions, reducers (alternative to Zustand)',
+          'When to use global state: sharing data across screens',
+          'State patterns: trip state, user state, app state',
+          'Offline queue: Redux Persist / AsyncStorage for offline support',
+          'State persistence: saving state to AsyncStorage',
+          'Real-time state: managing trip status, driver location',
+          'State management best practices: keeping state normalized',
+          'Real-life analogy: Like a whiteboard (Zustand/Redux) showing current order status that everyone can see and update'
+        ]
+      },
+      3: {
+        title: `Mobile: WebSockets vs REST API (${duration} min)`,
+        topics: [
+          'WebSockets vs REST: when to use each (from README)',
+          'REST API: like sending letters (request-response pattern)',
+          'WebSocket: like phone call (instant, two-way communication)',
+          'Socket.io client: installing and connecting to WebSocket server',
+          'WebSocket connection: establishing connection, authentication',
+          'Real-time updates: receiving trip.accepted, driver.location events',
+          'WebSocket events: socket.on(), socket.emit()',
+          'Connection management: reconnection logic, connection state',
+          'Battery optimization: WebSocket vs polling (REST every 5 seconds)',
+          'Use cases: trip status updates, driver location, notifications',
+          'Real-life analogy: REST = sending letters (slow), WebSocket = phone call (instant)'
+        ]
+      },
+      4: {
+        title: `Mobile: Error Handling & Validation (${duration} min)`,
+        topics: [
+          'Error boundaries: catching crashes gracefully (from README)',
+          'Try-catch blocks: handling errors in async operations',
+          'Error UI: displaying user-friendly error messages',
+          'Network errors: handling offline, timeout, server errors',
+          'Validation: client-side validation with Zod (from README)',
+          'Zod schemas: defining data validation rules',
+          'Form validation: validating user input before submission',
+          'Error recovery: retry logic, fallback strategies',
+          'Error logging: tracking errors for debugging',
+          'Defensive programming: checking data before using it',
+          'Real-life analogy: Like a safety net - catching errors before they crash the app'
+        ]
+      },
+      5: {
+        title: `Mobile: Offline-First Strategy (${duration} min)`,
+        topics: [
+          'Offline-first: app works without internet (from README)',
+          'NetInfo: detecting network connectivity',
+          'Offline queue: saving actions when offline, sending when online',
+          'AsyncStorage: caching data for offline use',
+          'Last known location: saving location when offline',
+          'Request queue: queuing API requests when offline',
+          'Sync mechanism: syncing queued requests when back online',
+          'Offline indicators: showing user when offline',
+          'Optimistic updates: updating UI before API response',
+          'Conflict resolution: handling data conflicts when syncing',
+          'Real-life analogy: Like writing a letter in a tunnel (offline), then mailing it when you reach a post office (online)'
+        ]
+      },
+      6: {
+        title: `Mobile: Week 2 Review & API Integration Practice (${duration} min)`,
+        topics: [
+          'Review API integration: fetch, authentication, secure storage',
+          'Review state management: Zustand/Redux patterns',
+          'Review WebSockets: real-time communication',
+          'Practice: Build login screen with Keychain token storage',
+          'Practice: Create API service layer with error handling',
+          'Practice: Implement offline queue with AsyncStorage',
+          'Code review: review Week 2 code, identify improvements',
+          'Real-life practice: Build authentication flow for Transport App'
+        ]
+      }
+    }
+    return week2Content[dayIndex] || week2Content[0]
+  }
+  
+  // Week 3-4: Location Services & Maps
+  if (weekNum >= 3 && weekNum <= 4) {
+    const locationContent = {
+      0: {
+        title: `Mobile: Location Services Introduction (${duration} min)`,
+        topics: [
+          'Location services: getting user location (from README)',
+          'expo-location: installing and setting up location services',
+          'Location permissions: requesting location access',
+          'Permission flow: handling permission requests, denials',
+          'getCurrentPosition: getting one-time location',
+          'watchPosition: tracking location continuously',
+          'Location accuracy: GPS vs network location',
+          'Location data: latitude, longitude, accuracy, timestamp',
+          'Error handling: handling location errors, permission denials',
+          'Platform differences: iOS vs Android location APIs',
+          'Real-life analogy: Like GPS in your car - works even when app is closed (background location)'
+        ]
+      },
+      1: {
+        title: `Mobile: Battery Optimization for Location (${duration} min)`,
+        topics: [
+          'Battery drain: location tracking uses GPS (from README)',
+          'Distance filter: only update when moved significant distance',
+          'Significant location changes: iOS/Android optimization',
+          'Update frequency: balancing accuracy vs battery life',
+          'Background location: when and how to use',
+          'Location accuracy tradeoffs: high accuracy vs battery',
+          'Battery monitoring: tracking battery usage',
+          'Optimization strategies: reduce update frequency, use significant changes',
+          'Real-life fix: Only update when moved 50+ meters, not every second',
+          'Performance monitoring: using React Native Performance Monitor',
+          'Real-life analogy: Like a car GPS that updates less when stationary - saves battery'
+        ]
+      },
+      2: {
+        title: `Mobile: React Native Maps Setup (${duration} min)`,
+        topics: [
+          'react-native-maps: installing and configuring maps',
+          'MapView component: displaying maps in React Native',
+          'Map providers: Google Maps, Apple Maps, Mapbox',
+          'API keys: setting up Google Maps API key',
+          'Map configuration: initial region, map type',
+          'Map markers: displaying points on map',
+          'Map interactions: onPress, onRegionChange',
+          'Map styling: custom map styles, themes',
+          'Platform setup: iOS and Android configuration',
+          'Map performance: optimizing map rendering',
+          'Real-life analogy: Like a restaurant map showing nearby locations'
+        ]
+      },
+      3: {
+        title: `Mobile: Map Markers & User Location (${duration} min)`,
+        topics: [
+          'Map markers: displaying vehicles, pickup/dropoff points',
+          'Custom markers: custom marker images, colors',
+          'Marker clustering: grouping nearby markers',
+          'User location: showing current user position on map',
+          'Location marker: custom marker for user location',
+          'Map camera: following user location',
+          'Map bounds: setting map boundaries',
+          'Marker interactions: onPress, showing info windows',
+          'Map animations: smooth camera movements',
+          'Real-life practice: Add user location and nearby vehicles to Transport App map'
+        ]
+      },
+      4: {
+        title: `Mobile: Route Display & Polylines (${duration} min)`,
+        topics: [
+          'Route display: showing routes on map (from README)',
+          'Polyline component: drawing routes on map',
+          'Route coordinates: converting route data to coordinates',
+          'Polyline styling: colors, width, patterns',
+          'Route optimization: simplifying polylines for performance',
+          'Multiple routes: displaying alternative routes',
+          'Route selection: allowing user to choose route',
+          'Map camera: following route, zoom levels',
+          'Route animation: animating route display',
+          'Performance: optimizing polyline rendering',
+          'Real-life practice: Display route from pickup to dropoff on Transport App map'
+        ]
+      },
+      5: {
+        title: `Mobile: Background Location & Permissions (${duration} min)`,
+        topics: [
+          'Background location: tracking location when app closed',
+          'Permission types: "While Using App" vs "Always"',
+          'Apple requirements: clear justification for background location',
+          'Info.plist: configuring location permission descriptions',
+          'Permission requests: smart permission flow',
+          'User-facing explanations: why location is needed',
+          'Permission handling: checking, requesting, handling denials',
+          'Background tasks: setting up background location updates',
+          'Battery considerations: background location impact',
+          'Real-life scenario: Handling Apple rejection for background location (from README)'
+        ]
+      },
+      6: {
+        title: `Mobile: Location Services Review & Practice (${duration} min)`,
+        topics: [
+          'Review location services: permissions, tracking, optimization',
+          'Review maps: MapView, markers, polylines',
+          'Review battery optimization: distance filters, significant changes',
+          'Practice: Build location tracking with battery optimization',
+          'Practice: Create map with user location and nearby vehicles',
+          'Practice: Display route with polyline on map',
+          'Code review: review location and map code',
+          'Real-life practice: Complete location and map features for Transport App'
+        ]
+      }
+    }
+    return locationContent[dayIndex] || locationContent[0]
+  }
+  
+  // Week 5-6: Advanced Features
+  if (weekNum >= 5 && weekNum <= 6) {
+    const advancedContent = {
+      0: {
+        title: `Mobile: Push Notifications (${duration} min)`,
+        topics: [
+          'Push notifications: FCM (Android) and APNS (iOS)',
+          'Notification setup: configuring push notification services',
+          'Notification permissions: requesting notification access',
+          'Notification handling: receiving and displaying notifications',
+          'Notification types: local vs remote notifications',
+          'Notification actions: handling notification taps',
+          'Background notifications: handling notifications when app closed',
+          'Notification payload: understanding notification data',
+          'Real-life use: "Driver accepted your trip" notifications'
+        ]
+      },
+      1: {
+        title: `Mobile: CodePush for OTA Updates (${duration} min)`,
+        topics: [
+          'CodePush: Over-The-Air updates (from README)',
+          'CodePush vs App Store: instant updates vs app store approval',
+          'CodePush setup: installing and configuring CodePush',
+          'Deploying updates: pushing updates to users',
+          'Update strategies: immediate, on next restart, on next resume',
+          'Rollback: handling failed updates',
+          'Use cases: fixing critical bugs, updating business logic',
+          'Limitations: what can and cannot be updated via CodePush',
+          'Real-life scenario: Emergency permission change via CodePush (from README)'
+        ]
+      },
+      2: {
+        title: `Mobile: Performance Optimization (${duration} min)`,
+        topics: [
+          'Performance monitoring: React Native Performance Monitor',
+          'List optimization: FlatList best practices',
+          'Image optimization: caching, lazy loading',
+          'Bundle size: reducing app bundle size',
+          'Memory management: avoiding memory leaks',
+          'Re-render optimization: React.memo, useMemo, useCallback',
+          'Network optimization: request batching, caching',
+          'Animation performance: using native driver',
+          'Profiling: identifying performance bottlenecks'
+        ]
+      },
+      3: {
+        title: `Mobile: Testing Basics (${duration} min)`,
+        topics: [
+          'Testing: unit tests, integration tests, E2E tests (from README)',
+          'Jest: React Native testing framework',
+          'Unit tests: testing functions, components',
+          'Component testing: testing React Native components',
+          'Mocking: mocking API calls, native modules',
+          'Snapshot testing: testing component output',
+          'E2E testing: Detox for end-to-end testing',
+          'Test structure: organizing tests, test files',
+          'Real-life practice: Write tests for trip request validation'
+        ]
+      },
+      4: {
+        title: `Mobile: Validation with Zod (${duration} min)`,
+        topics: [
+          'Zod: schema validation library (from README)',
+          'Zod schemas: defining validation rules',
+          'Trip request validation: validating pickup/dropoff locations',
+          'Form validation: validating user input',
+          'API response validation: validating API responses',
+          'Error messages: displaying validation errors',
+          'Custom validation: business rules (e.g., inter_city trips need 3+ min lead time)',
+          'Type safety: TypeScript integration with Zod',
+          'Real-life practice: Implement trip request validation from README code challenge'
+        ]
+      },
+      5: {
+        title: `Mobile: Error Boundaries & Crash Handling (${duration} min)`,
+        topics: [
+          'Error boundaries: catching component errors (from README)',
+          'Error boundary component: creating error boundary',
+          'Crash reporting: Sentry, Crashlytics',
+          'Error logging: tracking errors for debugging',
+          'User-friendly errors: displaying errors to users',
+          'Error recovery: allowing users to recover from errors',
+          'Defensive programming: validating data before use',
+          'WebSocket payload validation: handling unexpected payloads (from README)',
+          'Real-life scenario: Handling WebSocket payload changes causing crashes'
+        ]
+      },
+      6: {
+        title: `Mobile: Week 5-6 Review & Advanced Features Practice (${duration} min)`,
+        topics: [
+          'Review push notifications, CodePush, performance optimization',
+          'Review testing and validation',
+          'Practice: Implement push notifications for trip updates',
+          'Practice: Set up CodePush for OTA updates',
+          'Practice: Write tests for key features',
+          'Code review: review advanced features code',
+          'Real-life practice: Complete advanced features for Transport App'
+        ]
+      }
+    }
+    return advancedContent[dayIndex] || advancedContent[0]
+  }
+  
+  // Week 7-13: Production Readiness & Advanced Topics
+  if (weekNum >= 7) {
+    const productionContent = {
+      0: {
+        title: `Mobile: Production Readiness - Week ${weekNum} (${duration} min)`,
+        topics: [
+          'App store preparation: preparing for iOS App Store and Google Play',
+          'App icons and splash screens: creating app assets',
+          'App signing: iOS certificates, Android keystores',
+          'Version management: semantic versioning',
+          'Release notes: writing user-friendly release notes',
+          'Beta testing: TestFlight (iOS), Internal Testing (Android)',
+          'App store optimization: keywords, descriptions, screenshots'
+        ]
+      },
+      1: {
+        title: `Mobile: Advanced State Management - Week ${weekNum} (${duration} min)`,
+        topics: [
+          'Advanced Zustand patterns: middleware, persistence',
+          'State normalization: organizing complex state',
+          'State selectors: optimizing re-renders',
+          'State debugging: Redux DevTools integration',
+          'State migration: handling state schema changes',
+          'Real-time state sync: syncing state across devices'
+        ]
+      },
+      2: {
+        title: `Mobile: Advanced Navigation - Week ${weekNum} (${duration} min)`,
+        topics: [
+          'Deep linking: handling URLs, universal links',
+          'Navigation state persistence: saving navigation state',
+          'Custom transitions: custom screen transitions',
+          'Navigation guards: authentication guards, permission checks',
+          'Nested navigators: complex navigation structures',
+          'Navigation analytics: tracking user navigation'
+        ]
+      },
+      3: {
+        title: `Mobile: Advanced API Patterns - Week ${weekNum} (${duration} min)`,
+        topics: [
+          'API client architecture: request/response interceptors',
+          'Request retry logic: exponential backoff',
+          'Request cancellation: canceling in-flight requests',
+          'Response caching: caching API responses',
+          'Request queuing: managing request queue',
+          'API versioning: handling API version changes'
+        ]
+      },
+      4: {
+        title: `Mobile: Advanced Performance - Week ${weekNum} (${duration} min)`,
+        topics: [
+          'Memory profiling: identifying memory leaks',
+          'Network profiling: optimizing network requests',
+          'Image optimization: advanced image caching strategies',
+          'Code splitting: lazy loading screens',
+          'Bundle analysis: analyzing bundle size',
+          'Performance budgets: setting performance targets'
+        ]
+      },
+      5: {
+        title: `Mobile: Advanced Testing - Week ${weekNum} (${duration} min)`,
+        topics: [
+          'Integration testing: testing feature integration',
+          'E2E testing: complete user flows with Detox',
+          'Mock strategies: mocking external dependencies',
+          'Test coverage: achieving good test coverage',
+          'CI/CD integration: automated testing in CI/CD',
+          'Performance testing: testing app performance'
+        ]
+      },
+      6: {
+        title: `Mobile: Week ${weekNum} Review & Transport App Integration (${duration} min)`,
+        topics: [
+          `Review Week ${weekNum} concepts`,
+          'Transport App integration: integrating all features',
+          'End-to-end testing: testing complete user flows',
+          'Performance optimization: final performance tuning',
+          'Code review: comprehensive code review',
+          'Documentation: documenting architecture and decisions',
+          'Real-life practice: Complete Transport App with all features'
+        ]
+      }
+    }
+    return productionContent[dayIndex] || productionContent[0]
+  }
+  
+  // Fallback
+  return {
+    title: `Mobile: React Native Learning - Week ${weekNum}, Day ${dayIndex + 1} (${duration} min)`,
+    topics: [
+      `Continue React Native learning for Week ${weekNum}`,
+      'Review previous concepts',
+      'Practice building mobile features',
+      'Work on Transport App project'
+    ]
+  }
+}
+
+function getDisciplineContent(content, discipline, weekNum, type, dayIndex = 0) {
   const weekTheme = getSoftwareEngineeringTheme(weekNum)
   
-  // NEW: Handle synced frontend/backend structure
+  // Handle discipline-specific content using helper functions
+  const dayIdx = content?.dayIndex !== undefined ? content.dayIndex : dayIndex
+  
+  if (discipline === 'Mobile') {
+    const mobileContent = getMobileLearningContent(weekNum, dayIdx)
+    return {
+      title: mobileContent.title,
+      topics: mobileContent.topics || [],
+      type: 'study',
+      discipline: 'Mobile',
+      resources: getDisciplineResources('Mobile', weekNum),
+      roadmap: getDisciplineRoadmap('Mobile'),
+      syncedWith: 'Backend',
+      syncedContent: null
+    }
+  }
+  
+  if (discipline === 'Frontend') {
+    // Check if content has frontend property (from synced structure), otherwise use helper
+    if (content?.frontend && content.frontend.topics && content.frontend.topics.length > 0) {
+      return {
+        title: content.frontend.title || content.title || `${discipline} Learning`,
+        topics: content.frontend.topics || [],
+        type: 'study',
+        discipline: discipline,
+        resources: getDisciplineResources(discipline, weekNum),
+        roadmap: getDisciplineRoadmap(discipline),
+        syncedWith: 'Backend',
+        syncedContent: content.backend || null
+      }
+    }
+    // Use helper function for comprehensive Frontend content
+    const frontendContent = getFrontendLearningContent(weekNum, dayIdx)
+    return {
+      title: frontendContent.title,
+      topics: frontendContent.topics || [],
+      type: 'study',
+      discipline: 'Frontend',
+      resources: getDisciplineResources('Frontend', weekNum),
+      roadmap: getDisciplineRoadmap('Frontend'),
+      syncedWith: 'Backend',
+      syncedContent: null
+    }
+  }
+  
+  if (discipline === 'Backend') {
+    // Check if content has backend property (from synced structure), otherwise use helper
+    if (content?.backend && content.backend.topics && content.backend.topics.length > 0) {
+      return {
+        title: content.backend.title || content.title || `${discipline} Learning`,
+        topics: content.backend.topics || [],
+        type: 'study',
+        discipline: discipline,
+        resources: getDisciplineResources(discipline, weekNum),
+        roadmap: getDisciplineRoadmap(discipline),
+        syncedWith: 'Frontend',
+        syncedContent: content.frontend || null
+      }
+    }
+    // Use helper function for comprehensive Backend content
+    const backendContent = getBackendLearningContent(weekNum, dayIdx)
+    return {
+      title: backendContent.title,
+      topics: backendContent.topics || [],
+      type: 'study',
+      discipline: 'Backend',
+      resources: getDisciplineResources('Backend', weekNum),
+      roadmap: getDisciplineRoadmap('Backend'),
+      syncedWith: 'Frontend',
+      syncedContent: null
+    }
+  }
+  
+  if (discipline === 'Systems Engineering') {
+    // Use helper function for comprehensive Systems Engineering content
+    const systemsEngineeringContent = getWordPressLearningContent(weekNum, dayIdx)
+    return {
+      title: systemsEngineeringContent.title,
+      topics: systemsEngineeringContent.topics || [],
+      type: 'study',
+      discipline: 'Systems Engineering',
+      resources: getDisciplineResources('Systems Engineering', weekNum),
+      roadmap: getDisciplineRoadmap('Systems Engineering'),
+      syncedWith: 'Frontend',
+      syncedContent: null
+    }
+  }
+  
+  // NEW: Handle synced frontend/backend structure (legacy support)
   if (content.frontend && content.backend) {
     // Content has synced frontend/backend structure
     if (discipline === 'Frontend' && content.frontend) {
@@ -3143,81 +4916,110 @@ function getDisciplineContent(content, discipline, weekNum, type) {
 }
 
 // Scheduling and Discipline Rotation Helpers
+// Updated schedule based on final time allocations
 function getTimeBlocks(dayIndex) {
   const isSaturday = dayIndex === 5
   const isSunday = dayIndex === 6
-  const isWeekday = dayIndex >= 0 && dayIndex <= 4 // Monday-Friday (0=Monday, 4=Friday)
+  const isMonday = dayIndex === 0 // Monday (0=Monday)
+  const isTuesdayToFriday = dayIndex >= 1 && dayIndex <= 4 // Tuesday-Friday (1=Tuesday, 4=Friday)
+  const isWeekday = dayIndex >= 0 && dayIndex <= 4 // Monday-Friday
   
   if (isSaturday) {
-    // Saturday: WordPress + Mobile Revision
+    // Saturday: Mobile Revision, Frontend, Backend
     return {
       deepLearning: [
-        { time: '1:30 PM - 2:30 PM', discipline: 'WordPress', type: 'study', duration: '60 min', isRevision: false }
+        { time: '1:30 PM - 3:00 PM', discipline: 'Mobile', type: 'revision', duration: '90 min', isRevision: true },
+        { time: '3:00 PM - 4:00 PM', discipline: 'Frontend', type: 'study', duration: '60 min', isRevision: false }
       ],
       focusedImplementation: [
-        { time: '2:30 PM - 4:00 PM', discipline: 'Mobile', type: 'revision', duration: '90 min', isRevision: true }
+        { time: '4:00 PM - 5:00 PM', discipline: 'Backend', type: 'build', duration: '60 min', isRevision: false }
       ]
     }
   }
   
   if (isSunday) {
-    // Sunday: WordPress + Frontend & Backend Revision
+    // Sunday: WordPress only
     return {
       deepLearning: [
-        { time: '2:30 AM - 4:30 AM', discipline: 'WordPress', type: 'study', duration: '120 min', isRevision: false }
+        { time: '3:00 AM - 5:30 AM', discipline: 'Systems Engineering', type: 'study', duration: '150 min', isRevision: false }
       ],
       focusedImplementation: [
-        { time: '1:00 PM - 4:00 PM', discipline: 'Frontend', type: 'revision', duration: '180 min', isRevision: true },
-        { time: '1:00 PM - 4:00 PM', discipline: 'Backend', type: 'revision', duration: '180 min', isRevision: true }
+        { time: '3:00 AM - 5:30 AM', discipline: 'Systems Engineering', type: 'build', duration: '150 min', isRevision: false }
       ]
     }
   }
   
-  // Monday-Friday: Mobile, Frontend, Backend
+  if (isMonday) {
+    // Monday: Mobile (4:00 AM - 5:30 AM), Frontend (2:45 PM - 4:15 PM), Backend (8:00 PM - 9:30 PM)
+    return {
+        deepLearning: [
+        { time: '4:00 AM - 5:30 AM', discipline: 'Mobile', type: 'study', duration: '90 min', isRevision: false },
+        { time: '2:45 PM - 4:15 PM', discipline: 'Frontend', type: 'study', duration: '90 min', isRevision: false },
+        { time: '8:00 PM - 9:30 PM', discipline: 'Backend', type: 'study', duration: '90 min', isRevision: false }
+        ],
+        focusedImplementation: [
+        { time: '4:00 AM - 5:30 AM', discipline: 'Mobile', type: 'build', duration: '90 min', isRevision: false },
+        { time: '2:45 PM - 4:15 PM', discipline: 'Frontend', type: 'build', duration: '90 min', isRevision: false },
+        { time: '8:00 PM - 9:30 PM', discipline: 'Backend', type: 'build', duration: '90 min', isRevision: false }
+        ]
+    }
+  }
+  
+  if (isTuesdayToFriday) {
+    // Tuesday-Friday: Mobile (2:00 AM - 4:00 AM), Frontend (2:45 PM - 4:15 PM), Backend (8:00 PM - 9:30 PM)
   return {
     deepLearning: [
-      { time: '2:30 AM - 4:30 AM', discipline: 'Mobile', type: 'study', duration: '120 min', isRevision: false },
-      { time: '2:00 PM - 3:30 PM', discipline: 'Frontend', type: 'study', duration: '90 min', isRevision: false },
-      { time: '3:30 PM - 5:00 PM', discipline: 'Backend', type: 'study', duration: '90 min', isRevision: false }
+        { time: '2:00 AM - 4:00 AM', discipline: 'Mobile', type: 'study', duration: '120 min', isRevision: false },
+        { time: '2:45 PM - 4:15 PM', discipline: 'Frontend', type: 'study', duration: '90 min', isRevision: false },
+        { time: '8:00 PM - 9:30 PM', discipline: 'Backend', type: 'study', duration: '90 min', isRevision: false }
     ],
     focusedImplementation: [
-      { time: '2:30 AM - 4:30 AM', discipline: 'Mobile', type: 'build', duration: '120 min', isRevision: false },
-      { time: '2:00 PM - 3:30 PM', discipline: 'Frontend', type: 'build', duration: '90 min', isRevision: false },
-      { time: '3:30 PM - 5:00 PM', discipline: 'Backend', type: 'build', duration: '90 min', isRevision: false }
-    ]
+        { time: '2:00 AM - 4:00 AM', discipline: 'Mobile', type: 'build', duration: '120 min', isRevision: false },
+        { time: '2:45 PM - 4:15 PM', discipline: 'Frontend', type: 'build', duration: '90 min', isRevision: false },
+        { time: '8:00 PM - 9:30 PM', discipline: 'Backend', type: 'build', duration: '90 min', isRevision: false }
+      ]
+    }
+  }
+  
+  // Fallback (should not reach here)
+  return {
+    deepLearning: [],
+    focusedImplementation: []
   }
 }
 
 function getDisciplineRotation(weekNum, dayIndex) {
   const isSaturday = dayIndex === 5
   const isSunday = dayIndex === 6
+  const isMonday = dayIndex === 0
+  const isTuesdayToFriday = dayIndex >= 1 && dayIndex <= 4 // Tuesday-Friday
   const isWeekday = dayIndex >= 0 && dayIndex <= 4 // Monday-Friday
   
-  // Saturday: WordPress + Mobile Revision
+  // Saturday: Mobile Revision, Frontend, Backend
   if (isSaturday) {
     return {
-      primary: 'WordPress',
-      secondary: 'Mobile',
-      tertiary: null,
+      primary: 'Mobile',
+      secondary: 'Frontend',
+      tertiary: 'Backend',
       quaternary: null,
-      allDisciplines: ['WordPress', 'Mobile'],
-      priorityOrder: ['WordPress', 'Mobile'],
-      rotationOrder: ['WordPress', 'Mobile'],
+      allDisciplines: ['Mobile', 'Frontend', 'Backend'],
+      priorityOrder: ['Mobile', 'Frontend', 'Backend'],
+      rotationOrder: ['Mobile', 'Frontend', 'Backend'],
       earlyMorningDiscipline: null
     }
   }
   
-  // Sunday: WordPress + Frontend & Backend Revision
+  // Sunday: Systems Engineering only
   if (isSunday) {
     return {
-      primary: 'WordPress',
-      secondary: 'Frontend',
-      tertiary: 'Backend',
+      primary: 'Systems Engineering',
+      secondary: null,
+      tertiary: null,
       quaternary: null,
-      allDisciplines: ['WordPress', 'Frontend', 'Backend'],
-      priorityOrder: ['WordPress', 'Frontend', 'Backend'],
-      rotationOrder: ['WordPress', 'Frontend', 'Backend'],
-      earlyMorningDiscipline: 'WordPress'
+      allDisciplines: ['Systems Engineering'],
+      priorityOrder: ['Systems Engineering'],
+      rotationOrder: ['Systems Engineering'],
+      earlyMorningDiscipline: 'Systems Engineering'
     }
   }
   
@@ -3355,10 +5157,31 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
             'Node.js REPL: interactive JavaScript environment'
           ]
         },
+        mobile: {
+          title: 'Mobile: React Native Introduction & Setup (120 min)',
+          topics: [
+            'What is React Native: cross-platform mobile development',
+            'React Native vs native apps: when to use each',
+            'React Native architecture: JavaScript bridge, native modules',
+            'Development environment setup: Node.js, React Native CLI, Xcode (iOS), Android Studio',
+            'Expo vs React Native CLI: choosing the right approach',
+            'Creating your first React Native app: npx create-expo-app or npx react-native init',
+            'Project structure: understanding folders (src, components, screens, navigation)',
+            'Running on iOS simulator: xcode-select, simulator setup',
+            'Running on Android emulator: Android Studio, AVD setup',
+            'Hot reloading: Fast Refresh, live reloading',
+            'Platform differences: iOS vs Android considerations',
+            'React Native basics: View, Text, StyleSheet components',
+            'Styling in React Native: StyleSheet.create(), inline styles, Flexbox',
+            'Real-life analogy: Like learning to drive - understanding the car (React Native) before the road (complex features)'
+          ]
+        },
         topics: [] // Legacy support - will be populated from frontend.topics
       },
       1: {
         title: 'CSS Core Concepts (60 min) + CSS Selectors & Specificity (30 min)',
+        frontend: {
+          title: 'Frontend: CSS Core Concepts',
         topics: [
           'Box Model Deep Dive: content-box vs border-box, calculating total dimensions',
           'Display types: block, inline, inline-block, none',
@@ -3376,9 +5199,32 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
           'Pseudo-elements: ::before, ::after, ::first-line, ::first-letter',
           'Specificity calculation: inline styles (1000), IDs (100), classes (10), elements (1)'
         ]
+        },
+        mobile: {
+          title: 'Mobile: React Native Core Components & Styling (120 min)',
+          topics: [
+            'React Native Core Components: View, Text, Image, ScrollView, TextInput, Button',
+            'View component: container component (like div in web)',
+            'Text component: displaying text (must wrap text in <Text>, not directly in <View>)',
+            'StyleSheet API: StyleSheet.create() for performance optimization',
+            'Flexbox in React Native: same as web but default flexDirection is column (not row)',
+            'Layout basics: justifyContent, alignItems, alignSelf, flex',
+            'Styling differences: no CSS classes, no CSS selectors, StyleSheet only',
+            'Platform-specific styles: Platform.select() for iOS vs Android differences',
+            'Dimensions API: getting screen width/height, responsive design',
+            'SafeAreaView: handling notches and status bars',
+            'TouchableOpacity, TouchableHighlight, Pressable: handling user interactions',
+            'Image component: local images (require()) vs network images (uri)',
+            'ScrollView: making content scrollable',
+            'Real-life analogy: Like learning HTML/CSS but for mobile - same concepts, different implementation'
+          ]
+        },
+        topics: []
       },
       2: {
         title: 'Flexbox Fundamentals (60 min) + Flexbox Patterns (30 min)',
+        frontend: {
+          title: 'Frontend: Flexbox Fundamentals',
         topics: [
           'Flex container properties: display: flex, flex-direction, flex-wrap, justify-content, align-items, align-content, gap',
           'Flex item properties: flex-grow, flex-shrink, flex-basis, flex (shorthand), align-self, order',
@@ -3390,9 +5236,31 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
           'Equal height columns',
           'Responsive image galleries'
         ]
+        },
+        mobile: {
+          title: 'Mobile: React Native State Management & User Input (120 min)',
+          topics: [
+            'useState hook: managing component state in React Native',
+            'State updates: setState patterns, functional updates',
+            'TextInput component: handling user text input',
+            'Controlled components: TextInput with state',
+            'Keyboard handling: KeyboardAvoidingView, keyboard dismissal',
+            'Form handling: collecting user input, validation basics',
+            'Button component: TouchableOpacity vs Button vs Pressable',
+            'Event handling: onPress, onChange, onSubmit',
+            'State patterns: lifting state up, sharing state between components',
+            'Loading states: ActivityIndicator component',
+            'Error states: displaying errors to users',
+            'Platform-specific input: iOS vs Android keyboard differences',
+            'Real-life analogy: Like a form in a restaurant - collecting orders (input) and showing status (state)'
+          ]
+        },
+        topics: []
       },
       3: {
         title: 'CSS Grid Fundamentals (60 min) + Grid Patterns (30 min)',
+        frontend: {
+          title: 'Frontend: CSS Grid Fundamentals',
         topics: [
           'Grid container properties: display: grid, grid-template-columns, grid-template-rows, grid-template-areas, gap',
           'Grid item properties: grid-column, grid-row, grid-area, justify-self, align-self',
@@ -3404,9 +5272,29 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
           'Overlapping grid items',
           'Grid + Flexbox combination'
         ]
+        },
+        mobile: {
+          title: 'Mobile: Lists, Images & Performance (120 min)',
+          topics: [
+            'FlatList component: rendering lists efficiently (like restaurant menu)',
+            'FlatList vs ScrollView: when to use each',
+            'List performance: keyExtractor, getItemLayout, removeClippedSubviews',
+            'Image optimization: caching, lazy loading, placeholder images',
+            'Image component: local vs network images, resizeMode',
+            'SectionList: grouped lists with headers',
+            'VirtualizedList: understanding virtualization for performance',
+            'List patterns: pull-to-refresh, infinite scroll basics',
+            'Memory management: avoiding memory leaks in lists',
+            'Performance tips: avoiding unnecessary re-renders',
+            'Real-life analogy: Like a restaurant menu - efficiently showing many items (FlatList) vs showing everything at once (ScrollView)'
+          ]
+        },
+        topics: []
       },
       4: {
         title: 'Responsive Design Principles (60 min) + Advanced Responsive Techniques (30 min)',
+        frontend: {
+          title: 'Frontend: Responsive Design Principles',
         topics: [
           'Mobile-first vs desktop-first approaches',
           'Breakpoints: common sizes (320px, 768px, 1024px, 1440px)',
@@ -3419,9 +5307,30 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
           'Aspect ratio: aspect-ratio property',
           'Touch-friendly targets (min 44x44px)'
         ]
+        },
+        mobile: {
+          title: 'Mobile: Navigation Architecture (120 min)',
+          topics: [
+            'React Navigation: industry-standard navigation library',
+            'Navigation types: Stack, Tab, Drawer navigators',
+            'Stack Navigator: screen navigation (like pages in a book)',
+            'Tab Navigator: bottom tabs, top tabs',
+            'Navigation setup: installing @react-navigation/native, @react-navigation/stack',
+            'Screen components: creating multiple screens',
+            'Navigation props: navigation.navigate(), navigation.goBack()',
+            'Route parameters: passing data between screens',
+            'Navigation options: headers, titles, buttons',
+            'Deep linking basics: URL-based navigation',
+            'Navigation state: understanding navigation state structure',
+            'Real-life analogy: Like a restaurant with multiple rooms (screens) - navigation helps customers move between them'
+          ]
+        },
+        topics: []
       },
       5: {
         title: 'Tailwind CSS Fundamentals (60 min) + Tailwind Advanced Features (30 min)',
+        frontend: {
+          title: 'Frontend: Tailwind CSS Fundamentals',
         topics: [
           'Utility-first CSS philosophy',
           'Installation: CDN, npm, CLI',
@@ -3437,9 +5346,29 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
           'Custom utilities with @apply',
           'JIT (Just-In-Time) mode'
         ]
+        },
+        mobile: {
+          title: 'Mobile: Project Structure & Architecture (120 min)',
+          topics: [
+            'Mobile app architecture: UI Layer, Service Layer, Storage Layer (from README)',
+            'Project structure: organizing code for scale (screens/, components/, services/, store/, utils/)',
+            'Folder organization: feature-based vs type-based structure',
+            'Component organization: reusable vs screen-specific components',
+            'Service layer: separating business logic from UI',
+            'Storage layer: AsyncStorage vs Secure Storage (Keychain)',
+            'Platform differences: iOS vs Android, Platform.select()',
+            'Native modules: when to use native code',
+            'Error boundaries: catching crashes gracefully',
+            'Code organization best practices: single responsibility, separation of concerns',
+            'Real-life analogy: Like a restaurant - dining room (UI), kitchen (services), pantry (storage)'
+          ]
+        },
+        topics: []
       },
       6: {
         title: 'Week 1 Review & Consolidation (60 min) + Advanced Topics Preview (30 min)',
+        frontend: {
+          title: 'Frontend: Week 1 Review',
         topics: [
           'Review all Week 1 concepts',
           'Identify knowledge gaps',
@@ -3451,6 +5380,22 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
           'Performance optimization',
           'Accessibility best practices'
         ]
+        },
+        mobile: {
+          title: 'Mobile: Week 1 Review & Building First Screen (120 min)',
+          topics: [
+            'Review React Native fundamentals: components, state, styling',
+            'Review navigation basics: Stack Navigator, screen navigation',
+            'Review project structure: organizing mobile apps',
+            'Build your first complete screen: Home screen with navigation',
+            'Practice: Create a screen with TextInput, Button, and state',
+            'Practice: Add navigation between two screens',
+            'Identify knowledge gaps: what needs more practice?',
+            'Code review: review your Week 1 code, identify improvements',
+            'Real-life practice: Build a simple "Welcome" screen for Transport App'
+          ]
+        },
+        topics: []
       }
     },
     2: {
@@ -3484,6 +5429,22 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
             'Creating RESTful endpoints: GET, POST, PUT, DELETE',
             'API endpoint structure: /api/users, /api/trips, etc.',
             'Testing endpoints: Postman/Thunder Client basics'
+          ]
+        },
+        mobile: {
+          title: 'Mobile: API Integration & Fetch (120 min)',
+          topics: [
+            'Fetch API in React Native: making HTTP requests',
+            'async/await: handling asynchronous operations',
+            'API service layer: creating centralized API client',
+            'REST API basics: GET, POST, PUT, DELETE requests',
+            'Request headers: Content-Type, Authorization',
+            'Response handling: parsing JSON, error handling',
+            'Loading states: showing ActivityIndicator during API calls',
+            'Error handling: try-catch, displaying errors to users',
+            'API endpoint structure: understanding backend API structure',
+            'Network debugging: using React Native Debugger, Flipper',
+            'Real-life analogy: Like ordering food - sending request (fetch), waiting for response (async), getting food (data)'
           ]
         },
         topics: []
@@ -3520,6 +5481,22 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
             'Request validation: checking required fields'
           ]
         },
+        mobile: {
+          title: 'Mobile: Secure Storage & Authentication (120 min)',
+          topics: [
+            'Secure Storage: react-native-keychain for JWT tokens (from README)',
+            'Keychain vs AsyncStorage: when to use each (security vs convenience)',
+            'JWT tokens: understanding token-based authentication',
+            'Token storage: storing tokens securely in Keychain',
+            'Token retrieval: getting tokens from secure storage',
+            'Authentication flow: login, token storage, authenticated requests',
+            'Protected API calls: adding Authorization header with Bearer token',
+            'Token expiration: handling expired tokens, refresh tokens basics',
+            'AsyncStorage: for non-sensitive data (cached data, preferences)',
+            'Security best practices: never store sensitive data in AsyncStorage',
+            'Real-life analogy: Keychain = bank vault (secure), AsyncStorage = drawer (convenient but not secure)'
+          ]
+        },
         topics: []
       },
       2: {
@@ -3554,6 +5531,22 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
             'API documentation: documenting endpoints'
           ]
         },
+        mobile: {
+          title: 'Mobile: State Management with Zustand/Redux (120 min)',
+          topics: [
+            'State management: local state vs global state (from README)',
+            'Zustand: lightweight state management library',
+            'Zustand store: creating stores, actions, selectors',
+            'Redux basics: store, actions, reducers (alternative to Zustand)',
+            'When to use global state: sharing data across screens',
+            'State patterns: trip state, user state, app state',
+            'Offline queue: Redux Persist / AsyncStorage for offline support',
+            'State persistence: saving state to AsyncStorage',
+            'Real-time state: managing trip status, driver location',
+            'State management best practices: keeping state normalized',
+            'Real-life analogy: Like a whiteboard (Zustand/Redux) showing current order status that everyone can see and update'
+          ]
+        },
         topics: []
       },
       3: {
@@ -3586,6 +5579,22 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
             'Protected routes: requiring authentication',
             'User sessions: managing authenticated users',
             'Security best practices: password requirements, token expiration'
+          ]
+        },
+        mobile: {
+          title: 'Mobile: WebSockets vs REST API (120 min)',
+          topics: [
+            'WebSockets vs REST: when to use each (from README)',
+            'REST API: like sending letters (request-response pattern)',
+            'WebSocket: like phone call (instant, two-way communication)',
+            'Socket.io client: installing and connecting to WebSocket server',
+            'WebSocket connection: establishing connection, authentication',
+            'Real-time updates: receiving trip.accepted, driver.location events',
+            'WebSocket events: socket.on(), socket.emit()',
+            'Connection management: reconnection logic, connection state',
+            'Battery optimization: WebSocket vs polling (REST every 5 seconds)',
+            'Use cases: trip status updates, driver location, notifications',
+            'Real-life analogy: REST = sending letters (slow), WebSocket = phone call (instant)'
           ]
         },
         topics: []

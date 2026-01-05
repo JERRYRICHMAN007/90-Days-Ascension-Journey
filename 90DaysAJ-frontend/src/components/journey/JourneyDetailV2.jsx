@@ -108,15 +108,15 @@ export function JourneyDetailV2({
   const currentPhase = getCurrentPhase();
   const currentDayNumber = getCurrentDayNumber();
   
-  // Day 0 is January 4, 2026 - accessible on that date or when explicitly selected
+  // Day 0 is January 5, 2026 - accessible on that date or when explicitly selected
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const day0Date = new Date('2026-01-04');
+  const day0Date = new Date('2026-01-05');
   day0Date.setHours(0, 0, 0, 0);
   const isDay0Date = today.getTime() === day0Date.getTime();
   
   // Show preparation ONLY if Day 0 is explicitly selected
-  // Day 1 and other days should show their content even if it's January 4, 2026 (preview mode)
+  // Day 1 and other days should show their content even if it's January 5, 2026 (preview mode)
   const isPreparationPhase = selectedDay === 0;
   
   // Always get preparation data so Day 0 is always available
@@ -176,12 +176,14 @@ export function JourneyDetailV2({
   });
 
   // Discipline state for Software Engineering
-  const [activeDiscipline, setActiveDiscipline] = useState('Frontend');
+  const [activeDiscipline, setActiveDiscipline] = useState('Mobile');
   
+  // Discipline order based on time schedule: Mobile (2:30 AM) → Frontend (2:00 PM) → Backend (3:30 PM) → WordPress
+  // This matches the chronological order in the daily schedule (Mon-Fri: Mobile first, then Frontend, then Backend)
   const disciplines = [
+    { id: 'Mobile', label: 'Mobile', icon: Smartphone, color: '#f59e0b' },
     { id: 'Frontend', label: 'Frontend', icon: Code, color: '#667eea' },
     { id: 'Backend', label: 'Backend', icon: Server, color: '#10b981' },
-    { id: 'Mobile', label: 'Mobile', icon: Smartphone, color: '#f59e0b' },
     { id: 'WordPress', label: 'WordPress', icon: Globe, color: '#8b5cf6' },
   ];
 
@@ -822,7 +824,7 @@ export function JourneyDetailV2({
                         <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display mb-2 break-words">{preparationData.title}</h2>
                         <p className="text-sm sm:text-base text-muted-foreground mb-2 break-words">{preparationData.subtitle}</p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          Sunday, January 4, 2026
+                          Monday, January 5, 2026
                         </p>
                       </div>
                     </div>

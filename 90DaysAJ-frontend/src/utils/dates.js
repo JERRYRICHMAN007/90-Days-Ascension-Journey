@@ -3,22 +3,22 @@
  * 
  * Timeline:
  * - Preparation Phase: Dec 21-31, 2025
- * - Day 0 (Preparation): January 4, 2026 (Sunday)
- * - Ascension Phase: Jan 5 - Apr 4, 2026 (90 days)
- * - Day 1 = January 5, 2026 (Monday)
+ * - Day 0 (Preparation): January 5, 2026 (Monday)
+ * - Ascension Phase: Jan 6 - Apr 5, 2026 (90 days)
+ * - Day 1 = January 6, 2026 (Tuesday)
  */
 
 export const JOURNEY_CONSTANTS = {
   PREP_START: new Date('2025-12-21'),
-  ASCENSION_START: new Date('2026-01-04'), // Day 0 - Sunday, January 4, 2026
-  ASCENSION_END: new Date('2026-04-04'), // Day 90 - April 4, 2026
+  ASCENSION_START: new Date('2026-01-05'), // Day 0 - Monday, January 5, 2026
+  ASCENSION_END: new Date('2026-04-05'), // Day 90 - April 5, 2026
   TOTAL_DAYS: 90,
 };
 
 /**
  * Get the current phase of the journey
- * January 4, 2026 is preparation phase (Day 0 - Sunday)
- * January 5, 2026 onwards is ascension phase (Day 1-90 - Monday)
+ * January 5, 2026 is preparation phase (Day 0 - Monday)
+ * January 6, 2026 onwards is ascension phase (Day 1-90 - Tuesday)
  * @returns {'preparation' | 'ascension' | 'before' | 'after'}
  */
 export function getCurrentPhase() {
@@ -31,8 +31,8 @@ export function getCurrentPhase() {
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
   ascensionStart.setHours(0, 0, 0, 0);
   
-  // January 5, 2026 is when ascension actually starts (Day 1 - Monday)
-  const ascensionActualStart = new Date('2026-01-05');
+  // January 6, 2026 is when ascension actually starts (Day 1 - Tuesday)
+  const ascensionActualStart = new Date('2026-01-06');
   ascensionActualStart.setHours(0, 0, 0, 0);
   
   const ascensionEnd = new Date(JOURNEY_CONSTANTS.ASCENSION_END);
@@ -41,7 +41,7 @@ export function getCurrentPhase() {
   if (today < prepStart) {
     return 'before';
   } else if (today >= prepStart && today < ascensionActualStart) {
-    // Preparation phase includes January 4, 2026 (Day 0)
+    // Preparation phase includes January 5, 2026 (Day 0)
     return 'preparation';
   } else if (today >= ascensionActualStart && today <= ascensionEnd) {
     return 'ascension';
@@ -52,7 +52,7 @@ export function getCurrentPhase() {
 
 /**
  * Calculate the current day number (0-90)
- * Returns 0 for preparation phase (January 4, 2026), 1-90 for ascension phase, null if after
+ * Returns 0 for preparation phase (January 5, 2026), 1-90 for ascension phase, null if after
  * @returns {number | null}
  */
 export function getCurrentDayNumber() {
@@ -63,7 +63,7 @@ export function getCurrentDayNumber() {
     return 0;
   }
   
-  // If in preparation phase (includes January 4, 2026), return 0
+  // If in preparation phase (includes January 5, 2026), return 0
   if (phase === 'preparation') {
     return 0;
   }
@@ -77,23 +77,23 @@ export function getCurrentDayNumber() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Day 1 starts on January 5, 2026 (Monday)
-  const ascensionActualStart = new Date('2026-01-05');
+  // Day 1 starts on January 6, 2026 (Tuesday)
+  const ascensionActualStart = new Date('2026-01-06');
   ascensionActualStart.setHours(0, 0, 0, 0);
   
   const diffTime = today - ascensionActualStart;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
-  // Day 1 = Jan 5, 2026 (ascensionActualStart)
-  // If today is Jan 5, diffDays = 0, so return 1
-  // If today is Jan 6, diffDays = 1, so return 2
+  // Day 1 = Jan 6, 2026 (ascensionActualStart)
+  // If today is Jan 6, diffDays = 0, so return 1
+  // If today is Jan 7, diffDays = 1, so return 2
   return diffDays + 1;
 }
 
 /**
  * Get the date for a specific day number (1-90)
- * Day 0 = January 4, 2026 (preparation - Sunday)
- * Day 1 = January 5, 2026 (first actual day - Monday)
+ * Day 0 = January 5, 2026 (preparation - Monday)
+ * Day 1 = January 6, 2026 (first actual day - Tuesday)
  * @param {number} dayNumber - Day number (1-90)
  * @returns {Date | null}
  */
@@ -102,10 +102,10 @@ export function getDateForDay(dayNumber) {
     return null;
   }
   
-  // Day 1 starts on January 5, 2026 (Monday)
-  const ascensionActualStart = new Date('2026-01-05');
-  // Day 1 = Jan 5, 2026 (ascensionActualStart)
-  // Day 2 = Jan 6, 2026 (ascensionActualStart + 1 day)
+  // Day 1 starts on January 6, 2026 (Tuesday)
+  const ascensionActualStart = new Date('2026-01-06');
+  // Day 1 = Jan 6, 2026 (ascensionActualStart)
+  // Day 2 = Jan 7, 2026 (ascensionActualStart + 1 day)
   ascensionActualStart.setDate(ascensionActualStart.getDate() + dayNumber - 1);
   
   return ascensionActualStart;
@@ -225,7 +225,7 @@ export function isDayAccessible(dayNumber) {
   const currentDayNumber = getCurrentDayNumber();
   
   // If we're in preparation phase or before, Day 1 (tomorrow from Day 0) is accessible
-  // This handles the case when today is January 4, 2026 (Day 0) and tomorrow is January 5, 2026 (Day 1)
+  // This handles the case when today is January 5, 2026 (Day 0) and tomorrow is January 6, 2026 (Day 1)
   if (phase === 'preparation' || phase === 'before') {
     // Day 1 is accessible when we're in preparation phase (Day 0)
     // This allows users to preview Day 1 when on Day 0
@@ -277,7 +277,7 @@ export function isTomorrow(dayNumber) {
   const phase = getCurrentPhase();
   const currentDayNumber = getCurrentDayNumber();
   
-  // If we're in preparation phase or before, and viewing Day 0, tomorrow is Day 1 (January 5, 2026)
+  // If we're in preparation phase or before, and viewing Day 0, tomorrow is Day 1 (January 6, 2026)
   if (phase === 'preparation' || phase === 'before') {
     return dayNumber === 1;
   }
