@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -22,7 +22,8 @@ import {
   Clock,
   CheckCircle2,
   Menu,
-  X
+  X,
+  Circle
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -32,6 +33,7 @@ import { getCurrentDayNumber, getCurrentPhase, getDateForDay, isDayAccessible, c
 import { getQuoteOfTheDay } from '../../data/quotes';
 import { cn } from '../../lib/utils';
 import { getJourneyPreparation } from '../../data/preparationData';
+import { getSoftwareEngineeringReflection, getProjectComponentForDay } from '../../data/journeyData';
 
 /**
  * Journey Detail Page v2.0 - PRD Redesign
@@ -178,14 +180,32 @@ export function JourneyDetailV2({
   // Discipline state for Software Engineering
   const [activeDiscipline, setActiveDiscipline] = useState('Mobile');
   
-  // Discipline order based on time schedule: Mobile (2:30 AM) → Frontend (2:00 PM) → Backend (3:30 PM) → WordPress
+  // Get day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+  const dayOfWeek = useMemo(() => {
+    if (!currentDay?.dayNumber) return null;
+    const date = getDateForDay(currentDay.dayNumber);
+    if (!date) return null;
+    return date.getDay(); // 0 = Sunday, 6 = Saturday
+  }, [currentDay?.dayNumber]);
+
+  const isSunday = dayOfWeek === 0;
+
+  // Discipline order based on time schedule: Mobile (2:30 AM) → Frontend (2:00 PM) → Backend (3:30 PM) → WordPress (Sunday only)
   // This matches the chronological order in the daily schedule (Mon-Fri: Mobile first, then Frontend, then Backend)
   const disciplines = [
     { id: 'Mobile', label: 'Mobile', icon: Smartphone, color: '#f59e0b' },
     { id: 'Frontend', label: 'Frontend', icon: Code, color: '#667eea' },
     { id: 'Backend', label: 'Backend', icon: Server, color: '#10b981' },
-    { id: 'WordPress', label: 'WordPress', icon: Globe, color: '#8b5cf6' },
+    // Only show WordPress/Systems Engineering on Sundays
+    ...(isSunday ? [{ id: 'WordPress', label: 'WordPress', icon: Globe, color: '#8b5cf6' }] : []),
   ];
+  
+  // If activeDiscipline is WordPress but it's not Sunday, switch to Mobile
+  useEffect(() => {
+    if (activeDiscipline === 'WordPress' && !isSunday) {
+      setActiveDiscipline('Mobile');
+    }
+  }, [isSunday, activeDiscipline]);
 
   // Filter schedule content by active discipline for Software Engineering
   const getDisciplineContent = () => {
@@ -193,13 +213,18 @@ export function JourneyDetailV2({
       return null;
     }
 
+    // Don't show Systems Engineering/WordPress content unless it's Sunday
+    if (activeDiscipline === 'WordPress' && !isSunday) {
+      return null;
+    }
+
     const schedule = currentDay.schedule;
     const deepLearningSessions = schedule?.scheduledContent?.deepLearning?.filter(
-      (block) => block.discipline === activeDiscipline
+      (block) => block.discipline === activeDiscipline || (block.discipline === 'Systems Engineering' && activeDiscipline === 'WordPress')
     ) || [];
     
     const implementationSessions = schedule?.scheduledContent?.focusedImplementation?.filter(
-      (block) => block.discipline === activeDiscipline
+      (block) => block.discipline === activeDiscipline || (block.discipline === 'Systems Engineering' && activeDiscipline === 'WordPress')
     ) || [];
 
     // Get resources and reflection filtered by discipline
@@ -227,6 +252,189 @@ export function JourneyDetailV2({
     if (!day || !day.dayNumber) return false;
     return journeyProgress[day.dayNumber] || false;
   };
+
+  // Extract all tasks from current day (discipline-aware for Software Engineering)
+  const extractTasks = (day) => {
+    if (!day) return [];
+    const tasks = [];
+    
+    // Dual Brand tasks
+    if (journeyId === 'dual-brand') {
+      if (day.personalBrandTasks) {
+        tasks.push({
+          id: `personal-brand-${day.dayNumber}`,
+          text: day.personalBrandTasks,
+          category: 'Personal Brand'
+        });
+      }
+      if (day.companyBrandTasks) {
+        tasks.push({
+          id: `company-brand-${day.dayNumber}`,
+          text: day.companyBrandTasks,
+          category: 'Company Brand'
+        });
+      }
+      // Legacy support
+      if (day.ryxenTasks && !day.personalBrandTasks) {
+        tasks.push({
+          id: `ryxen-${day.dayNumber}`,
+          text: day.ryxenTasks,
+          category: 'Personal Brand'
+        });
+      }
+      if (day.havenXTasks && !day.companyBrandTasks) {
+        tasks.push({
+          id: `havenx-${day.dayNumber}`,
+          text: day.havenXTasks,
+          category: 'Company Brand'
+        });
+      }
+    }
+    
+    // Body Transformation tasks
+    if (journeyId === 'body-transformation' && day.workout) {
+      tasks.push({
+        id: `workout-${day.dayNumber}`,
+        text: `Complete ${day.focus || 'workout'} session`,
+        category: 'Workout'
+      });
+    }
+    
+    // Reading tasks
+    if (journeyId === 'reading' && day.readingSessions) {
+      day.readingSessions.forEach((session, idx) => {
+        const materialText = typeof session.material === 'object' 
+          ? session.material.text 
+          : session.material;
+        tasks.push({
+          id: `reading-${day.dayNumber}-${idx}`,
+          text: `${session.type}: ${materialText}`,
+          category: 'Reading'
+        });
+      });
+    }
+    
+    // Writer's Journey tasks
+    if (journeyId === 'writers' && day.execution) {
+      tasks.push({
+        id: `writers-${day.dayNumber}`,
+        text: day.execution,
+        category: 'Writing'
+      });
+    }
+    
+    // Software Engineering tasks - discipline-specific
+    if (journeyId === 'software-engineering' && day.schedule?.scheduledContent) {
+      const schedule = day.schedule.scheduledContent;
+      
+      // Get tasks for the active discipline
+      const disciplineTasks = [];
+      
+      // Deep Learning sessions for active discipline
+      if (schedule.deepLearning && Array.isArray(schedule.deepLearning)) {
+        schedule.deepLearning.forEach((session, idx) => {
+          if (session.discipline === activeDiscipline && session.content) {
+            const learningTitle = session.content.title || 'Learning Session';
+            const duration = session.duration || '';
+            disciplineTasks.push({
+              id: `se-${activeDiscipline.toLowerCase()}-learning-${day.dayNumber}-${idx}`,
+              text: `${activeDiscipline}: ${learningTitle}${duration ? ` (${duration})` : ''}`,
+              category: `${activeDiscipline} Learning`,
+              discipline: activeDiscipline
+            });
+          }
+        });
+      }
+      
+      // Focused Implementation sessions for active discipline
+      if (schedule.focusedImplementation && Array.isArray(schedule.focusedImplementation)) {
+        schedule.focusedImplementation.forEach((session, idx) => {
+          if (session.discipline === activeDiscipline && session.content) {
+            const projectTitle = session.content.title || 'Implementation Session';
+            const duration = session.duration || '';
+            disciplineTasks.push({
+              id: `se-${activeDiscipline.toLowerCase()}-implementation-${day.dayNumber}-${idx}`,
+              text: `${activeDiscipline}: ${projectTitle}${duration ? ` (${duration})` : ''}`,
+              category: `${activeDiscipline} Implementation`,
+              discipline: activeDiscipline
+            });
+          }
+        });
+      }
+      
+      // If no discipline-specific tasks found, check for general project
+      if (disciplineTasks.length === 0 && day.project) {
+        const projectTitle = typeof day.project === 'object'
+          ? day.project.title
+          : day.project;
+        tasks.push({
+          id: `se-project-${day.dayNumber}`,
+          text: `Complete project: ${projectTitle}`,
+          category: 'Project'
+        });
+      } else {
+        // Add discipline-specific tasks
+        tasks.push(...disciplineTasks);
+      }
+    }
+    
+    return tasks;
+  };
+
+  // Get tasks for current day (include activeDiscipline for Software Engineering)
+  const dayTasks = useMemo(() => extractTasks(currentDay), [currentDay, journeyId, activeDiscipline]);
+  
+  // Task completion state (discipline-aware for Software Engineering)
+  const [taskCompletion, setTaskCompletion] = useState(() => {
+    if (!currentDay?.dayNumber) return {};
+    try {
+      const key = journeyId === 'software-engineering' && currentDay?.dayNumber
+        ? `tasks_${journeyId}_${currentDay.dayNumber}_${activeDiscipline}`
+        : `tasks_${journeyId}_${currentDay.dayNumber}`;
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Update task completion when day or discipline changes
+  useEffect(() => {
+    if (!currentDay?.dayNumber) {
+      setTaskCompletion({});
+      return;
+    }
+    try {
+      const key = journeyId === 'software-engineering' && currentDay?.dayNumber
+        ? `tasks_${journeyId}_${currentDay.dayNumber}_${activeDiscipline}`
+        : `tasks_${journeyId}_${currentDay.dayNumber}`;
+      const saved = localStorage.getItem(key);
+      setTaskCompletion(saved ? JSON.parse(saved) : {});
+    } catch {
+      setTaskCompletion({});
+    }
+  }, [currentDay?.dayNumber, journeyId, activeDiscipline]);
+
+  // Toggle task completion
+  const toggleTask = (taskId) => {
+    const newCompletion = {
+      ...taskCompletion,
+      [taskId]: !taskCompletion[taskId]
+    };
+    setTaskCompletion(newCompletion);
+    if (currentDay?.dayNumber) {
+      const key = journeyId === 'software-engineering' && currentDay?.dayNumber
+        ? `tasks_${journeyId}_${currentDay.dayNumber}_${activeDiscipline}`
+        : `tasks_${journeyId}_${currentDay.dayNumber}`;
+      localStorage.setItem(key, JSON.stringify(newCompletion));
+    }
+  };
+
+  // Check if all tasks are completed
+  const allTasksCompleted = useMemo(() => {
+    if (dayTasks.length === 0) return true; // No tasks means "completed"
+    return dayTasks.every(task => taskCompletion[task.id] === true);
+  }, [dayTasks, taskCompletion]);
   
   const getWeekProgress = (week) => {
     if (!week || !week.days) return 0;
@@ -864,17 +1072,35 @@ export function JourneyDetailV2({
                       </div>
                       {canCompleteDay(currentDay.dayNumber) ? (
                         <Button
-                          onClick={() => updateProgress(journeyId, currentDay.dayNumber, !getDayProgress(currentDay))}
+                          onClick={() => {
+                            if (!getDayProgress(currentDay) && !allTasksCompleted && dayTasks.length > 0) {
+                              // Show message that all tasks must be completed
+                              alert(`Please complete all ${dayTasks.length} task(s) before marking the day as complete.`);
+                              return;
+                            }
+                            updateProgress(journeyId, currentDay.dayNumber, !getDayProgress(currentDay));
+                          }}
                           className={cn(
                             'touch-manipulation',
-                            getDayProgress(currentDay) ? 'bg-muted' : ''
+                            getDayProgress(currentDay) 
+                              ? '!bg-green-600 hover:!bg-green-700 !text-white border-green-700 shadow-md' 
+                              : (!allTasksCompleted && dayTasks.length > 0)
+                              ? 'opacity-50 cursor-not-allowed'
+                              : ''
                           )}
-                          style={{ minHeight: '44px' }}
+                          style={{ 
+                            minHeight: '44px',
+                            ...(getDayProgress(currentDay) ? {
+                              backgroundColor: '#16a34a',
+                              color: '#ffffff'
+                            } : {})
+                          }}
+                          disabled={!getDayProgress(currentDay) && !allTasksCompleted && dayTasks.length > 0}
                         >
                           {getDayProgress(currentDay) ? (
                             <>
-                              <Check className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                              <span className="text-sm sm:text-base">Completed</span>
+                              <Check className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-white" />
+                              <span className="text-sm sm:text-base text-white">Completed</span>
                             </>
                           ) : (
                             <>
@@ -900,6 +1126,67 @@ export function JourneyDetailV2({
                       <div className={`p-4 rounded-lg ${colors.bg} border ${colors.border}`}>
                         <p className="text-sm font-medium text-foreground">{currentDay.theme}</p>
                       </div>
+                    )}
+
+                    {/* Task Checklist */}
+                    {dayTasks.length > 0 && (
+                      <Card className="p-4 sm:p-6 border border-border/50">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+                            <Target className="w-5 h-5 text-primary" />
+                            Today's Tasks
+                          </h3>
+                          <span className="text-xs sm:text-sm text-muted-foreground">
+                            {dayTasks.filter(t => taskCompletion[t.id]).length} / {dayTasks.length} completed
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {dayTasks.map((task) => {
+                            const isCompleted = taskCompletion[task.id] === true;
+                            return (
+                              <div
+                                key={task.id}
+                                className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                                onClick={() => toggleTask(task.id)}
+                              >
+                                <button
+                                  className="mt-0.5 flex-shrink-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleTask(task.id);
+                                  }}
+                                >
+                                  {isCompleted ? (
+                                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                  ) : (
+                                    <Circle className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+                                  )}
+                                </button>
+                                <div className="flex-1 min-w-0">
+                                  <p className={cn(
+                                    "text-sm sm:text-base",
+                                    isCompleted 
+                                      ? "line-through text-muted-foreground" 
+                                      : "text-foreground"
+                                  )}>
+                                    {task.text}
+                                  </p>
+                                  {task.category && (
+                                    <span className="text-xs text-muted-foreground mt-1 inline-block">
+                                      {task.category}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {!allTasksCompleted && dayTasks.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-3 italic">
+                            Complete all tasks to mark this day as done
+                          </p>
+                        )}
+                      </Card>
                     )}
                   </div>
                 ) : null}
@@ -1154,8 +1441,8 @@ export function JourneyDetailV2({
                             </div>
                           )}
 
-                          {/* Systems Section - Always visible */}
-                          {currentDay.dailyLearning?.systems && (
+                          {/* Systems Section - Only visible on Sundays */}
+                          {isSunday && currentDay.dailyLearning?.systems && (
                             <Card className="p-0 border border-border/50 overflow-hidden mt-6">
                               <button
                                 onClick={() => toggleSection('systems')}
@@ -1209,6 +1496,12 @@ export function JourneyDetailV2({
                                             {currentDay.dailyLearning.frontend.title || 'Frontend Engineering'}
                                           </h3>
                                         </div>
+                                        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                          <p className="text-sm text-blue-800 dark:text-blue-200">
+                                            <strong>🎯 Component-Based Learning:</strong> Today's focus is on building a practical component. 
+                                            Learn by doing - build, experiment, and understand why it works, not just how.
+                                          </p>
+                                        </div>
                                         {currentDay.dailyLearning.frontend.topics && Array.isArray(currentDay.dailyLearning.frontend.topics) && (
                                           <ul className="space-y-2">
                                             {currentDay.dailyLearning.frontend.topics.map((topic, idx) => (
@@ -1232,6 +1525,12 @@ export function JourneyDetailV2({
                                             {currentDay.dailyLearning.backend.title || 'Backend Engineering'}
                                           </h3>
                                         </div>
+                                        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                          <p className="text-sm text-green-800 dark:text-green-200">
+                                            <strong>🎯 Component-Based Learning:</strong> Today's focus is on building a practical component (API handler, auth flow, state manager, etc.). 
+                                            Learn by doing - build, experiment, and understand why it works, not just how.
+                                          </p>
+                                        </div>
                                         {currentDay.dailyLearning.backend.topics && Array.isArray(currentDay.dailyLearning.backend.topics) && (
                                           <ul className="space-y-2">
                                             {currentDay.dailyLearning.backend.topics.map((topic, idx) => (
@@ -1254,6 +1553,12 @@ export function JourneyDetailV2({
                                           <h3 className="text-lg font-semibold text-foreground">
                                             {currentDay.dailyLearning.mobile.title || 'Mobile Engineering'}
                                           </h3>
+                                        </div>
+                                        <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                                          <p className="text-sm text-orange-800 dark:text-orange-200">
+                                            <strong>🎯 Component-Based Learning:</strong> Today's focus is on building a practical component (button, form, navigation, etc.). 
+                                            Learn by doing - build, experiment, and understand why it works, not just how.
+                                          </p>
                                         </div>
                                         {currentDay.dailyLearning.mobile.topics && Array.isArray(currentDay.dailyLearning.mobile.topics) && (
                                           <ul className="space-y-2">
@@ -1339,18 +1644,44 @@ export function JourneyDetailV2({
                             <Card className="p-4 sm:p-6 border border-border/50">
                               <h4 className="text-sm font-semibold text-foreground mb-3">Today's Reading Sessions:</h4>
                               <div className="space-y-3">
-                                {currentDay.readingSessions.map((session, idx) => (
-                                  <div key={idx} className="p-3 bg-muted/30 rounded-lg">
-                                    <div className="flex items-center justify-between mb-1">
-                                      <span className="text-xs font-semibold text-primary">{session.time}</span>
-                                      <span className="text-xs text-muted-foreground">{session.type}</span>
+                                {currentDay.readingSessions.map((session, idx) => {
+                                  const bibleData = session.type === "Bible Reading" && typeof session.material === 'object' 
+                                    ? session.material 
+                                    : null;
+                                  const materialText = bibleData ? bibleData.text : session.material;
+                                  const chapterCount = session.type === "Bible Reading" ? 1 : null; // Bible reading is 1 chapter per 15-minute session
+                                  
+                                  return (
+                                    <div key={idx} className="p-3 bg-muted/30 rounded-lg">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-xs font-semibold text-primary">{session.time}</span>
+                                        <span className="text-xs text-muted-foreground">{session.type}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="text-sm font-medium text-foreground">{materialText}</p>
+                                        {bibleData && bibleData.link && (
+                                          <a
+                                            href={bibleData.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
+                                          >
+                                            <BookOpen className="w-3 h-3" />
+                                            Read Chapter
+                                          </a>
+                                        )}
+                                      </div>
+                                      {chapterCount && (
+                                        <p className="text-xs text-primary font-medium mt-1">
+                                          📖 {chapterCount} chapter{chapterCount > 1 ? 's' : ''} to read (15 minutes allocated)
+                                        </p>
+                                      )}
+                                      {session.focus && (
+                                        <p className="text-xs text-muted-foreground mt-1">Focus: {session.focus}</p>
+                                      )}
                                     </div>
-                                    <p className="text-sm font-medium text-foreground">{session.material}</p>
-                                    {session.focus && (
-                                      <p className="text-xs text-muted-foreground mt-1">Focus: {session.focus}</p>
-                                    )}
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </Card>
                           )}
@@ -1379,22 +1710,47 @@ export function JourneyDetailV2({
                             )}
                           </Card>
                           
-                          {currentDay.ryxenTasks && (
+                          {currentDay.personalBrandTasks && (
                             <Card className="p-4 sm:p-6 border border-border/50">
                               <div className="flex items-center gap-2 mb-4">
-                                <span className="text-2xl">🎨</span>
-                                <h3 className="text-base sm:text-lg font-semibold text-foreground">Ryxen Tasks</h3>
+                                <span className="text-2xl">👤</span>
+                                <h3 className="text-base sm:text-lg font-semibold text-foreground">Personal Brand (_jerryrichman007)</h3>
                               </div>
+                              <p className="text-sm text-muted-foreground mb-2">Focus: Personal journey, growth, thoughts, and general content</p>
+                              <p className="text-sm sm:text-base text-foreground">{currentDay.personalBrandTasks}</p>
+                            </Card>
+                          )}
+                          
+                          {currentDay.companyBrandTasks && (
+                            <Card className="p-4 sm:p-6 border border-border/50">
+                              <div className="flex items-center gap-2 mb-4">
+                                <span className="text-2xl">🏢</span>
+                                <h3 className="text-base sm:text-lg font-semibold text-foreground">Company Brand (_ryxen007)</h3>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">Focus: Company-building journey, products, systems, and business updates</p>
+                              <p className="text-sm sm:text-base text-foreground">{currentDay.companyBrandTasks}</p>
+                            </Card>
+                          )}
+                          
+                          {/* Legacy support for ryxenTasks and havenXTasks */}
+                          {!currentDay.personalBrandTasks && currentDay.ryxenTasks && (
+                            <Card className="p-4 sm:p-6 border border-border/50">
+                              <div className="flex items-center gap-2 mb-4">
+                                <span className="text-2xl">👤</span>
+                                <h3 className="text-base sm:text-lg font-semibold text-foreground">Personal Brand (_jerryrichman007)</h3>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">Focus: Personal journey, growth, thoughts, and general content</p>
                               <p className="text-sm sm:text-base text-foreground">{currentDay.ryxenTasks}</p>
                             </Card>
                           )}
                           
-                          {currentDay.havenXTasks && (
+                          {!currentDay.companyBrandTasks && currentDay.havenXTasks && (
                             <Card className="p-4 sm:p-6 border border-border/50">
                               <div className="flex items-center gap-2 mb-4">
-                                <span className="text-2xl">🚀</span>
-                                <h3 className="text-base sm:text-lg font-semibold text-foreground">HavenX Tasks</h3>
+                                <span className="text-2xl">🏢</span>
+                                <h3 className="text-base sm:text-lg font-semibold text-foreground">Company Brand (_ryxen007)</h3>
                               </div>
+                              <p className="text-sm text-muted-foreground mb-2">Focus: Company-building journey, products, systems, and business updates</p>
                               <p className="text-sm sm:text-base text-foreground">{currentDay.havenXTasks}</p>
                             </Card>
                           )}
@@ -1488,8 +1844,8 @@ export function JourneyDetailV2({
                                 </Card>
                               )}
 
-                              {/* Systems Thinking Section - Collapsible */}
-                              {currentDay.dailyLearning.systems && (
+                              {/* Systems Thinking Section - Collapsible (Only on Sundays) */}
+                              {isSunday && currentDay.dailyLearning.systems && (
                                 <Card className="p-0 border border-border/50 overflow-hidden">
                                   <button
                                     onClick={() => toggleSection('systems')}
@@ -1614,6 +1970,76 @@ export function JourneyDetailV2({
                           {(() => {
                             // Get discipline-specific project if available, otherwise use default
                             const projectInfo = currentDay.disciplineProjects?.[activeDiscipline] || currentDay.project;
+                            // Get discipline-specific clues and key things
+                            const DISCIPLINE_PROJECTS_DATA = {
+                              Frontend: {
+                                clues: [
+                                  "Focus on component reusability and composition patterns",
+                                  "Implement responsive design with mobile-first approach",
+                                  "Use state management for complex data flows",
+                                  "Optimize for performance with code splitting and lazy loading",
+                                  "Ensure accessibility (a11y) standards throughout"
+                                ],
+                                keyThings: [
+                                  "Component architecture and folder structure",
+                                  "State management (Context API, Redux, or Zustand)",
+                                  "Form handling and validation libraries",
+                                  "API integration and data fetching patterns",
+                                  "Responsive breakpoints and media queries"
+                                ]
+                              },
+                              Mobile: {
+                                clues: [
+                                  "Design for both iOS and Android platform differences",
+                                  "Implement native navigation patterns (Stack, Tab, Drawer)",
+                                  "Handle device-specific features (camera, location, push notifications)",
+                                  "Optimize for different screen sizes and orientations",
+                                  "Implement offline-first architecture with local storage"
+                                ],
+                                keyThings: [
+                                  "React Native navigation (React Navigation)",
+                                  "Platform-specific code (Platform.OS checks)",
+                                  "Native modules and bridge communication",
+                                  "State persistence (AsyncStorage, Redux Persist)",
+                                  "Offline data synchronization"
+                                ]
+                              },
+                              Backend: {
+                                clues: [
+                                  "Design RESTful endpoints following REST principles",
+                                  "Implement proper authentication and authorization",
+                                  "Use middleware for request validation and error handling",
+                                  "Design database schemas with relationships",
+                                  "Implement rate limiting and security measures"
+                                ],
+                                keyThings: [
+                                  "REST API design patterns and conventions",
+                                  "Authentication (JWT, OAuth, session-based)",
+                                  "Database design (SQL/NoSQL, relationships, migrations)",
+                                  "Middleware architecture (auth, validation, error handling)",
+                                  "API security (CORS, rate limiting, input sanitization)"
+                                ]
+                              },
+                              "Systems Engineering": {
+                                clues: [
+                                  "Create custom post types and taxonomies",
+                                  "Build reusable theme templates and components",
+                                  "Develop custom plugins for specific functionality",
+                                  "Implement user role management and permissions",
+                                  "Design admin interfaces and custom dashboards"
+                                ],
+                                keyThings: [
+                                  "WordPress theme development (PHP, HTML, CSS)",
+                                  "Custom post types and taxonomies",
+                                  "Plugin development and hooks system",
+                                  "User roles and capabilities",
+                                  "Database queries (WP_Query, get_posts)"
+                                ]
+                              }
+                            };
+                            
+                            const disciplineData = DISCIPLINE_PROJECTS_DATA[activeDiscipline] || {};
+                            
                             return projectInfo ? (
                               <div className="mb-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
                                 <div className="flex items-center gap-2 mb-2">
@@ -1621,15 +2047,44 @@ export function JourneyDetailV2({
                                   <h4 className="text-sm font-semibold text-primary">Building: {projectInfo.name}</h4>
                                 </div>
                                 <p className="text-xs text-muted-foreground mb-2">{projectInfo.description}</p>
-                                <div className="text-xs text-muted-foreground">
+                                <div className="text-xs text-muted-foreground mb-3">
                                   <span className="font-semibold">Phase:</span> {projectInfo.buildPhase}
                                 </div>
+                                
+                                {/* Discipline-specific clues */}
+                                {disciplineData.clues && disciplineData.clues.length > 0 && (
+                                  <div className="mb-3">
+                                    <h5 className="text-xs font-semibold text-primary mb-2">💡 Key Clues for {activeDiscipline}:</h5>
+                                    <ul className="space-y-1">
+                                      {disciplineData.clues.map((clue, idx) => (
+                                        <li key={idx} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                          <span className="text-primary mt-0.5">•</span>
+                                          <span>{clue}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                
+                                {/* Discipline-specific key things */}
+                                {disciplineData.keyThings && disciplineData.keyThings.length > 0 && (
+                                  <div>
+                                    <h5 className="text-xs font-semibold text-primary mb-2">🔑 Key Things to Focus On:</h5>
+                                    <ul className="space-y-1">
+                                      {disciplineData.keyThings.map((thing, idx) => (
+                                        <li key={idx} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                          <span className="text-primary mt-0.5">•</span>
+                                          <span>{thing}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                               </div>
                             ) : null;
                           })()}
                           
                           <div className="flex items-center gap-2 mb-4">
-                            <Code className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                             <h3 className="text-base sm:text-lg font-semibold">{currentDay.miniProject.title}</h3>
                           </div>
                           
@@ -1759,25 +2214,54 @@ export function JourneyDetailV2({
                             
                             return flattenedResources.length > 0 ? (
                               <ul className="space-y-3">
-                                {flattenedResources.map((resource, idx) => (
-                                  <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                                    <div>
-                                      <a
-                                        href={resource.url || '#'}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-foreground hover:text-primary transition-colors font-medium"
-                                      >
-                                        {resource.title}
-                                      </a>
-                                      {(resource.time || resource.category) && (
-                                        <span className="text-xs text-muted-foreground ml-2">
-                                          ({resource.time || resource.category})
-                                        </span>
+                                {flattenedResources.map((resource, idx) => {
+                                  // Check if this is a Bible reading resource
+                                  const isBibleResource = resource.category === 'Bible' || 
+                                                         (resource.title && resource.title.includes('Bible Reading'));
+                                  
+                                  return (
+                                    <li key={idx} className="flex items-start justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <a
+                                            href={resource.url || '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-foreground hover:text-primary transition-colors font-medium"
+                                          >
+                                            {resource.title}
+                                          </a>
+                                          {(resource.time || resource.category) && (
+                                            <span className="text-xs text-muted-foreground">
+                                              ({resource.time || resource.category})
+                                            </span>
+                                          )}
+                                        </div>
+                                        {isBibleResource && resource.description && (
+                                          <p className="text-xs text-muted-foreground mt-1">
+                                            📖 {resource.description}
+                                          </p>
+                                        )}
+                                        {isBibleResource && resource.chapterCount !== undefined && (
+                                          <p className="text-xs text-primary font-medium mt-1">
+                                            Chapters to read: {resource.chapterCount} chapter{resource.chapterCount > 1 ? 's' : ''} (15 minutes allocated)
+                                          </p>
+                                        )}
+                                      </div>
+                                      {isBibleResource && resource.url && (
+                                        <a
+                                          href={resource.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="ml-2 text-primary hover:text-primary/80 transition-colors shrink-0"
+                                          title="Read Bible Chapter"
+                                        >
+                                          <BookOpen className="w-4 h-4" />
+                                        </a>
                                       )}
-                                    </div>
-                                  </li>
-                                ))}
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             ) : (
                               <p className="text-muted-foreground">No resources for this day.</p>
@@ -1806,28 +2290,61 @@ export function JourneyDetailV2({
                             <FileText className="w-5 h-5 text-primary" />
                             <h3 className="text-lg font-semibold">{activeDiscipline} Reflection</h3>
                           </div>
-                          {currentDay.reflection ? (
-                            typeof currentDay.reflection === 'string' ? (
-                              <p className="text-foreground">{currentDay.reflection}</p>
-                            ) : currentDay.reflection.questions && Array.isArray(currentDay.reflection.questions) ? (
-                              <ul className="space-y-3">
-                                {currentDay.reflection.questions.map((question, idx) => (
-                                  <li key={idx} className="flex items-start gap-2 text-foreground">
-                                    <span className="text-primary mt-1">•</span>
-                                    <span>{question}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                          {(() => {
+                            // Get discipline-specific reflection based on day and component being built
+                            const component = getProjectComponentForDay(currentDay.dayNumber, activeDiscipline);
+                            // Calculate dayIndex (0-6) from dayNumber
+                            const dayIndex = (currentDay.dayNumber - 1) % 7;
+                            const reflection = getSoftwareEngineeringReflection(
+                              selectedWeek,
+                              dayIndex,
+                              currentDay.dayNumber,
+                              activeDiscipline
+                            );
+                            
+                            return reflection && reflection.questions && Array.isArray(reflection.questions) ? (
+                              <div className="space-y-4">
+                                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                                  <p className="text-xs sm:text-sm text-muted-foreground mb-2">
+                                    <span className="font-semibold text-primary">Today's Focus:</span> {component.component || 'Building components'}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Reflect on your {activeDiscipline.toLowerCase()} work and how it connects to real-world development.
+                                  </p>
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-semibold text-foreground mb-3">Reflection Questions:</h4>
+                                  <ul className="space-y-3">
+                                    {reflection.questions.map((question, idx) => (
+                                      <li key={idx} className="flex items-start gap-2 text-sm sm:text-base text-foreground">
+                                        <span className="text-primary mt-1.5 shrink-0">•</span>
+                                        <span>{question}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                {reflection.documentation && Array.isArray(reflection.documentation) && reflection.documentation.length > 0 && (
+                                  <div className="mt-4 p-3 bg-muted/50 rounded-lg border border-border/50">
+                                    <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2">📝 Documentation:</h4>
+                                    <ul className="space-y-1.5">
+                                      {reflection.documentation.map((doc, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                                          <span className="text-primary mt-1">•</span>
+                                          <span>{doc}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
                             ) : (
-                              <p className="text-foreground">{String(currentDay.reflection)}</p>
-                            )
-                          ) : (
-                            <p className="text-muted-foreground">
-                              {isTomorrow(currentDay.dayNumber) 
-                                ? `Preview tomorrow's ${activeDiscipline.toLowerCase()} learning and implementation.` 
-                                : `Reflect on today's ${activeDiscipline.toLowerCase()} learning and implementation.`}
-                            </p>
-                          )}
+                              <p className="text-muted-foreground">
+                                {isTomorrow(currentDay.dayNumber) 
+                                  ? `Preview tomorrow's ${activeDiscipline.toLowerCase()} learning and implementation.` 
+                                  : `Reflect on today's ${activeDiscipline.toLowerCase()} learning and implementation.`}
+                              </p>
+                            );
+                          })()}
                         </Card>
                       ) : currentDay.reflection ? (
                         <Card className="p-4 sm:p-6 border border-border/50">
@@ -1881,4 +2398,3 @@ export function JourneyDetailV2({
     </div>
   );
 }
-

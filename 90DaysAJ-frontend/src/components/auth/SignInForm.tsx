@@ -7,6 +7,41 @@ import { motion } from 'framer-motion';
 
 const SAVED_EMAIL_KEY = 'ascension_saved_email';
 const REMEMBER_ME_KEY = 'ascension_remember_me';
+const RATE_LIMIT_VIOLATIONS_KEY = 'ascension_rate_limit_violations';
+const RATE_LIMIT_LAST_VIOLATION_KEY = 'ascension_rate_limit_last_violation';
+
+// Helper functions for rate limit tracking
+const getRateLimitViolations = (): { count: number; lastViolation: number } => {
+  try {
+    const stored = localStorage.getItem(RATE_LIMIT_VIOLATIONS_KEY);
+    const lastViolation = parseInt(localStorage.getItem(RATE_LIMIT_LAST_VIOLATION_KEY) || '0', 10);
+    if (stored) {
+      const count = parseInt(stored, 10);
+      // Reset count if last violation was more than 1 hour ago
+      const oneHourAgo = Date.now() - 60 * 60 * 1000;
+      if (lastViolation < oneHourAgo) {
+        return { count: 0, lastViolation: 0 };
+      }
+      return { count, lastViolation };
+    }
+    return { count: 0, lastViolation: 0 };
+  } catch {
+    return { count: 0, lastViolation: 0 };
+  }
+};
+
+const incrementRateLimitViolations = (): number => {
+  const { count } = getRateLimitViolations();
+  const newCount = count + 1;
+  localStorage.setItem(RATE_LIMIT_VIOLATIONS_KEY, newCount.toString());
+  localStorage.setItem(RATE_LIMIT_LAST_VIOLATION_KEY, Date.now().toString());
+  return newCount;
+};
+
+const clearRateLimitViolations = () => {
+  localStorage.removeItem(RATE_LIMIT_VIOLATIONS_KEY);
+  localStorage.removeItem(RATE_LIMIT_LAST_VIOLATION_KEY);
+};
 
 export function SignInForm() {
   const [email, setEmail] = useState('');
@@ -45,6 +80,9 @@ export function SignInForm() {
       fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:40',message:'Calling signIn before API call',data:{email,hasPassword:!!password},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
       // #endregion
       await signIn(email, password);
+      
+      // Clear rate limit violations on successful login
+      clearRateLimitViolations();
       
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:44',message:'signIn succeeded',data:{email,accessToken:localStorage.getItem('accessToken')?'present':'missing',refreshToken:localStorage.getItem('refreshToken')?'present':'missing'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
@@ -111,7 +149,15 @@ export function SignInForm() {
       else if (errorMessage.toLowerCase().includes('too many') || 
           errorMessage.toLowerCase().includes('rate limit') ||
           errorMessage.toLowerCase().includes('429')) {
-        errorMessage = 'Too many login attempts. Please wait 15 minutes before trying again.';
+        // Track rate limit violations for tiered timeout system
+        const violationCount = incrementRateLimitViolations();
+        
+        // First violation: 5 minutes, subsequent violations: 15 minutes
+        if (violationCount === 1) {
+          errorMessage = 'Too many login attempts. Please wait 5 minutes before trying again.';
+        } else {
+          errorMessage = 'Too many login attempts. Please wait 15 minutes before trying again.';
+        }
       }
       
       // #region agent log

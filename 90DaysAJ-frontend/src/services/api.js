@@ -37,8 +37,24 @@ class ApiClient {
       },
     };
 
+    // Log request details for debugging
+    console.log('API Request:', {
+      url,
+      method: options.method || 'GET',
+      hasToken: !!this.token,
+      endpoint,
+    });
+
     try {
       const response = await fetch(url, config);
+      
+      // Log response details for debugging
+      console.log('API Response:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+      });
       
       // Get response text first (can only read once)
       const responseText = await response.text();

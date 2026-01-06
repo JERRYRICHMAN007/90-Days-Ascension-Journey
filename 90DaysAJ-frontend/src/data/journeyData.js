@@ -225,8 +225,9 @@ function getReadingLearning(weekNum, dayIndex) {
   const topics = [];
   readingSessions.forEach((session) => {
     if (session.type === "Bible Reading") {
+      const bibleData = typeof session.material === 'object' ? session.material : { text: session.material };
       topics.push(
-        `Bible Study: ${session.material}`,
+        `Bible Study: ${bibleData.text}`,
         "Spiritual wisdom and principles",
         "Applying biblical principles to daily life"
       );
@@ -274,7 +275,8 @@ function getReadingProject(weekNum, dayIndex) {
   const requirements = [];
   readingSessions.forEach((session) => {
     if (session.type === "Bible Reading") {
-      requirements.push(`Read: ${session.material}`);
+      const bibleData = typeof session.material === 'object' ? session.material : { text: session.material };
+      requirements.push(`Read: ${bibleData.text}`);
       requirements.push("Take notes on key verses and insights");
     } else if (session.type === "E-Reading") {
       requirements.push(`Read: ${session.material}`);
@@ -309,7 +311,8 @@ function getReadingReflection(weekNum, dayIndex) {
   const prompts = [];
   readingSessions.forEach((session) => {
     if (session.type === "Bible Reading") {
-      prompts.push(`What wisdom did I gain from ${session.material}?`);
+      const bibleData = typeof session.material === 'object' ? session.material : { text: session.material };
+      prompts.push(`What wisdom did I gain from ${bibleData.text}?`);
       prompts.push("How can I apply these principles today?");
     } else if (session.type === "E-Reading") {
       prompts.push(`What key insights did I learn from ${session.material}?`);
@@ -343,16 +346,16 @@ function getReadingReflection(weekNum, dayIndex) {
 // Helper function for Dual Brand reflection
 function getDualBrandReflection(weekNum, dayIndex) {
   const focus = getDualBrandFocus(weekNum, dayIndex);
-  const ryxenTasks = getRyxenTasks(weekNum, dayIndex);
-  const havenXTasks = getHavenXTasks(weekNum, dayIndex);
+  const personalBrandTasks = getPersonalBrandTasks(weekNum, dayIndex);
+  const companyBrandTasks = getCompanyBrandTasks(weekNum, dayIndex);
   const outcome = getDualBrandOutcome(weekNum, dayIndex);
 
   return {
-    prompt: `Reflect on today's ${focus} work for both Ryxen and HavenX brands`,
+    prompt: `Reflect on today's ${focus} work for both Personal Brand and Company Brand`,
     questions: [
       `What progress did I make on ${focus}?`,
-      `Ryxen: How did ${ryxenTasks} go?`,
-      `HavenX: How did ${havenXTasks} go?`,
+      `Personal Brand (_jerryrichman007): How did ${personalBrandTasks} go?`,
+      `Company Brand (_ryxen007): How did ${companyBrandTasks} go?`,
       `Did I achieve the expected outcome: ${outcome}?`,
       "What challenges did I face?",
       "What will I focus on improving tomorrow?",
@@ -840,7 +843,27 @@ function getBibleReading(weekNum, dayIndex) {
     "Isaiah",
     "Isaiah",
   ];
-  return `${readings[weekNum - 1] || "Proverbs"} ${Math.min(dayIndex + 1, 31)}`;
+  const book = readings[weekNum - 1] || "Proverbs";
+  const chapter = Math.min(dayIndex + 1, 31);
+  const chapterName = `${book} ${chapter}`;
+  
+  // Generate Bible.com link for the specific chapter
+  // Using YouVersion Bible.com format: book abbreviation and chapter
+  const bookAbbrev = {
+    "Proverbs": "PRO",
+    "Ecclesiastes": "ECC",
+    "Isaiah": "ISA"
+  }[book] || "PRO";
+  
+  // YouVersion Bible.com link format
+  const bibleLink = `https://www.bible.com/bible/1/${bookAbbrev}.${chapter}.KJV`;
+  
+  return {
+    text: chapterName,
+    link: bibleLink,
+    book: book,
+    chapter: chapter
+  };
 }
 
 function getReadingTheme(weekNum) {
@@ -863,6 +886,10 @@ function getReadingTheme(weekNum) {
 }
 
 function getReadingResources(weekNum, dayIndex) {
+  // Get Bible reading information
+  const bibleData = getBibleReading(weekNum, dayIndex);
+  const bibleChapterCount = 1; // Each day reads 1 chapter (15 minutes allocated)
+  
   const resources = [
     {
       title: "Atomic Habits - James Clear",
@@ -900,15 +927,29 @@ function getReadingResources(weekNum, dayIndex) {
 
   // Always include reading comprehension and note-taking guides
   const baseGuides = [resources[4], resources[5]];
+  
+  // Add Bible chapter link with chapter count
+  const bibleResource = {
+    title: `Bible Reading: ${bibleData.text}`,
+    url: bibleData.link,
+    time: "15 min",
+    category: "Bible",
+    description: `${bibleChapterCount} chapter${bibleChapterCount > 1 ? 's' : ''} (${bibleData.book} ${bibleData.chapter})`,
+    chapterCount: bibleChapterCount
+  };
 
+  let readingResources = [];
   if (weekNum <= 2) {
-    return [resources[0], ...baseGuides];
+    readingResources = [resources[0], bibleResource, ...baseGuides];
   } else if (weekNum <= 4) {
-    return [resources[1], ...baseGuides];
+    readingResources = [resources[1], bibleResource, ...baseGuides];
   } else if (weekNum <= 6) {
-    return [resources[2], ...baseGuides];
+    readingResources = [resources[2], bibleResource, ...baseGuides];
+  } else {
+    readingResources = [bibleResource, ...baseGuides];
   }
-  return [resources[3], ...baseGuides];
+  
+  return readingResources;
 }
 
 // Dual Brand Journey - Complete 13 weeks
@@ -940,8 +981,11 @@ export const dualBrandWeeks = generateWeeks("2026-01-06", 13).map(
         date: dayDateString,
         dayName: actualDayName,
         focus: getDualBrandFocus(idx + 1, i),
-        ryxenTasks: getRyxenTasks(idx + 1, i),
-        havenXTasks: getHavenXTasks(idx + 1, i),
+        personalBrandTasks: getPersonalBrandTasks(idx + 1, i),
+        companyBrandTasks: getCompanyBrandTasks(idx + 1, i),
+        // Keep legacy fields for backward compatibility
+        ryxenTasks: getPersonalBrandTasks(idx + 1, i),
+        havenXTasks: getCompanyBrandTasks(idx + 1, i),
         theme: getDualBrandTheme(idx + 1),
         learningResources: getDualBrandLearningResources(idx + 1, i),
         outcome: getDualBrandOutcome(idx + 1, i),
@@ -1711,22 +1755,22 @@ function getDualBrandLearningResources(weekNum, dayIndex) {
   return allResources[weekNum - 1]?.[dayIndex] || [];
 }
 
-function getRyxenTasks(weekNum, dayIndex) {
+function getPersonalBrandTasks(weekNum, dayIndex) {
   const tasks = [
     [
-      "Define Ryxen mission, values, target persona",
-      "Design Ryxen logo concept, color palette",
-      "Create/optimize Ryxen Instagram, X, TikTok profiles",
-      "Create Ryxen YouTube channel",
-      "Define 5 Ryxen content pillars",
-      "Write compelling bios for all Ryxen platforms",
+      "Define Personal Brand (_jerryrichman007) mission, values, target persona",
+      "Design Personal Brand logo concept, color palette",
+      "Create/optimize Personal Brand Instagram, X, TikTok profiles",
+      "Create Personal Brand YouTube channel",
+      "Define 5 Personal Brand content pillars",
+      "Write compelling bios for all Personal Brand platforms",
       "Review week foundation work",
     ],
     [
-      "Create 3 Ryxen Instagram posts",
-      "Create 5 Ryxen X/Twitter threads",
-      "Script 2 Ryxen YouTube Shorts",
-      "Create 3 Ryxen TikTok videos",
+      "Create 3 Personal Brand Instagram posts",
+      "Create 5 Personal Brand X/Twitter threads",
+      "Script 2 Personal Brand YouTube Shorts",
+      "Create 3 Personal Brand TikTok videos",
       "Schedule Week 3 content",
       "Review all created content",
       "Analyze what content resonated",
@@ -1831,18 +1875,18 @@ function getRyxenTasks(weekNum, dayIndex) {
       "DUAL BRAND ASCENSION COMPLETE",
     ],
   ];
-  return tasks[weekNum - 1]?.[dayIndex] || "Ryxen brand task";
+  return tasks[weekNum - 1]?.[dayIndex] || "Personal brand task";
 }
 
-function getHavenXTasks(weekNum, dayIndex) {
+function getCompanyBrandTasks(weekNum, dayIndex) {
   const tasks = [
     [
-      "Define HavenX mission, positioning, ideal client",
-      "Design HavenX logo concept, brand guidelines",
-      "Create/optimize HavenX LinkedIn, X, Instagram profiles",
-      "Create HavenX YouTube channel",
-      "Define 5 HavenX content pillars",
-      "Write compelling bios for all HavenX platforms",
+      "Define Company Brand (_ryxen007) mission, positioning, ideal client",
+      "Design Company Brand logo concept, brand guidelines",
+      "Create/optimize Company Brand LinkedIn, X, Instagram profiles",
+      "Create Company Brand YouTube channel",
+      "Define 5 Company Brand content pillars",
+      "Write compelling bios for all Company Brand platforms",
       "Review week foundation work",
     ],
     [
@@ -1954,7 +1998,7 @@ function getHavenXTasks(weekNum, dayIndex) {
       "DUAL BRAND ASCENSION COMPLETE",
     ],
   ];
-  return tasks[weekNum - 1]?.[dayIndex] || "HavenX brand task";
+  return tasks[weekNum - 1]?.[dayIndex] || "Company brand task";
 }
 
 function getDualBrandTheme(weekNum) {
@@ -4526,18 +4570,114 @@ const DISCIPLINE_PROJECTS = {
   Frontend: {
     name: "Customer Web Dashboard",
     description: "A production-ready responsive web application with modern UI/UX, built with React and modern frontend technologies",
+    clues: [
+      "Focus on component reusability and composition patterns",
+      "Implement responsive design with mobile-first approach",
+      "Use state management for complex data flows",
+      "Optimize for performance with code splitting and lazy loading",
+      "Ensure accessibility (a11y) standards throughout",
+      "Implement proper error boundaries and loading states",
+      "Use modern CSS-in-JS or utility-first CSS frameworks",
+      "Build reusable form components with validation",
+      "Implement client-side routing with React Router",
+      "Focus on user experience and smooth interactions"
+    ],
+    keyThings: [
+      "Component architecture and folder structure",
+      "State management (Context API, Redux, or Zustand)",
+      "Form handling and validation libraries",
+      "API integration and data fetching patterns",
+      "Responsive breakpoints and media queries",
+      "Performance optimization (memoization, virtualization)",
+      "Accessibility features (ARIA labels, keyboard navigation)",
+      "Error handling and user feedback",
+      "Testing strategies (unit, integration, E2E)",
+      "Build tools and bundling (Vite, Webpack)"
+    ]
   },
   Mobile: {
     name: "Mobile App",
     description: "A production-ready cross-platform mobile application built with React Native, featuring native performance and offline capabilities",
+    clues: [
+      "Design for both iOS and Android platform differences",
+      "Implement native navigation patterns (Stack, Tab, Drawer)",
+      "Handle device-specific features (camera, location, push notifications)",
+      "Optimize for different screen sizes and orientations",
+      "Implement offline-first architecture with local storage",
+      "Use native modules for platform-specific functionality",
+      "Focus on touch interactions and gesture handling",
+      "Optimize app performance and bundle size",
+      "Handle app state persistence across sessions",
+      "Test on both iOS and Android devices/emulators"
+    ],
+    keyThings: [
+      "React Native navigation (React Navigation)",
+      "Platform-specific code (Platform.OS checks)",
+      "Native modules and bridge communication",
+      "State persistence (AsyncStorage, Redux Persist)",
+      "Offline data synchronization",
+      "Push notification setup",
+      "App icons and splash screens",
+      "Deep linking and universal links",
+      "Performance monitoring and crash reporting",
+      "App store deployment process"
+    ]
   },
   Backend: {
     name: "REST API Server",
     description: "A production-ready RESTful API backend built with Node.js and Express, featuring authentication, data management, and secure endpoints",
+    clues: [
+      "Design RESTful endpoints following REST principles",
+      "Implement proper authentication and authorization",
+      "Use middleware for request validation and error handling",
+      "Design database schemas with relationships",
+      "Implement rate limiting and security measures",
+      "Handle file uploads and storage",
+      "Use environment variables for configuration",
+      "Implement logging and monitoring",
+      "Write comprehensive API documentation",
+      "Focus on scalability and performance optimization"
+    ],
+    keyThings: [
+      "REST API design patterns and conventions",
+      "Authentication (JWT, OAuth, session-based)",
+      "Database design (SQL/NoSQL, relationships, migrations)",
+      "Middleware architecture (auth, validation, error handling)",
+      "API security (CORS, rate limiting, input sanitization)",
+      "Error handling and status codes",
+      "File upload and storage (local, cloud)",
+      "API documentation (Swagger/OpenAPI)",
+      "Testing (unit, integration, API testing)",
+      "Deployment and environment management"
+    ]
   },
   "Systems Engineering": {
     name: "WordPress CMS Platform",
     description: "A production-ready WordPress content management system with custom themes, plugins, and administrative capabilities",
+    clues: [
+      "Create custom post types and taxonomies",
+      "Build reusable theme templates and components",
+      "Develop custom plugins for specific functionality",
+      "Implement user role management and permissions",
+      "Design admin interfaces and custom dashboards",
+      "Optimize for performance and SEO",
+      "Ensure security best practices",
+      "Create custom widgets and shortcodes",
+      "Implement proper data migration strategies",
+      "Focus on client-friendly admin experience"
+    ],
+    keyThings: [
+      "WordPress theme development (PHP, HTML, CSS)",
+      "Custom post types and taxonomies",
+      "Plugin development and hooks system",
+      "User roles and capabilities",
+      "Database queries (WP_Query, get_posts)",
+      "REST API and AJAX requests",
+      "Security (nonces, sanitization, validation)",
+      "Performance (caching, optimization)",
+      "SEO optimization (meta tags, schema markup)",
+      "Client onboarding and documentation"
+    ]
   },
 };
 
@@ -4832,7 +4972,8 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
         weekNum,
         i,
         disciplineRotation,
-        timeBlocks
+        timeBlocks,
+        dayNumber
       );
 
       // Get project component information for each discipline
@@ -4977,7 +5118,8 @@ function organizeContentBySchedule(
   weekNum,
   dayIndex,
   disciplineRotation,
-  timeBlocks
+  timeBlocks,
+  dayNumber = null
 ) {
   const scheduled = {
     deepLearning: [],
@@ -4986,6 +5128,9 @@ function organizeContentBySchedule(
 
   const isSaturday = dayIndex === 5;
   const isSunday = dayIndex === 6;
+  
+  // Calculate dayNumber if not provided
+  const calculatedDayNumber = dayNumber || ((weekNum - 1) * 7 + dayIndex + 1);
 
   if (isSaturday) {
     // Saturday: Mobile Revision, Frontend, Backend
@@ -4996,7 +5141,9 @@ function organizeContentBySchedule(
           learningData,
           block.discipline,
           weekNum,
-          "study"
+          "study",
+          dayIndex,
+          calculatedDayNumber
         );
         scheduled.deepLearning.push({
           ...block,
@@ -5021,7 +5168,9 @@ function organizeContentBySchedule(
               projectData,
               block.discipline,
               weekNum,
-              "build"
+              "build",
+              dayIndex,
+              calculatedDayNumber
             );
         scheduled.focusedImplementation.push({
           ...block,
@@ -5051,7 +5200,8 @@ function organizeContentBySchedule(
           block.discipline,
           weekNum,
           "study",
-          dayIndex
+          dayIndex,
+          calculatedDayNumber
         );
         scheduled.deepLearning.push({
           ...block,
@@ -5077,7 +5227,8 @@ function organizeContentBySchedule(
               block.discipline,
               weekNum,
               "build",
-              dayIndex
+              dayIndex,
+              calculatedDayNumber
             );
         scheduled.focusedImplementation.push({
           ...block,
@@ -5107,14 +5258,16 @@ function organizeContentBySchedule(
         disc,
         weekNum,
         "study",
-        dayIndex
+        dayIndex,
+        calculatedDayNumber
       ),
       project: getDisciplineContent(
         projectDataWithDayIndex,
         disc,
         weekNum,
         "build",
-        dayIndex
+        dayIndex,
+        calculatedDayNumber
       ),
     };
   });
@@ -5129,7 +5282,8 @@ function organizeContentBySchedule(
       discipline,
       weekNum,
       "study",
-      dayIndex
+      dayIndex,
+      calculatedDayNumber
     );
     const syncInfo = getSyncedContent(
       discipline,
@@ -5158,7 +5312,8 @@ function organizeContentBySchedule(
       discipline,
       weekNum,
       "build",
-      dayIndex
+      dayIndex,
+      calculatedDayNumber
     );
     const syncInfo = getSyncedContent(
       discipline,
@@ -5204,7 +5359,8 @@ function organizeContentBySchedule(
               discipline,
               weekNum,
               "study",
-              dayIndex
+              dayIndex,
+              calculatedDayNumber
             ),
           });
         }
@@ -5217,7 +5373,8 @@ function organizeContentBySchedule(
               discipline,
               weekNum,
               "build",
-              dayIndex
+              dayIndex,
+              calculatedDayNumber
             ),
           });
         }
@@ -5233,7 +5390,8 @@ function organizeContentBySchedule(
             discipline,
             weekNum,
             "study",
-            dayIndex
+            dayIndex,
+            calculatedDayNumber
           ),
         });
 
@@ -5247,7 +5405,8 @@ function organizeContentBySchedule(
             discipline,
             weekNum,
             "build",
-            dayIndex
+            dayIndex,
+            calculatedDayNumber
           ),
         });
       }
@@ -5981,13 +6140,336 @@ function getSkillQuiz(skillName) {
 }
 
 // Discipline-specific resource mapping (enhanced with skill-based resources)
-function getDisciplineResources(discipline, weekNum, skillName = null) {
+// Get day-specific, discipline-specific resources that connect to the day's project
+function getDaySpecificResources(dayNumber, discipline, weekNum, dayIndex) {
+  const component = getProjectComponentForDay(dayNumber, discipline);
+  const componentName = component.component || "";
+  const partName = component.part || "";
+  
+  // Frontend resources based on component being built
+  if (discipline === "Frontend") {
+    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
+      return [
+        {
+          title: "React Project Setup Guide",
+          url: "https://react.dev/learn/start-a-new-react-project",
+          time: "15 min",
+          category: "Setup"
+        },
+        {
+          title: "Modern JavaScript for React",
+          url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+          time: "20 min",
+          category: "Fundamentals"
+        }
+      ];
+    }
+    if (componentName.includes("Layout") || partName.includes("Layout")) {
+      return [
+        {
+          title: "CSS Layout Patterns",
+          url: "https://css-tricks.com/guides/layout/",
+          time: "25 min",
+          category: "Layout"
+        },
+        {
+          title: "React Component Composition",
+          url: "https://react.dev/learn/passing-props-to-a-component",
+          time: "15 min",
+          category: "Components"
+        }
+      ];
+    }
+    if (componentName.includes("Auth") || partName.includes("Auth")) {
+      return [
+        {
+          title: "React Form Handling",
+          url: "https://react.dev/reference/react-dom/components/form",
+          time: "20 min",
+          category: "Forms"
+        },
+        {
+          title: "Authentication Best Practices",
+          url: "https://developer.mozilla.org/en-US/docs/Web/Security/Authentication",
+          time: "15 min",
+          category: "Security"
+        }
+      ];
+    }
+    if (componentName.includes("Dashboard") || componentName.includes("List") || componentName.includes("Detail")) {
+      return [
+        {
+          title: "React State Management",
+          url: "https://react.dev/learn/managing-state",
+          time: "25 min",
+          category: "State"
+        },
+        {
+          title: "Data Fetching in React",
+          url: "https://react.dev/learn/synchronizing-with-effects",
+          time: "20 min",
+          category: "Data"
+        }
+      ];
+    }
+    if (componentName.includes("Form") || componentName.includes("Modal")) {
+      return [
+        {
+          title: "Controlled Components",
+          url: "https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable",
+          time: "15 min",
+          category: "Forms"
+        },
+        {
+          title: "React Portal for Modals",
+          url: "https://react.dev/reference/react-dom/createPortal",
+          time: "15 min",
+          category: "UI Patterns"
+        }
+      ];
+    }
+    // Default frontend resources
+    return [
+      {
+        title: "React Official Docs",
+        url: "https://react.dev/learn",
+        time: "20 min",
+        category: "Reference"
+      },
+      {
+        title: "MDN Web Docs",
+        url: "https://developer.mozilla.org",
+        time: "15 min",
+        category: "Reference"
+      }
+    ];
+  }
+  
+  // Mobile resources based on component being built
+  if (discipline === "Mobile") {
+    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
+      return [
+        {
+          title: "React Native Getting Started",
+          url: "https://reactnative.dev/docs/getting-started",
+          time: "20 min",
+          category: "Setup"
+        },
+        {
+          title: "Expo Quick Start",
+          url: "https://docs.expo.dev/get-started/installation/",
+          time: "15 min",
+          category: "Setup"
+        }
+      ];
+    }
+    if (componentName.includes("Navigation")) {
+      return [
+        {
+          title: "React Navigation Basics",
+          url: "https://reactnavigation.org/docs/getting-started",
+          time: "25 min",
+          category: "Navigation"
+        }
+      ];
+    }
+    if (componentName.includes("Auth") || componentName.includes("Login")) {
+      return [
+        {
+          title: "React Native Forms",
+          url: "https://reactnative.dev/docs/textinput",
+          time: "15 min",
+          category: "Forms"
+        },
+        {
+          title: "AsyncStorage Guide",
+          url: "https://react-native-async-storage.github.io/async-storage/",
+          time: "15 min",
+          category: "Storage"
+        }
+      ];
+    }
+    if (componentName.includes("Offline")) {
+      return [
+        {
+          title: "Offline-First Architecture",
+          url: "https://reactnative.dev/docs/network",
+          time: "20 min",
+          category: "Architecture"
+        }
+      ];
+    }
+    // Default mobile resources
+    return [
+      {
+        title: "React Native Docs",
+        url: "https://reactnative.dev",
+        time: "20 min",
+        category: "Reference"
+      }
+    ];
+  }
+  
+  // Backend resources based on component being built
+  if (discipline === "Backend") {
+    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
+      return [
+        {
+          title: "Node.js Getting Started",
+          url: "https://nodejs.org/en/docs/guides/getting-started-guide",
+          time: "20 min",
+          category: "Setup"
+        },
+        {
+          title: "Express.js Hello World",
+          url: "https://expressjs.com/en/starter/hello-world.html",
+          time: "15 min",
+          category: "Framework"
+        }
+      ];
+    }
+    if (componentName.includes("Auth") || componentName.includes("Authentication")) {
+      return [
+        {
+          title: "JWT Authentication Guide",
+          url: "https://jwt.io/introduction",
+          time: "20 min",
+          category: "Security"
+        },
+        {
+          title: "Express Middleware",
+          url: "https://expressjs.com/en/guide/using-middleware.html",
+          time: "15 min",
+          category: "Middleware"
+        }
+      ];
+    }
+    if (componentName.includes("Database") || componentName.includes("CRUD")) {
+      return [
+        {
+          title: "MongoDB CRUD Operations",
+          url: "https://www.mongodb.com/docs/manual/crud/",
+          time: "25 min",
+          category: "Database"
+        }
+      ];
+    }
+    if (componentName.includes("API") || componentName.includes("Endpoint")) {
+      return [
+        {
+          title: "REST API Design",
+          url: "https://restfulapi.net/",
+          time: "20 min",
+          category: "API Design"
+        },
+        {
+          title: "Express Routing",
+          url: "https://expressjs.com/en/guide/routing.html",
+          time: "15 min",
+          category: "Routing"
+        }
+      ];
+    }
+    if (componentName.includes("Security") || componentName.includes("Error")) {
+      return [
+        {
+          title: "API Security Best Practices",
+          url: "https://owasp.org/www-project-api-security/",
+          time: "20 min",
+          category: "Security"
+        }
+      ];
+    }
+    // Default backend resources
+    return [
+      {
+        title: "Node.js Documentation",
+        url: "https://nodejs.org/en/docs",
+        time: "20 min",
+        category: "Reference"
+      }
+    ];
+  }
+  
+  // Systems Engineering (WordPress) resources
+  if (discipline === "Systems Engineering") {
+    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
+      return [
+        {
+          title: "WordPress Development Environment",
+          url: "https://developer.wordpress.org/getting-started/",
+          time: "20 min",
+          category: "Setup"
+        }
+      ];
+    }
+    if (componentName.includes("Post Types") || componentName.includes("Custom")) {
+      return [
+        {
+          title: "Custom Post Types",
+          url: "https://developer.wordpress.org/reference/functions/register_post_type/",
+          time: "25 min",
+          category: "Development"
+        }
+      ];
+    }
+    if (componentName.includes("Theme") || componentName.includes("Template")) {
+      return [
+        {
+          title: "Theme Development",
+          url: "https://developer.wordpress.org/themes/getting-started/",
+          time: "25 min",
+          category: "Themes"
+        }
+      ];
+    }
+    if (componentName.includes("Plugin")) {
+      return [
+        {
+          title: "Plugin Development",
+          url: "https://developer.wordpress.org/plugins/plugin-basics/",
+          time: "25 min",
+          category: "Plugins"
+        }
+      ];
+    }
+    if (componentName.includes("User") || componentName.includes("Role")) {
+      return [
+        {
+          title: "User Roles and Capabilities",
+          url: "https://developer.wordpress.org/plugins/users/roles-and-capabilities/",
+          time: "20 min",
+          category: "Security"
+        }
+      ];
+    }
+    // Default WordPress resources
+    return [
+      {
+        title: "WordPress Developer Docs",
+        url: "https://developer.wordpress.org",
+        time: "20 min",
+        category: "Reference"
+      }
+    ];
+  }
+  
+  // Fallback
+  return [];
+}
+
+function getDisciplineResources(discipline, weekNum, skillName = null, dayNumber = null, dayIndex = null) {
   // If skillName is provided, return skill-specific resources
   if (skillName) {
     return getSkillResources(skillName);
   }
 
-  // Otherwise return general discipline resources
+  // For Software Engineering, use day-specific resources
+  if (dayNumber && dayIndex !== null) {
+    return getDaySpecificResources(dayNumber, discipline, weekNum, dayIndex);
+  }
+
+  // Otherwise return general discipline resources (fallback)
   const resources = {
     Frontend: [
       {
@@ -5998,23 +6480,9 @@ function getDisciplineResources(discipline, weekNum, skillName = null) {
         type: "deep-learning",
       },
       {
-        title: "Tailwind CSS Docs",
-        url: "https://tailwindcss.com/docs",
-        category: "Framework",
-        time: "Reference",
-        type: "deep-learning",
-      },
-      {
         title: "React Official Docs",
         url: "https://react.dev/learn",
         category: "Library",
-        time: "Reference",
-        type: "deep-learning",
-      },
-      {
-        title: "Next.js Official Docs",
-        url: "https://nextjs.org/docs",
-        category: "Framework",
         time: "Reference",
         type: "deep-learning",
       },
@@ -6034,27 +6502,6 @@ function getDisciplineResources(discipline, weekNum, skillName = null) {
         time: "Reference",
         type: "deep-learning",
       },
-      {
-        title: "MongoDB Documentation",
-        url: "https://www.mongodb.com/docs",
-        category: "Database",
-        time: "Reference",
-        type: "deep-learning",
-      },
-      {
-        title: "PostgreSQL Docs",
-        url: "https://www.postgresql.org/docs",
-        category: "Database",
-        time: "Reference",
-        type: "deep-learning",
-      },
-      {
-        title: "Prisma Documentation",
-        url: "https://www.prisma.io/docs",
-        category: "ORM",
-        time: "Reference",
-        type: "deep-learning",
-      },
     ],
     Mobile: [
       {
@@ -6071,40 +6518,12 @@ function getDisciplineResources(discipline, weekNum, skillName = null) {
         time: "Reference",
         type: "deep-learning",
       },
-      {
-        title: "React Navigation",
-        url: "https://reactnavigation.org",
-        category: "Framework",
-        time: "Reference",
-        type: "deep-learning",
-      },
-      {
-        title: "React Native Maps",
-        url: "https://github.com/react-native-maps/react-native-maps",
-        category: "Library",
-        time: "Reference",
-        type: "deep-learning",
-      },
-      {
-        title: "Redux for React Native",
-        url: "https://redux.js.org",
-        category: "State Management",
-        time: "Reference",
-        type: "deep-learning",
-      },
     ],
     "Systems Engineering": [
       {
         title: "WordPress Developer Docs",
         url: "https://developer.wordpress.org",
         category: "CMS",
-        time: "Reference",
-        type: "deep-learning",
-      },
-      {
-        title: "Gutenberg Handbook",
-        url: "https://developer.wordpress.org/block-editor",
-        category: "Editor",
         time: "Reference",
         type: "deep-learning",
       },
@@ -8232,12 +8651,16 @@ function getDisciplineContent(
   discipline,
   weekNum,
   type,
-  dayIndex = 0
+  dayIndex = 0,
+  dayNumber = null
 ) {
   const weekTheme = getSoftwareEngineeringTheme(weekNum);
 
   // Handle discipline-specific content using helper functions
   const dayIdx = content?.dayIndex !== undefined ? content.dayIndex : dayIndex;
+  
+  // Calculate dayNumber if not provided (weekNum * 7 - 7 + dayIndex + 1)
+  const calculatedDayNumber = dayNumber || ((weekNum - 1) * 7 + dayIndex + 1);
 
   if (discipline === "Mobile") {
     const mobileContent = getMobileLearningContent(weekNum, dayIdx);
@@ -8246,7 +8669,7 @@ function getDisciplineContent(
       topics: mobileContent.topics || [],
       type: "study",
       discipline: "Mobile",
-      resources: getDisciplineResources("Mobile", weekNum),
+      resources: getDisciplineResources("Mobile", weekNum, null, calculatedDayNumber, dayIdx),
       roadmap: getDisciplineRoadmap("Mobile"),
       syncedWith: "Backend",
       syncedContent: null,
@@ -8266,7 +8689,7 @@ function getDisciplineContent(
         topics: content.frontend.topics || [],
         type: "study",
         discipline: discipline,
-        resources: getDisciplineResources(discipline, weekNum),
+        resources: getDisciplineResources(discipline, weekNum, null, calculatedDayNumber, dayIdx),
         roadmap: getDisciplineRoadmap(discipline),
         syncedWith: "Backend",
         syncedContent: content.backend || null,
@@ -8279,7 +8702,7 @@ function getDisciplineContent(
       topics: frontendContent.topics || [],
       type: "study",
       discipline: "Frontend",
-      resources: getDisciplineResources("Frontend", weekNum),
+      resources: getDisciplineResources("Frontend", weekNum, null, calculatedDayNumber, dayIdx),
       roadmap: getDisciplineRoadmap("Frontend"),
       syncedWith: "Backend",
       syncedContent: null,
@@ -8299,7 +8722,7 @@ function getDisciplineContent(
         topics: content.backend.topics || [],
         type: "study",
         discipline: discipline,
-        resources: getDisciplineResources(discipline, weekNum),
+        resources: getDisciplineResources(discipline, weekNum, null, calculatedDayNumber, dayIdx),
         roadmap: getDisciplineRoadmap(discipline),
         syncedWith: "Frontend",
         syncedContent: content.frontend || null,
@@ -8312,7 +8735,7 @@ function getDisciplineContent(
       topics: backendContent.topics || [],
       type: "study",
       discipline: "Backend",
-      resources: getDisciplineResources("Backend", weekNum),
+      resources: getDisciplineResources("Backend", weekNum, null, calculatedDayNumber, dayIdx),
       roadmap: getDisciplineRoadmap("Backend"),
       syncedWith: "Frontend",
       syncedContent: null,
@@ -8330,7 +8753,7 @@ function getDisciplineContent(
       topics: systemsEngineeringContent.topics || [],
       type: "study",
       discipline: "Systems Engineering",
-      resources: getDisciplineResources("Systems Engineering", weekNum),
+      resources: getDisciplineResources("Systems Engineering", weekNum, null, calculatedDayNumber, dayIdx),
       roadmap: getDisciplineRoadmap("Systems Engineering"),
       syncedWith: "Frontend",
       syncedContent: null,
@@ -8347,7 +8770,7 @@ function getDisciplineContent(
         topics: content.frontend.topics || [],
         type: "study",
         discipline: discipline,
-        resources: getDisciplineResources(discipline, weekNum),
+        resources: getDisciplineResources(discipline, weekNum, null, calculatedDayNumber, dayIdx),
         roadmap: getDisciplineRoadmap(discipline),
         syncedWith: "Backend",
         syncedContent: content.backend,
@@ -8360,7 +8783,7 @@ function getDisciplineContent(
         topics: content.backend.topics || [],
         type: "study",
         discipline: discipline,
-        resources: getDisciplineResources(discipline, weekNum),
+        resources: getDisciplineResources(discipline, weekNum, null, calculatedDayNumber, dayIdx),
         roadmap: getDisciplineRoadmap(discipline),
         syncedWith: "Frontend",
         syncedContent: content.frontend,
@@ -8403,8 +8826,11 @@ function getDisciplineContent(
   if (discipline === "Mobile" && mobileMatch) matchesDiscipline = true;
   if (discipline === "WordPress" && wordpressMatch) matchesDiscipline = true;
 
-  // Get discipline-specific resources
-  const resources = getDisciplineResources(discipline, weekNum);
+  // Calculate dayNumber for resources (weekNum * 7 - 7 + dayIndex + 1)
+  const resourceDayNumber = (weekNum - 1) * 7 + dayIndex + 1;
+  
+  // Get discipline-specific resources (day-specific)
+  const resources = getDisciplineResources(discipline, weekNum, null, resourceDayNumber, dayIndex);
   const roadmap = getDisciplineRoadmap(discipline);
 
   // If content matches discipline, return it
@@ -10797,39 +11223,415 @@ function getPlatformSessions(weekNum, dayIndex) {
   return null;
 }
 
-function getSoftwareEngineeringReflection(weekNum, dayIndex) {
-  const reflections = {
-    1: {
-      0: {
+// Get discipline-specific reflection questions based on day number and component being built
+function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, discipline = null) {
+  // Calculate dayNumber if not provided
+  const calculatedDayNumber = dayNumber || ((weekNum - 1) * 7 + dayIndex + 1);
+  
+  // Get the component being built today for this discipline
+  const component = discipline ? getProjectComponentForDay(calculatedDayNumber, discipline) : null;
+  const componentName = component?.component || "";
+  const partName = component?.part || "";
+  
+  // Frontend-specific reflections
+  if (discipline === "Frontend") {
+    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
+      return {
         questions: [
-          "What was the most challenging concept today?",
-          "How does semantic HTML differ from what you knew before?",
-          "What questions do you still have?",
-          "What are you most excited to learn next?",
+          "What specific React patterns did you implement today that you'll reuse in future components?",
+          "How does your project structure compare to production React applications you've seen?",
+          "What JavaScript concepts did you apply that made the setup smoother?",
+          "What's one thing you'll do differently in your next React project based on today's experience?",
+          "How confident do you feel about building the next component? What would increase that confidence?"
         ],
         documentation: [
-          "Save your reflection in a reflections/day-01.md file",
-          "Note any resources you found helpful",
-          "List concepts to review tomorrow",
+          "Document your project structure and why you chose it",
+          "Note any setup challenges and how you solved them",
+          "List React patterns you want to master"
         ],
-      },
-    },
-  };
-
-  const reflection = reflections[weekNum]?.[dayIndex];
-  if (reflection) {
-    return reflection;
+      };
+    }
+    if (componentName.includes("Layout") || partName.includes("Layout")) {
+      return {
+        questions: [
+          "How did you decide between CSS Grid and Flexbox for different layout sections?",
+          "What responsive design challenges did you face, and how did you solve them?",
+          "How does your component composition approach compare to real-world React apps?",
+          "What accessibility considerations did you implement in your layout?",
+          "If you were to refactor this layout tomorrow, what would you improve and why?"
+        ],
+        documentation: [
+          "Document your layout decisions and trade-offs",
+          "Note responsive breakpoints and why you chose them",
+          "List layout patterns you want to explore further"
+        ],
+      };
+    }
+    if (componentName.includes("Auth") || partName.includes("Auth")) {
+      return {
+        questions: [
+          "What security considerations did you implement in your authentication flow?",
+          "How does your form validation approach handle edge cases users might encounter?",
+          "What would happen if a user tried to submit invalid data? How did you handle that?",
+          "How does your auth implementation compare to production authentication systems?",
+          "What's one security vulnerability you're aware of and how would you prevent it?"
+        ],
+        documentation: [
+          "Document your authentication flow and security measures",
+          "Note validation rules and error handling strategies",
+          "List security best practices you want to implement"
+        ],
+      };
+    }
+    if (componentName.includes("Dashboard") || componentName.includes("List") || componentName.includes("Detail")) {
+      return {
+        questions: [
+          "How did you manage state complexity as your component grew? What patterns helped?",
+          "What data fetching strategies did you use, and why did you choose them?",
+          "How does your component handle loading and error states? Is it user-friendly?",
+          "If this component had to handle 10x more data, what would you need to change?",
+          "What performance optimizations did you implement, and what's the measurable impact?"
+        ],
+        documentation: [
+          "Document your state management decisions",
+          "Note data fetching patterns and error handling",
+          "List performance optimizations to explore"
+        ],
+      };
+    }
+    if (componentName.includes("Form") || componentName.includes("Modal")) {
+      return {
+        questions: [
+          "How did you ensure your form provides clear feedback to users at every step?",
+          "What edge cases did you consider in your form validation?",
+          "How does your modal implementation handle accessibility (keyboard navigation, focus management)?",
+          "If a user had a slow connection, how would your form/modal behave?",
+          "What user experience improvements could you make to reduce friction?"
+        ],
+        documentation: [
+          "Document form validation rules and user feedback mechanisms",
+          "Note accessibility features implemented",
+          "List UX improvements to test with real users"
+        ],
+      };
+    }
+    // Default Frontend reflection
+    return {
+      questions: [
+        "What React patterns did you use today that you want to master?",
+        "How does your code structure compare to production React applications?",
+        "What performance considerations did you implement, and why?",
+        "If you were to code review your work, what would you improve?",
+        "What's one thing you learned today that will make you a better frontend developer?"
+      ],
+      documentation: [
+        "Document key React patterns and concepts learned",
+        "Note code quality improvements to make",
+        "List frontend skills to develop further"
+      ],
+    };
   }
-
+  
+  // Mobile-specific reflections
+  if (discipline === "Mobile") {
+    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
+      return {
+        questions: [
+          "What differences did you notice between React Native and React web development?",
+          "How did you handle platform-specific considerations (iOS vs Android) in your setup?",
+          "What challenges did you face with the development environment, and how did you solve them?",
+          "How does your mobile app structure compare to production React Native apps?",
+          "What's one thing about mobile development that surprised you today?"
+        ],
+        documentation: [
+          "Document platform differences you encountered",
+          "Note setup challenges and solutions",
+          "List React Native concepts to master"
+        ],
+      };
+    }
+    if (componentName.includes("Navigation")) {
+      return {
+        questions: [
+          "How did you design your navigation structure to match user expectations?",
+          "What navigation patterns did you implement, and why did you choose them?",
+          "How does your navigation handle deep linking and back button behavior?",
+          "If a user navigated through your app quickly, would they get lost? How did you prevent that?",
+          "What navigation UX improvements would make your app feel more native?"
+        ],
+        documentation: [
+          "Document navigation structure and user flow",
+          "Note navigation patterns and their use cases",
+          "List mobile navigation best practices to implement"
+        ],
+      };
+    }
+    if (componentName.includes("Auth") || componentName.includes("Login")) {
+      return {
+        questions: [
+          "How did you handle secure storage of authentication tokens on mobile devices?",
+          "What mobile-specific security considerations did you implement?",
+          "How does your mobile auth flow compare to apps you use daily?",
+          "What happens if a user loses their device? How is their data protected?",
+          "What biometric authentication options could you add to improve UX?"
+        ],
+        documentation: [
+          "Document mobile authentication and security measures",
+          "Note token storage and session management",
+          "List mobile security best practices to implement"
+        ],
+      };
+    }
+    if (componentName.includes("Offline")) {
+      return {
+        questions: [
+          "How does your app behave when connectivity is poor or unavailable?",
+          "What data synchronization strategy did you implement, and why?",
+          "How do you handle conflicts when data changes both locally and on the server?",
+          "What's the user experience when they go offline mid-action?",
+          "How would you test offline functionality in a real-world scenario?"
+        ],
+        documentation: [
+          "Document offline architecture and sync strategy",
+          "Note data persistence and conflict resolution",
+          "List offline-first patterns to explore"
+        ],
+      };
+    }
+    // Default Mobile reflection
+    return {
+      questions: [
+        "What mobile-specific challenges did you encounter today?",
+        "How does your mobile implementation compare to native app performance?",
+        "What platform differences (iOS/Android) did you need to account for?",
+        "If you were to optimize your app for performance, what would you focus on?",
+        "What's one mobile development skill you want to master based on today's work?"
+      ],
+      documentation: [
+        "Document mobile-specific learnings and challenges",
+        "Note platform differences and solutions",
+        "List mobile development skills to develop"
+      ],
+    };
+  }
+  
+  // Backend-specific reflections
+  if (discipline === "Backend") {
+    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
+      return {
+        questions: [
+          "What architectural decisions did you make today that will impact your entire API?",
+          "How does your project structure support scalability and maintainability?",
+          "What middleware did you set up, and why is each one necessary?",
+          "How does your backend setup compare to production Node.js applications?",
+          "What's one thing you'd change about your setup if you were starting over?"
+        ],
+        documentation: [
+          "Document architectural decisions and their rationale",
+          "Note middleware setup and configuration",
+          "List backend architecture patterns to explore"
+        ],
+      };
+    }
+    if (componentName.includes("Auth") || componentName.includes("Authentication")) {
+      return {
+        questions: [
+          "What security measures did you implement to protect user authentication?",
+          "How does your JWT implementation handle token expiration and refresh?",
+          "What would happen if someone tried to brute force your login endpoint?",
+          "How does your authentication compare to industry standards (OAuth, JWT best practices)?",
+          "What additional security layers would you add before deploying to production?"
+        ],
+        documentation: [
+          "Document authentication flow and security measures",
+          "Note token management and security considerations",
+          "List security best practices to implement"
+        ],
+      };
+    }
+    if (componentName.includes("Database") || componentName.includes("CRUD")) {
+      return {
+        questions: [
+          "How did you design your database schema to support future features?",
+          "What indexing strategies did you consider for query performance?",
+          "How does your CRUD implementation handle concurrent requests?",
+          "What would happen if your database had 1 million records? Would your queries still be fast?",
+          "What data validation and sanitization did you implement to prevent injection attacks?"
+        ],
+        documentation: [
+          "Document database design decisions and schema",
+          "Note query optimization and indexing strategies",
+          "List database best practices to implement"
+        ],
+      };
+    }
+    if (componentName.includes("API") || componentName.includes("Endpoint")) {
+      return {
+        questions: [
+          "How did you design your API endpoints to be intuitive and RESTful?",
+          "What error handling did you implement, and how does it help API consumers?",
+          "How does your API handle rate limiting and prevent abuse?",
+          "If your API received 1000 requests per second, what would break first?",
+          "What API documentation would help other developers use your endpoints effectively?"
+        ],
+        documentation: [
+          "Document API design decisions and endpoint structure",
+          "Note error handling and response formats",
+          "List API best practices and documentation needs"
+        ],
+      };
+    }
+    if (componentName.includes("Security") || componentName.includes("Error")) {
+      return {
+        questions: [
+          "What security vulnerabilities did you identify and how did you address them?",
+          "How does your error handling prevent information leakage to potential attackers?",
+          "What logging and monitoring would you implement to detect security issues?",
+          "How does your security implementation compare to OWASP recommendations?",
+          "What's one security risk you're aware of that you haven't addressed yet?"
+        ],
+        documentation: [
+          "Document security measures and vulnerability assessments",
+          "Note error handling and logging strategies",
+          "List security improvements to implement"
+        ],
+      };
+    }
+    // Default Backend reflection
+    return {
+      questions: [
+        "What backend patterns did you implement today that you'll reuse?",
+        "How does your API design compare to production backend systems?",
+        "What security considerations did you implement, and why are they critical?",
+        "If your API had to handle 10x more traffic, what would you need to change?",
+        "What's one backend skill you want to master based on today's challenges?"
+      ],
+      documentation: [
+        "Document backend patterns and architectural decisions",
+        "Note security and performance considerations",
+        "List backend skills to develop further"
+      ],
+    };
+  }
+  
+  // Systems Engineering (WordPress) specific reflections
+  if (discipline === "Systems Engineering") {
+    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
+      return {
+        questions: [
+          "How does your WordPress development environment compare to production setups?",
+          "What WordPress development practices did you implement that will save time later?",
+          "How did you structure your theme/plugin to be maintainable and scalable?",
+          "What WordPress hooks and filters did you use, and why were they the right choice?",
+          "If a client needed to update content without breaking your code, how did you ensure that?"
+        ],
+        documentation: [
+          "Document WordPress development environment and structure",
+          "Note hooks, filters, and WordPress patterns used",
+          "List WordPress development best practices to master"
+        ],
+      };
+    }
+    if (componentName.includes("Post Types") || componentName.includes("Custom")) {
+      return {
+        questions: [
+          "How did you design your custom post types to be intuitive for content editors?",
+          "What taxonomies did you create, and how do they improve content organization?",
+          "How does your custom post type implementation compare to production WordPress sites?",
+          "If a client needed to add a new field type, how easy would it be to extend your code?",
+          "What WordPress admin UI improvements did you make to enhance the editing experience?"
+        ],
+        documentation: [
+          "Document custom post type and taxonomy design",
+          "Note admin UI customizations and user experience",
+          "List WordPress customization patterns to explore"
+        ],
+      };
+    }
+    if (componentName.includes("Theme") || componentName.includes("Template")) {
+      return {
+        questions: [
+          "How did you structure your theme templates to be maintainable and reusable?",
+          "What WordPress template hierarchy patterns did you follow, and why?",
+          "How does your theme handle different content types and page layouts?",
+          "If a client wanted to change the design, how easy would it be to modify your theme?",
+          "What performance optimizations did you implement in your theme?"
+        ],
+        documentation: [
+          "Document theme structure and template hierarchy",
+          "Note design patterns and customization options",
+          "List theme optimization strategies to implement"
+        ],
+      };
+    }
+    if (componentName.includes("Plugin")) {
+      return {
+        questions: [
+          "How did you ensure your plugin doesn't conflict with other plugins or themes?",
+          "What WordPress hooks did you use, and why were they the right choice?",
+          "How does your plugin handle updates without breaking existing functionality?",
+          "If a client deactivated your plugin, would their site still function? How did you ensure that?",
+          "What security measures did you implement to protect against common WordPress vulnerabilities?"
+        ],
+        documentation: [
+          "Document plugin architecture and hook usage",
+          "Note conflict prevention and update strategies",
+          "List WordPress security best practices to implement"
+        ],
+      };
+    }
+    if (componentName.includes("User") || componentName.includes("Role")) {
+      return {
+        questions: [
+          "How did you design user roles to balance security and usability?",
+          "What capabilities did you assign, and why are they appropriate for each role?",
+          "How does your role system prevent unauthorized access to sensitive areas?",
+          "If a client needed to add a new user role, how easy would it be to extend your system?",
+          "What security considerations did you implement to protect against privilege escalation?"
+        ],
+        documentation: [
+          "Document user role and capability design",
+          "Note security measures and access control",
+          "List WordPress security patterns to implement"
+        ],
+      };
+    }
+    // Default Systems Engineering reflection
+    return {
+      questions: [
+        "What WordPress development patterns did you use today that you'll reuse?",
+        "How does your WordPress implementation compare to production CMS systems?",
+        "What security considerations did you implement specific to WordPress?",
+        "If a client needed to modify your code, how maintainable is your implementation?",
+        "What's one WordPress development skill you want to master based on today's work?"
+      ],
+      documentation: [
+        "Document WordPress patterns and development decisions",
+        "Note security and maintainability considerations",
+        "List WordPress development skills to develop"
+      ],
+    };
+  }
+  
+  // Fallback for when discipline is not specified
   return {
     questions: [
-      "What did I learn today?",
-      "What was challenging?",
-      "What will I focus on tomorrow?",
+      "What did you learn today that will make you a better developer?",
+      "What was the most challenging aspect, and how did you overcome it?",
+      "How does your implementation compare to production code?",
+      "What would you improve if you had more time?",
+      "What's one skill you want to develop further based on today's work?"
     ],
-    documentation: ["Document your progress"],
+    documentation: [
+      "Document key learnings and challenges",
+      "Note improvements to make",
+      "List skills to develop"
+    ],
   };
 }
+
+// Export reflection and project component functions
+export { getSoftwareEngineeringReflection, getProjectComponentForDay };
 
 // Export function to get journey data
 export function getJourneyData(journeyId) {

@@ -2,6 +2,7 @@ import { Moon, Sun, Sparkles, Search, Bell, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useGamification } from '../../hooks/useGamification';
+import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 import { Dropdown } from '../ui/dropdown';
 import { cn } from '../../lib/utils';
@@ -22,6 +23,7 @@ export function TopNav() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { streaks, getLevel } = useGamification();
+  const { user } = useAuth();
   const globalLevel = getLevel();
   
   const currentPhase = getCurrentPhase();
@@ -111,6 +113,26 @@ export function TopNav() {
             className="w-28 md:w-36 hidden sm:block"
             align="left"
           />
+
+          {/* Profile Image/Icon */}
+          <button
+            onClick={() => navigate('/profile')}
+            className="relative h-8 w-8 rounded-full overflow-hidden border-2 border-border hover:border-primary transition-colors touch-manipulation shrink-0"
+            style={{ minWidth: '32px', minHeight: '32px' }}
+            aria-label="Profile"
+          >
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name || 'Profile'}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-purple-500 to-green-500 flex items-center justify-center text-white text-sm font-bold">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+            )}
+          </button>
         </div>
       </div>
     </header>
