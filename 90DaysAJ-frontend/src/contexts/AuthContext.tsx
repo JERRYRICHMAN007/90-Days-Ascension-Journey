@@ -234,16 +234,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (name: string, email: string, password: string) => {
-    const response = await api.register(email, password, name);
-    // Handle both response formats: { data: {...} } or direct response
-    const responseData = response.data || response;
-    const { user, tokens } = responseData;
-    
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    api.setToken(tokens.accessToken);
-    
-    setUser(user);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:236',message:'signUp called in AuthContext',data:{email,name,hasPassword:!!password},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+    // #endregion
+    try {
+      const response = await api.register(email, password, name);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:239',message:'API register response received',data:{email,hasResponse:!!response,hasData:!!(response?.data),hasUser:!!(response?.data?.user || response?.user),hasTokens:!!(response?.data?.tokens || response?.tokens)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+      // #endregion
+      // Handle both response formats: { data: {...} } or direct response
+      const responseData = response.data || response;
+      const { user, tokens } = responseData;
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:244',message:'Storing tokens and setting user after signUp',data:{email,hasUser:!!user,hasAccessToken:!!tokens?.accessToken,hasRefreshToken:!!tokens?.refreshToken,userId:user?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+      // #endregion
+      localStorage.setItem('accessToken', tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+      api.setToken(tokens.accessToken);
+      
+      setUser(user);
+    } catch (error: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:252',message:'signUp error in AuthContext',data:{email,errorMessage:error.message,errorType:error.constructor.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+      // #endregion
+      // Re-throw error so SignUpForm can handle it
+      throw error;
+    }
   };
 
   const refreshToken = async () => {

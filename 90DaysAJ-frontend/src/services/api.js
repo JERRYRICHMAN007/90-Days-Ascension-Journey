@@ -110,18 +110,40 @@ class ApiClient {
           error.message?.includes('ERR_CONNECTION_REFUSED') ||
           error.message?.includes('SUPABASE_UNAVAILABLE') ||
           error.message?.includes('503')) {
-        // Set offline mode flag
-        localStorage.setItem('ascension_offline_mode', 'true');
-        // Dispatch event for OfflineModeBanner
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('service-unavailable', { 
-            detail: { code: 'SERVICE_UNAVAILABLE', message: error.message } 
-          }));
+        
+        // Check if this is a registration or login attempt (critical operations that require backend)
+        const isAuthOperation = endpoint.includes('/auth/register') || endpoint.includes('/auth/login');
+        const hasValidTokens = localStorage.getItem('accessToken') && localStorage.getItem('refreshToken');
+        
+        // Only set offline mode for authenticated users with existing tokens
+        // Do NOT set offline mode for registration/login attempts - they require backend
+        if (!isAuthOperation && hasValidTokens) {
+          // Set offline mode flag only for authenticated users
+          localStorage.setItem('ascension_offline_mode', 'true');
+          // Dispatch event for OfflineModeBanner
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('service-unavailable', { 
+              detail: { code: 'SERVICE_UNAVAILABLE', message: error.message } 
+            }));
+          }
         }
-        // Check if this is a Supabase error from the backend
-        const supabaseError = new Error('Backend service unavailable. The app will work in offline mode using LocalStorage.');
-        supabaseError.code = 'SERVICE_UNAVAILABLE';
-        throw supabaseError;
+        
+        // Provide appropriate error message based on operation type
+        let errorMessage;
+        if (isAuthOperation) {
+          // Registration/login requires backend - be clear about this
+          errorMessage = 'Unable to connect to authentication service. Please check your connection and try again.';
+        } else if (hasValidTokens) {
+          // Authenticated users can work offline
+          errorMessage = 'Backend service unavailable. The app will work in offline mode using LocalStorage.';
+        } else {
+          // Unauthenticated users need backend
+          errorMessage = 'Unable to connect to server. Please check your connection and try again.';
+        }
+        
+        const serviceError = new Error(errorMessage);
+        serviceError.code = 'SERVICE_UNAVAILABLE';
+        throw serviceError;
       }
       
       // If error is already an Error object, throw it as is
@@ -135,10 +157,24 @@ class ApiClient {
 
   // Auth endpoints
   async register(email, password, name) {
-    return this.request('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, name }),
-    });
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:137',message:'API register called',data:{email,name,hasPassword:!!password},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+    // #endregion
+    try {
+      const response = await this.request('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, name }),
+      });
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:143',message:'API register succeeded',data:{email,hasResponse:!!response,hasUser:!!(response?.data?.user || response?.user),hasTokens:!!(response?.data?.tokens || response?.tokens)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+      // #endregion
+      return response;
+    } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.js:148',message:'API register failed',data:{email,errorMessage:error.message,errorType:error.constructor.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+      // #endregion
+      throw error;
+    }
   }
 
   async login(email, password) {

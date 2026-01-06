@@ -50,10 +50,31 @@ export function SignUpForm() {
 
     setLoading(true);
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignUpForm.tsx:51',message:'SignUp handleSubmit - calling signUp',data:{email,name,hasPassword:!!password},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+      // #endregion
       await signUp(name, email, password);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignUpForm.tsx:54',message:'SignUp succeeded',data:{email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+      // #endregion
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Failed to create account');
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignUpForm.tsx:56',message:'SignUp error caught',data:{email,errorMessage:err.message,errorType:err.constructor.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});
+      // #endregion
+      let errorMessage = err.message || 'Failed to create account';
+      
+      // Show clear error message for service unavailable
+      if (errorMessage.includes('SERVICE_UNAVAILABLE') ||
+          errorMessage.includes('service unavailable') ||
+          errorMessage.includes('SUPABASE_UNAVAILABLE') ||
+          errorMessage.includes('503') ||
+          errorMessage.includes('Failed to fetch') ||
+          errorMessage.includes('NetworkError')) {
+        errorMessage = 'Unable to connect to authentication service. Please check your connection and try again. Account creation requires a working connection.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
