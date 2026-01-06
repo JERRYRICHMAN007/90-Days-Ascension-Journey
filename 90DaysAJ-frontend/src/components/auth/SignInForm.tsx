@@ -36,8 +36,19 @@ export function SignInForm() {
     setError('');
     setLoading(true);
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:34',message:'handleSubmit called',data:{email,passwordLength:password.length,rememberMe},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:40',message:'Calling signIn before API call',data:{email,hasPassword:!!password},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       await signIn(email, password);
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:44',message:'signIn succeeded',data:{email,accessToken:localStorage.getItem('accessToken')?'present':'missing',refreshToken:localStorage.getItem('refreshToken')?'present':'missing'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       
       // Save email if "Remember me" is checked
       if (rememberMe) {
@@ -49,25 +60,52 @@ export function SignInForm() {
         localStorage.removeItem(REMEMBER_ME_KEY);
       }
       
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:52',message:'Navigating to dashboard after successful signIn',data:{email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       navigate('/dashboard');
     } catch (err: any) {
       // Handle rate limiting and other errors with better messages
       let errorMessage = err.message || 'Invalid email or password';
       
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:55',message:'signIn error caught',data:{email,errorMessage,errorType:err.constructor.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      
       // Check if it's a service unavailable error (Supabase/backend down)
-      // In this case, silently allow offline mode - don't show error to user
+      // SECURITY FIX: Only allow offline mode if user has existing valid tokens
+      // Do NOT allow new sign-ins without credential validation
       if (errorMessage.includes('SERVICE_UNAVAILABLE') ||
           errorMessage.includes('service unavailable') ||
           errorMessage.includes('SUPABASE_UNAVAILABLE') ||
           errorMessage.includes('503') ||
           errorMessage.includes('Failed to fetch') ||
           errorMessage.includes('NetworkError')) {
-        // Backend unavailable - allow offline access
-        // Set offline mode flag silently
-        localStorage.setItem('ascension_offline_mode', 'true');
-        // Navigate to dashboard (offline mode will work)
-        navigate('/dashboard');
-        return; // Don't show error, just proceed
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:75',message:'Service unavailable error detected - checking for existing tokens',data:{email,errorMessage,hasAccessToken:!!localStorage.getItem('accessToken'),hasRefreshToken:!!localStorage.getItem('refreshToken')},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
+        
+        // Check if user has existing valid tokens (previously authenticated session)
+        const existingAccessToken = localStorage.getItem('accessToken');
+        const existingRefreshToken = localStorage.getItem('refreshToken');
+        
+        if (existingAccessToken && existingRefreshToken) {
+          // User has existing session - allow offline mode for continuity
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:85',message:'Existing tokens found - allowing offline mode for returning user',data:{email,hasAccessToken:true,hasRefreshToken:true},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+          // #endregion
+          localStorage.setItem('ascension_offline_mode', 'true');
+          navigate('/dashboard');
+          return;
+        } else {
+          // No existing tokens - this is a NEW sign-in attempt
+          // SECURITY: Do NOT allow sign-in without credential validation
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:94',message:'BLOCKED: New sign-in attempt without backend validation',data:{email,hasAccessToken:false,hasRefreshToken:false},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+          // #endregion
+          setError('Unable to connect to authentication service. Please check your connection and try again.');
+          return;
+        }
       }
       // Check if it's a rate limit error
       else if (errorMessage.toLowerCase().includes('too many') || 
@@ -76,6 +114,9 @@ export function SignInForm() {
         errorMessage = 'Too many login attempts. Please wait 15 minutes before trying again.';
       }
       
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:79',message:'Setting error message to user',data:{email,errorMessage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       setError(errorMessage);
     } finally {
       setLoading(false);
