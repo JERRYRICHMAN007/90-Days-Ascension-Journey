@@ -25,6 +25,8 @@ const allowedOrigins = [
   "http://127.0.0.1:5173", // Vite default port (IPv4)
   "http://localhost:5174", // Vite fallback port
   "http://127.0.0.1:5174", // Vite fallback port (IPv4)
+  "http://localhost:5175", // Additional Vite port
+  "http://127.0.0.1:5175", // Additional Vite port (IPv4)
   // Add your Vercel frontend URL here
   process.env.FRONTEND_URL,
 ].filter(Boolean); // Remove undefined values
@@ -34,6 +36,21 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
+
+      // In development, be more permissive - allow localhost and 127.0.0.1 on any port
+      if (process.env.NODE_ENV === "development" || !process.env.NODE_ENV) {
+        try {
+          const originUrl = new URL(origin);
+          // Allow any localhost or 127.0.0.1 origin in development
+          if (originUrl.hostname === "localhost" || 
+              originUrl.hostname === "127.0.0.1" ||
+              originUrl.hostname === "::1") {
+            return callback(null, true);
+          }
+        } catch (e) {
+          // If URL parsing fails, continue to check allowed origins
+        }
+      }
 
       // In production, be more permissive if APP_URL is set
       if (process.env.NODE_ENV === "production" && process.env.APP_URL) {
@@ -49,10 +66,10 @@ app.use(
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        // In development, show the error. In production, be more lenient
-        if (process.env.NODE_ENV === "development") {
-          console.warn(`CORS blocked origin: ${origin}`);
-          callback(new Error("Not allowed by CORS"));
+        // In development, log but allow. In production, be more lenient
+        if (process.env.NODE_ENV === "development" || !process.env.NODE_ENV) {
+          console.warn(`CORS: Origin ${origin} not in allowed list, but allowing in development`);
+          callback(null, true);
         } else {
           // In production, allow if it's a known pattern
           callback(null, true);

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authenticate, AuthRequest } from '../middleware/auth';
-import { authRateLimiter } from '../middleware/rateLimiter';
+import { authRateLimiter, clearAuthViolations } from '../middleware/rateLimiter';
 import { AppError } from '../middleware/errorHandler';
 import {
   signUpUser,
@@ -34,6 +34,9 @@ router.post(
 
       // Create user in Supabase Auth
       const { accessToken, refreshToken, user } = await signUpUser(email, password, { name });
+
+      // Clear rate limit violations on successful registration
+      clearAuthViolations(req);
 
       res.status(201).json({
         success: true,
@@ -76,6 +79,9 @@ router.post(
 
       // Sign in with Supabase Auth
       const { accessToken, refreshToken, user } = await signInUser(email, password);
+
+      // Clear rate limit violations on successful login
+      clearAuthViolations(req);
 
       res.json({
         success: true,
