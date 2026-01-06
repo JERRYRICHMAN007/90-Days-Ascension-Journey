@@ -48,19 +48,26 @@ export function Sidebar() {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 80 : 256 }}
-      className="hidden md:flex flex-col border-r bg-card transition-all duration-300 relative z-10"
+      animate={{ width: collapsed ? 72 : 256 }}
+      className="hidden md:flex flex-col border-r border-border/50 bg-card/30 backdrop-blur-md transition-all duration-300 relative z-10"
     >
-      <div className="flex items-center justify-between p-4 border-b">
+      {/* Header */}
+      <div className="flex items-center justify-between h-16 px-4 border-b border-border/50">
         {!collapsed && (
-          <div className="flex items-center gap-2">
+          <Link 
+            to="/dashboard"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
             <div className="text-2xl">🚀</div>
-            <span className="text-base sm:text-lg md:text-xl font-bold gradient-text">Ascension</span>
-          </div>
+            <span className="text-lg font-bold bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent">
+              Ascension
+            </span>
+          </Link>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg hover:bg-muted transition-colors"
+          className="p-2 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground ml-auto"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
             <ChevronRight className="w-4 h-4" />
@@ -70,7 +77,8 @@ export function Sidebar() {
         </button>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      {/* Navigation */}
+      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -80,31 +88,40 @@ export function Sidebar() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
-                "hover:bg-muted hover:text-blue-500",
-                isActive && "bg-primary/10 text-primary font-semibold"
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+                "text-sm font-medium",
+                "hover:bg-muted/40 hover:text-foreground",
+                isActive 
+                  ? "bg-primary/10 text-primary shadow-sm" 
+                  : "text-muted-foreground"
               )}
               title={collapsed ? item.label : undefined}
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
+              <Icon className={cn(
+                "w-4 h-4 flex-shrink-0 transition-colors",
+                isActive && "text-primary"
+              )} />
+              {!collapsed && (
+                <span className="truncate">{item.label}</span>
+              )}
             </Link>
           );
         })}
       </nav>
 
       {/* Logout Button */}
-      <div className="p-4 border-t">
+      <div className="p-2 border-t border-border/50">
         <button
           onClick={handleLogout}
           className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all w-full",
-            "hover:bg-green-500 hover:text-white",
-            "text-muted-foreground"
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 w-full",
+            "text-sm font-medium text-muted-foreground",
+            "hover:bg-destructive/10 hover:text-destructive",
+            "border border-transparent"
           )}
           title={collapsed ? 'Logout' : undefined}
         >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
+          <LogOut className="w-4 h-4 flex-shrink-0" />
           {!collapsed && <span>Logout</span>}
         </button>
       </div>

@@ -630,7 +630,7 @@ function JourneyDetail({
             </motion.div>
           </AnimatePresence>
         </div>
-      </main>
+        </main>
     </div>
   );
 }

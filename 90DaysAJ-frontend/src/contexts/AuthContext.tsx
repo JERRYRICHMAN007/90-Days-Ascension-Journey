@@ -23,6 +23,109 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+  // Clear all cache and storage
+  const clearAllCache = () => {
+    try {
+      // Clear localStorage (except offline mode flag)
+      const offlineMode = localStorage.getItem('ascension_offline_mode');
+      localStorage.clear();
+      if (offlineMode) {
+        localStorage.setItem('ascension_offline_mode', offlineMode);
+      }
+      
+      // Clear sessionStorage
+      sessionStorage.clear();
+      
+      // Clear IndexedDB if used
+      if ('indexedDB' in window) {
+        indexedDB.databases().then(databases => {
+          databases.forEach(db => {
+            if (db.name) {
+              indexedDB.deleteDatabase(db.name);
+            }
+          });
+        });
+      }
+      
+      // Clear service worker cache if available
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => {
+            caches.delete(name);
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    }
+  };
+
+  const signOut = async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (refreshToken) {
+      try {
+        await api.logout(refreshToken);
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+    
+    // Clear all cache and storage
+    clearAllCache();
+    
+    api.setToken(null);
+    setUser(null);
+  };
+
+  // Handle inactivity timeout
+  useEffect(() => {
+    if (!user) return;
+
+    let inactivityTimer: NodeJS.Timeout;
+    let lastActivityTime = Date.now();
+
+    const resetTimer = () => {
+      lastActivityTime = Date.now();
+      clearTimeout(inactivityTimer);
+      
+      inactivityTimer = setTimeout(() => {
+        const timeSinceLastActivity = Date.now() - lastActivityTime;
+        if (timeSinceLastActivity >= INACTIVITY_TIMEOUT) {
+          // User has been inactive for 30 minutes
+          console.log('User inactive for 30 minutes, logging out and clearing cache...');
+          clearAllCache();
+          signOut();
+          // Redirect to login page
+          window.location.href = '/login';
+        }
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    // Track user activity
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    const handleActivity = () => {
+      resetTimer();
+    };
+
+    // Initialize timer
+    resetTimer();
+
+    // Add event listeners
+    activityEvents.forEach(event => {
+      document.addEventListener(event, handleActivity, true);
+    });
+
+    // Cleanup
+    return () => {
+      clearTimeout(inactivityTimer);
+      activityEvents.forEach(event => {
+        document.removeEventListener(event, handleActivity, true);
+      });
+    };
+  }, [user]);
 
   useEffect(() => {
     // Check for stored tokens and restore session
@@ -116,22 +219,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.setToken(tokens.accessToken);
     
     setUser(user);
-  };
-
-  const signOut = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken) {
-      try {
-        await api.logout(refreshToken);
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    }
-    
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    api.setToken(null);
-    setUser(null);
   };
 
   const refreshToken = async () => {

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useGamification } from "../hooks/useGamification";
+import { useAuth } from "../contexts/AuthContext";
 import { LevelBar } from "../components/ui/level-bar";
 import { StreakIndicator } from "../components/ui/streak-indicator";
 import { StatsWidget } from "../components/ui/stats-widget";
@@ -60,8 +61,27 @@ const journeyCards = [
 ];
 
 export function HomePage({ userProgress }) {
+  const { user } = useAuth();
   const { xp, streaks, getLevel } = useGamification();
   const globalLevel = getLevel();
+  
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+  
+  // Get user's first name or fallback
+  const getUserName = () => {
+    if (user?.name) {
+      // Extract first name if full name is provided
+      const firstName = user.name.split(' ')[0];
+      return firstName;
+    }
+    return null;
+  };
 
   // Calculate today's date and get real objectives
   const {
@@ -91,7 +111,7 @@ export function HomePage({ userProgress }) {
     });
 
     const tasks = [];
-
+    
     // Only show tasks if in ascension phase
     if (phase === "ascension" && dayNumber) {
       const journeyIds = [
@@ -155,8 +175,8 @@ export function HomePage({ userProgress }) {
                     ) {
                       const workoutText =
                         typeof todayDay.workout === "object"
-                          ? todayDay.workout.name || "Complete workout"
-                          : todayDay.workout || "Complete workout";
+                        ? todayDay.workout.name || "Complete workout"
+                        : todayDay.workout || "Complete workout";
                       taskTitle = `💪 ${todayDay.focus} - ${workoutText}`;
                       priority = "high";
                       xpReward = 25;
@@ -241,8 +261,8 @@ export function HomePage({ userProgress }) {
       });
     }
 
-    return {
-      todayDate: formattedDate,
+    return { 
+      todayDate: formattedDate, 
       todayTasks: tasks,
       currentPhase: phase,
       currentDay: dayNumber,
@@ -252,9 +272,9 @@ export function HomePage({ userProgress }) {
   }, []); // Empty dependency array - recalculate only on mount
 
   return (
-    <div className="space-y-4 sm:space-y-5 md:space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       {/* Hero Section - Day Number - Better Mobile Layout */}
-      <div className="text-center space-y-2 py-5 sm:py-6 border-b px-3 sm:px-4">
+      <div className="text-center space-y-3 py-6 sm:py-8 border-b border-border/50">
         {currentPhase === "preparation" && currentDay === 0 && (
           <>
             <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
@@ -315,10 +335,12 @@ export function HomePage({ userProgress }) {
       </div>
 
       {/* Header (PRD v2.0) - Better Mobile Spacing */}
-      <div className="px-3 sm:px-4 md:px-0">
+      <div>
         <div className="min-w-0 flex-1 overflow-hidden">
-          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-display break-words">Good morning! 🌟</h1>
-          <p className="text-muted-foreground mt-1.5 sm:mt-2 text-sm sm:text-base md:text-lg break-words">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-display break-words mb-2">
+            {getUserName() ? `${getGreeting()}, ${getUserName()}! 👋` : `${getGreeting()}! 🌟`}
+          </h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base break-words">
             {currentPhase === "ascension"
               ? "Continue your ascension journey"
               : currentPhase === "preparation"
@@ -326,13 +348,13 @@ export function HomePage({ userProgress }) {
               : "Your transformation awaits"}
           </p>
           {(currentPhase === "ascension" || (currentPhase === "preparation" && currentDay === 0)) && currentDay !== null && (
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 break-words">{todayDate}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2 break-words">{todayDate}</p>
           )}
         </div>
       </div>
 
       {/* Stats Grid - Better Mobile Layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4 px-3 sm:px-4 md:px-0">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="p-3 sm:p-4">
           <LevelBar
             level={globalLevel.level}
@@ -358,11 +380,11 @@ export function HomePage({ userProgress }) {
       </div>
 
       {/* Today's Focus (PRD v2.0) - Better Mobile Layout */}
-      <div className="space-y-3 sm:space-y-4 px-3 sm:px-4 md:px-0">
+      <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-display break-words">Today's Focus</h2>
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display break-words">Today's Focus</h2>
           {currentPhase === "ascension" && todayTasks.length > 0 && (
-            <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap shrink-0 px-2 py-1 bg-muted/50 rounded-md">
+            <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap shrink-0 px-2.5 py-1 bg-muted/50 rounded-md">
               {todayTasks.filter((t) => t.completed).length} /{" "}
               {todayTasks.length}
             </div>
@@ -420,7 +442,7 @@ export function HomePage({ userProgress }) {
                   </span>
                 </div>
               </div>
-            </div>
+          </div>
           </motion.div>
         )}
         {currentPhase === "ascension" && todayTasks.length === 0 && (
@@ -466,9 +488,9 @@ export function HomePage({ userProgress }) {
       </div>
 
       {/* Your Journeys (PRD v2.0) - Better Mobile Layout */}
-      <div className="space-y-3 sm:space-y-4 px-3 sm:px-4 md:px-0">
-        <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-display break-words">Your Journeys</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 items-stretch">
+      <div className="space-y-4">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display break-words">Your Journeys</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
           {journeyCards.map((journey, index) => {
             try {
               const journeyProgress = userProgress[journey.id] || {};
@@ -486,7 +508,7 @@ export function HomePage({ userProgress }) {
 
               return (
                 <JourneyCardV2
-                  key={journey.id}
+              key={journey.id}
                   journey={{
                     id: journey.id,
                     title: journey.label,

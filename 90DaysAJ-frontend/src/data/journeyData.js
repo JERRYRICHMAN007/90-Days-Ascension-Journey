@@ -4521,6 +4521,26 @@ function getCrashCourseDisciplineRotation(dayNum) {
 // ============================================================================
 
 // Project Structure Definition
+// Discipline-specific project definitions
+const DISCIPLINE_PROJECTS = {
+  Frontend: {
+    name: "Customer Web Dashboard",
+    description: "A production-ready responsive web application with modern UI/UX, built with React and modern frontend technologies",
+  },
+  Mobile: {
+    name: "Mobile App",
+    description: "A production-ready cross-platform mobile application built with React Native, featuring native performance and offline capabilities",
+  },
+  Backend: {
+    name: "REST API Server",
+    description: "A production-ready RESTful API backend built with Node.js and Express, featuring authentication, data management, and secure endpoints",
+  },
+  "Systems Engineering": {
+    name: "WordPress CMS Platform",
+    description: "A production-ready WordPress content management system with custom themes, plugins, and administrative capabilities",
+  },
+};
+
 const TRANSPORT_APP_PROJECT = {
   name: "Transport/Service App",
   description: "A production-ready transport and service booking platform",
@@ -4795,7 +4815,7 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
         } else {
           // Single project data - enrich based on primary discipline for the day
           const primaryDiscipline =
-            disciplineRotation.primaryDiscipline || "Frontend";
+            disciplineRotation.primary || "Frontend";
           projectData = enrichProjectWithProjectInfo(
             projectData,
             dayNumber,
@@ -4826,6 +4846,38 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
         ),
       };
 
+      // Create discipline-specific project information
+      const disciplineProjects = {
+        Frontend: {
+          name: DISCIPLINE_PROJECTS.Frontend.name,
+          description: DISCIPLINE_PROJECTS.Frontend.description,
+          components: projectInfo,
+          buildPhase: getBuildPhaseForWeek(weekNum),
+        },
+        Mobile: {
+          name: DISCIPLINE_PROJECTS.Mobile.name,
+          description: DISCIPLINE_PROJECTS.Mobile.description,
+          components: projectInfo,
+          buildPhase: getBuildPhaseForWeek(weekNum),
+        },
+        Backend: {
+          name: DISCIPLINE_PROJECTS.Backend.name,
+          description: DISCIPLINE_PROJECTS.Backend.description,
+          components: projectInfo,
+          buildPhase: getBuildPhaseForWeek(weekNum),
+        },
+        "Systems Engineering": {
+          name: DISCIPLINE_PROJECTS["Systems Engineering"].name,
+          description: DISCIPLINE_PROJECTS["Systems Engineering"].description,
+          components: projectInfo,
+          buildPhase: getBuildPhaseForWeek(weekNum),
+        },
+      };
+
+      // Get primary discipline for backward compatibility
+      const primaryDiscipline = disciplineRotation.primary || "Frontend";
+      const defaultProject = disciplineProjects[primaryDiscipline] || disciplineProjects.Frontend;
+
       days.push({
         dayNumber: dayNumber,
         date: dayDateString,
@@ -4846,13 +4898,10 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
           disciplineRotation: disciplineRotation,
           scheduledContent: scheduledContent,
         },
-        // Project-driven information
-        project: {
-          name: TRANSPORT_APP_PROJECT.name,
-          description: TRANSPORT_APP_PROJECT.description,
-          components: projectInfo,
-          buildPhase: getBuildPhaseForWeek(weekNum),
-        },
+        // Project-driven information - discipline-specific (for backward compatibility, use primary)
+        project: defaultProject,
+        // Discipline-specific projects (for UI to switch between)
+        disciplineProjects: disciplineProjects,
         isTestRun: false,
         testRunNote: null,
         testRunTasks: null,
@@ -9423,26 +9472,100 @@ function getSoftwareEngineeringProject(weekNum, dayIndex) {
   const projects = {
     1: {
       0: {
-        title: "Personal Introduction Page",
-        description:
-          "Build a single-page HTML document that introduces yourself.",
-        skills: ["HTML5", "Semantic HTML", "Forms"],
-        requirements: [
-          "Semantic HTML5 structure",
-          "Header with your name and title",
-          "Navigation menu (even if single page)",
-          "About section with text content",
-          "Skills/interests section using lists",
-          "Contact form (styling comes later)",
-          "Footer with copyright",
-        ],
-        mustHave: [
-          "Valid HTML5",
-          "All images have alt text",
-          "Proper heading hierarchy (h1 → h2 → h3)",
-          "Accessible form labels",
-          "Semantic elements only (no div soup)",
-        ],
+        // Frontend project
+        frontend: {
+          title: "Personal Introduction Page",
+          description:
+            "Build a single-page HTML document that introduces yourself.",
+          skills: ["HTML5", "Semantic HTML", "Forms"],
+          requirements: [
+            "Semantic HTML5 structure",
+            "Header with your name and title",
+            "Navigation menu (even if single page)",
+            "About section with text content",
+            "Skills/interests section using lists",
+            "Contact form (styling comes later)",
+            "Footer with copyright",
+          ],
+          mustHave: [
+            "Valid HTML5",
+            "All images have alt text",
+            "Proper heading hierarchy (h1 → h2 → h3)",
+            "Accessible form labels",
+            "Semantic elements only (no div soup)",
+          ],
+        },
+        // Mobile project
+        mobile: {
+          title: "React Native App Setup & Welcome Screen",
+          description:
+            "Create your first React Native app with a welcome screen that introduces yourself.",
+          skills: ["React Native", "Components", "Styling", "Navigation Setup"],
+          requirements: [
+            "Set up React Native project (Expo or CLI)",
+            "Create Welcome screen component",
+            "Display your name and title in a header",
+            "Add About section with text content",
+            "Create Skills/Interests section using FlatList",
+            "Add a Contact button (navigation comes later)",
+            "Style with React Native StyleSheet",
+            "Test on iOS simulator or Android emulator",
+          ],
+          mustHave: [
+            "Valid React Native component structure",
+            "Proper component organization",
+            "Responsive layout using Flexbox",
+            "Accessible text components",
+            "Clean code structure",
+          ],
+        },
+        // Backend project
+        backend: {
+          title: "Node.js Server Setup & API Introduction",
+          description:
+            "Set up a Node.js server with Express and create an introduction API endpoint.",
+          skills: ["Node.js", "Express", "REST API", "JSON"],
+          requirements: [
+            "Initialize Node.js project with package.json",
+            "Set up Express server",
+            "Create GET /api/introduction endpoint",
+            "Return JSON with your name, title, and bio",
+            "Add /api/skills endpoint returning array of skills",
+            "Add /api/interests endpoint returning array of interests",
+            "Create /api/contact endpoint (POST method, validation comes later)",
+            "Test endpoints with Postman or curl",
+          ],
+          mustHave: [
+            "Valid Express server setup",
+            "Proper route organization",
+            "JSON response format",
+            "Error handling basics",
+            "Clean code structure",
+          ],
+        },
+        // Systems Engineering project
+        "systems-engineering": {
+          title: "WordPress Site Setup & About Page",
+          description:
+            "Set up a WordPress site and create an About page that introduces yourself.",
+          skills: ["WordPress", "Pages", "Content Management", "Themes"],
+          requirements: [
+            "Install and configure WordPress",
+            "Create About page with your name and title",
+            "Add navigation menu structure",
+            "Add About section with text content",
+            "Create Skills/Interests section using lists",
+            "Add Contact form (plugins come later)",
+            "Set up footer with copyright",
+          ],
+          mustHave: [
+            "Valid WordPress installation",
+            "Proper page structure",
+            "Semantic HTML output",
+            "Accessible content",
+            "Clean theme structure",
+          ],
+        },
       },
       1: {
         title: "Styled Card Component Library",
@@ -9569,14 +9692,158 @@ function getSoftwareEngineeringProject(weekNum, dayIndex) {
   };
 
   const project = projects[weekNum]?.[dayIndex];
-  if (project) {
+  
+  // If project already has discipline-specific structure, return it
+  if (project && (project.frontend || project.mobile || project.backend || project['systems-engineering'])) {
     return project;
   }
+  
+  // If project exists but is not discipline-specific, convert it to discipline-specific
+  if (project) {
+    return {
+      frontend: {
+        ...project,
+        description: project.description || `Frontend: ${project.title}`,
+      },
+      mobile: {
+        title: project.title
+          .replace(/HTML document|HTML page|HTML/gi, 'React Native App')
+          .replace(/CSS/gi, 'React Native')
+          .replace(/Web|Website/gi, 'Mobile App')
+          .replace(/Page/gi, 'Screen')
+          .replace(/Component Library/gi, 'Component Library')
+          .replace(/Dashboard Layout/gi, 'App Dashboard')
+          .replace(/Blog Layout/gi, 'Blog Screen')
+          .replace(/Landing Page/gi, 'Welcome Screen')
+          .replace(/Portfolio Website/gi, 'Portfolio App'),
+        description: `Mobile: ${(project.description || project.title)
+          .replace(/HTML document|web page|website|HTML page/gi, 'React Native app')
+          .replace(/HTML|CSS/gi, 'React Native')
+          .replace(/components/gi, 'React Native components')
+          .replace(/styling/gi, 'React Native StyleSheet')}`,
+        skills: project.skills ? project.skills.map(s => 
+          s.replace(/HTML5|HTML/gi, 'React Native')
+           .replace(/CSS3|CSS/gi, 'React Native StyleSheet')
+           .replace(/Flexbox/gi, 'Flexbox (React Native)')
+           .replace(/CSS Grid/gi, 'Flexbox Layout')
+        ) : ['React Native', 'Components', 'StyleSheet', 'Flexbox'],
+        requirements: project.requirements ? project.requirements.map(req => 
+          req.replace(/HTML document|web page|website|HTML page/gi, 'React Native app')
+            .replace(/HTML|CSS/gi, 'React Native')
+            .replace(/CSS styling|CSS styles/gi, 'React Native StyleSheet')
+            .replace(/component library|components/gi, 'React Native components')
+            .replace(/card components/gi, 'card screens')
+            .replace(/dashboard/gi, 'mobile app dashboard')
+            .replace(/layout/gi, 'screen layout')
+            .replace(/landing page/gi, 'welcome screen')
+            .replace(/portfolio website/gi, 'portfolio app')
+        ) : project.requirements || [],
+        mustHave: project.mustHave ? project.mustHave.map(req => 
+          req.replace(/HTML|CSS|web page|website|document/gi, 'React Native app')
+        ) : [
+          'Valid React Native component structure',
+          'Proper component organization',
+          'Responsive layout using Flexbox',
+          'Accessible components',
+          'Clean code structure',
+        ],
+        buildsOn: project.buildsOn || [],
+      },
+      backend: {
+        title: project.title
+          .replace(/Page|Layout|Component|Website/gi, 'API')
+          .replace(/Card Component Library/gi, 'Card Data API')
+          .replace(/Dashboard Layout/gi, 'Dashboard API')
+          .replace(/Blog Layout/gi, 'Blog API')
+          .replace(/Landing Page/gi, 'Introduction API')
+          .replace(/Portfolio Website/gi, 'Portfolio API'),
+        description: `Backend: ${(project.description || project.title)
+          .replace(/HTML document|web page|website|HTML page|page/gi, 'API endpoints')
+          .replace(/HTML|CSS/gi, 'JSON responses')
+          .replace(/components/gi, 'API endpoints')
+          .replace(/styling/gi, 'response formatting')}`,
+        skills: ['Node.js', 'Express', 'REST API', 'JSON'],
+        requirements: project.requirements ? project.requirements.map(req => 
+          req.replace(/HTML document|web page|website|HTML page|page/gi, 'API endpoints')
+            .replace(/HTML|CSS/gi, 'JSON')
+            .replace(/component library|components/gi, 'API endpoints')
+            .replace(/card components/gi, 'card data endpoints')
+            .replace(/dashboard/gi, 'dashboard API')
+            .replace(/layout/gi, 'API structure')
+            .replace(/landing page/gi, 'introduction API')
+            .replace(/portfolio website/gi, 'portfolio API')
+            .replace(/Create|Build|Design/gi, 'Implement')
+            .replace(/styling|styles/gi, 'response format')
+        ) : ['Create API endpoints', 'Return JSON responses', 'Handle requests'],
+        mustHave: [
+          'Valid Express routes',
+          'JSON response format',
+          'Error handling',
+          'Clean code structure',
+          'Proper API organization',
+        ],
+        buildsOn: project.buildsOn || [],
+      },
+      'systems-engineering': {
+        title: project.title
+          .replace(/HTML|CSS|Web|Page|Website/gi, 'WordPress')
+          .replace(/Component Library/gi, 'Custom Post Types')
+          .replace(/Dashboard Layout/gi, 'WordPress Dashboard')
+          .replace(/Blog Layout/gi, 'WordPress Blog')
+          .replace(/Landing Page/gi, 'WordPress Landing Page')
+          .replace(/Portfolio Website/gi, 'WordPress Portfolio'),
+        description: `Systems Engineering: ${(project.description || project.title)
+          .replace(/HTML document|web page|website|HTML page/gi, 'WordPress site')
+          .replace(/HTML|CSS/gi, 'WordPress')
+          .replace(/components/gi, 'WordPress pages/posts')
+          .replace(/styling/gi, 'WordPress theme')}`,
+        skills: ['WordPress', 'Pages', 'Content Management', 'Themes'],
+        requirements: project.requirements ? project.requirements.map(req => 
+          req.replace(/HTML document|web page|website|HTML page/gi, 'WordPress site')
+            .replace(/HTML|CSS/gi, 'WordPress')
+            .replace(/component library|components/gi, 'WordPress pages/posts')
+            .replace(/card components/gi, 'custom post types')
+            .replace(/dashboard/gi, 'WordPress dashboard')
+            .replace(/layout/gi, 'WordPress theme layout')
+            .replace(/landing page/gi, 'WordPress landing page')
+            .replace(/portfolio website/gi, 'WordPress portfolio site')
+            .replace(/Create|Build/gi, 'Set up in WordPress')
+            .replace(/CSS styling|CSS styles/gi, 'WordPress theme styles')
+        ) : ['Set up WordPress pages', 'Configure content', 'Manage structure'],
+        mustHave: [
+          'Valid WordPress structure',
+          'Proper page organization',
+          'Semantic HTML output',
+          'Clean theme structure',
+          'Accessible content',
+        ],
+        buildsOn: project.buildsOn || [],
+      },
+    };
+  }
 
+  // Default fallback - return discipline-specific structure
   return {
-    title: `Daily Mini-Project: ${getSoftwareEngineeringTheme(weekNum)}`,
-    description: `Project for Week ${weekNum}, Day ${dayIndex + 1}`,
-    requirements: ["Complete project requirements"],
+    frontend: {
+      title: `Frontend Project: ${getSoftwareEngineeringTheme(weekNum)}`,
+      description: `Frontend project for Week ${weekNum}, Day ${dayIndex + 1}`,
+      requirements: ["Complete frontend project requirements"],
+    },
+    mobile: {
+      title: `Mobile Project: ${getSoftwareEngineeringTheme(weekNum)}`,
+      description: `Mobile project for Week ${weekNum}, Day ${dayIndex + 1}`,
+      requirements: ["Complete mobile project requirements"],
+    },
+    backend: {
+      title: `Backend Project: ${getSoftwareEngineeringTheme(weekNum)}`,
+      description: `Backend project for Week ${weekNum}, Day ${dayIndex + 1}`,
+      requirements: ["Complete backend project requirements"],
+    },
+    'systems-engineering': {
+      title: `Systems Engineering Project: ${getSoftwareEngineeringTheme(weekNum)}`,
+      description: `Systems Engineering project for Week ${weekNum}, Day ${dayIndex + 1}`,
+      requirements: ["Complete systems engineering project requirements"],
+    },
   };
 }
 
