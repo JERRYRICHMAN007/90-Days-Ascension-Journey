@@ -564,7 +564,7 @@ export function JourneyDetailV2({
                         Day 0 - Preparation
                       </div>
                       <div className={cn('text-[10px] sm:text-xs md:text-sm truncate', selectedDay === 0 ? 'text-white/80' : 'text-muted-foreground')}>
-                        Jan 4, 2026 • Setup & Environment
+                        Jan 5, 2026 • Setup & Environment
                       </div>
                     </div>
                   </button>
@@ -1273,6 +1273,142 @@ export function JourneyDetailV2({
                             </>
                           )}
                         </>
+                      ) : journeyId === 'body-transformation' && currentDay.focus ? (
+                        <>
+                          {currentDay.dailyLearning && (
+                            <Card className="p-4 sm:p-6 border border-border/50">
+                              <div className="flex items-center gap-2 mb-4">
+                                <Target className="w-5 h-5 text-primary" />
+                                <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.dailyLearning.title}</h3>
+                              </div>
+                              {currentDay.dailyLearning.description && (
+                                <p className="text-sm text-muted-foreground mb-4">{currentDay.dailyLearning.description}</p>
+                              )}
+                              {currentDay.dailyLearning.topics && Array.isArray(currentDay.dailyLearning.topics) && currentDay.dailyLearning.topics.length > 0 && (
+                                <ul className="space-y-2">
+                                  {currentDay.dailyLearning.topics.map((topic, idx) => (
+                                    <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                      <span className="text-primary mt-1">•</span>
+                                      <span>{topic}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </Card>
+                          )}
+                          <Card className="p-4 sm:p-6 border border-border/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-2xl">💪</span>
+                              <h4 className="text-sm font-semibold text-foreground">Today's Focus: {currentDay.focus}</h4>
+                            </div>
+                            {currentDay.workout && (
+                              <p className="text-sm text-foreground mb-2">Workout: {currentDay.workout}</p>
+                            )}
+                            {currentDay.nutrition && (
+                              <p className="text-sm text-foreground mb-2">Nutrition: {currentDay.nutrition}</p>
+                            )}
+                            {currentDay.mindset && (
+                              <p className="text-sm text-muted-foreground">Mindset: {currentDay.mindset}</p>
+                            )}
+                          </Card>
+                        </>
+                      ) : journeyId === 'reading' && currentDay.readingSessions ? (
+                        <>
+                          {currentDay.dailyLearning && (
+                            <Card className="p-4 sm:p-6 border border-border/50">
+                              <div className="flex items-center gap-2 mb-4">
+                                <BookOpen className="w-5 h-5 text-primary" />
+                                <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.dailyLearning.title}</h3>
+                              </div>
+                              {currentDay.dailyLearning.description && (
+                                <p className="text-sm text-muted-foreground mb-4">{currentDay.dailyLearning.description}</p>
+                              )}
+                              {currentDay.dailyLearning.topics && Array.isArray(currentDay.dailyLearning.topics) && currentDay.dailyLearning.topics.length > 0 && (
+                                <ul className="space-y-2">
+                                  {currentDay.dailyLearning.topics.map((topic, idx) => (
+                                    <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                      <span className="text-primary mt-1">•</span>
+                                      <span>{topic}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </Card>
+                          )}
+                          {currentDay.readingSessions && Array.isArray(currentDay.readingSessions) && currentDay.readingSessions.length > 0 && (
+                            <Card className="p-4 sm:p-6 border border-border/50">
+                              <h4 className="text-sm font-semibold text-foreground mb-3">Today's Reading Sessions:</h4>
+                              <div className="space-y-3">
+                                {currentDay.readingSessions.map((session, idx) => (
+                                  <div key={idx} className="p-3 bg-muted/30 rounded-lg">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="text-xs font-semibold text-primary">{session.time}</span>
+                                      <span className="text-xs text-muted-foreground">{session.type}</span>
+                                    </div>
+                                    <p className="text-sm font-medium text-foreground">{session.material}</p>
+                                    {session.focus && (
+                                      <p className="text-xs text-muted-foreground mt-1">Focus: {session.focus}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </Card>
+                          )}
+                        </>
+                      ) : journeyId === 'writers' && currentDay.learning ? (
+                        <>
+                          <Card className="p-4 sm:p-6 border border-border/50">
+                            <div className="flex items-center gap-2 mb-4">
+                              <BookOpen className="w-5 h-5 text-primary" />
+                              <h3 className="text-base sm:text-lg font-semibold text-foreground">Learning: {currentDay.learning}</h3>
+                            </div>
+                            {currentDay.theme && (
+                              <p className="text-sm text-muted-foreground mb-4">Theme: {currentDay.theme}</p>
+                            )}
+                          </Card>
+                        </>
+                      ) : journeyId === 'dual-brand' && currentDay.focus ? (
+                        <>
+                          <Card className="p-4 sm:p-6 border border-border/50">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Target className="w-5 h-5 text-primary" />
+                              <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.focus}</h3>
+                            </div>
+                            {currentDay.theme && (
+                              <p className="text-sm text-muted-foreground mb-4">Theme: {currentDay.theme}</p>
+                            )}
+                          </Card>
+                          
+                          {currentDay.ryxenTasks && (
+                            <Card className="p-4 sm:p-6 border border-border/50">
+                              <div className="flex items-center gap-2 mb-4">
+                                <span className="text-2xl">🎨</span>
+                                <h3 className="text-base sm:text-lg font-semibold text-foreground">Ryxen Tasks</h3>
+                              </div>
+                              <p className="text-sm sm:text-base text-foreground">{currentDay.ryxenTasks}</p>
+                            </Card>
+                          )}
+                          
+                          {currentDay.havenXTasks && (
+                            <Card className="p-4 sm:p-6 border border-border/50">
+                              <div className="flex items-center gap-2 mb-4">
+                                <span className="text-2xl">🚀</span>
+                                <h3 className="text-base sm:text-lg font-semibold text-foreground">HavenX Tasks</h3>
+                              </div>
+                              <p className="text-sm sm:text-base text-foreground">{currentDay.havenXTasks}</p>
+                            </Card>
+                          )}
+                          
+                          {currentDay.outcome && (
+                            <Card className="p-4 sm:p-6 border border-border/50 bg-primary/5">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Target className="w-5 h-5 text-primary" />
+                                <h4 className="text-sm font-semibold text-primary">Expected Outcome</h4>
+                              </div>
+                              <p className="text-sm text-foreground">{currentDay.outcome}</p>
+                            </Card>
+                          )}
+                        </>
                       ) : currentDay.dailyLearning ? (
                         <>
                           {typeof currentDay.dailyLearning === 'object' && (
@@ -1390,7 +1526,7 @@ export function JourneyDetailV2({
                         </>
                       ) : null}
                       
-                      {!currentDay.dailyLearning && !currentDay.focus && (
+                      {!currentDay.dailyLearning && !currentDay.focus && !currentDay.learning && !currentDay.readingSessions && journeyId !== 'dual-brand' && journeyId !== 'writers' && journeyId !== 'reading' && journeyId !== 'body-transformation' && (
                         <Card className="p-12 text-center border border-border/50">
                           <p className="text-muted-foreground">No learning content for this day.</p>
                         </Card>
@@ -1449,6 +1585,29 @@ export function JourneyDetailV2({
                             </Card>
                           ))}
                         </div>
+                      ) : currentDay.project && journeyId === 'dual-brand' ? (
+                        <Card className="p-4 sm:p-6 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <Target className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                            <h3 className="text-base sm:text-lg font-semibold">{currentDay.project.title}</h3>
+                          </div>
+                          
+                          <p className="text-sm sm:text-base text-foreground mb-4">{currentDay.project.description}</p>
+                          
+                          {currentDay.project.requirements && Array.isArray(currentDay.project.requirements) && currentDay.project.requirements.length > 0 && (
+                            <div>
+                              <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2">Requirements:</h4>
+                              <ul className="space-y-2">
+                                {currentDay.project.requirements.map((req, idx) => (
+                                  <li key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-foreground">
+                                    <span className="text-primary mt-1">•</span>
+                                    <span>{req}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </Card>
                       ) : currentDay.miniProject ? (
                         <Card className="p-4 sm:p-6 border border-border/50">
                           {/* Project Information Header */}
@@ -1572,35 +1731,54 @@ export function JourneyDetailV2({
                             );
                           })()}
                         </Card>
-                      ) : currentDay.resources ? (
+                      ) : (currentDay.resources || (journeyId === 'dual-brand' && currentDay.learningResources)) ? (
                         <Card className="p-4 sm:p-6 border border-border/50">
                           <div className="flex items-center gap-2 mb-4">
                             <BookOpen className="w-5 h-5 text-primary" />
                             <h3 className="text-lg font-semibold">Resources</h3>
                           </div>
-                          {Array.isArray(currentDay.resources) && currentDay.resources.length > 0 ? (
-                            <ul className="space-y-3">
-                              {currentDay.resources.map((resource, idx) => (
-                                <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                                  <div>
-                                    <a
-                                      href={resource.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-foreground hover:text-primary transition-colors font-medium"
-                                    >
-                                      {resource.title}
-                                    </a>
-                                    {resource.time && (
-                                      <span className="text-xs text-muted-foreground ml-2">({resource.time})</span>
-                                    )}
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-muted-foreground">No resources for this day.</p>
-                          )}
+                          {(() => {
+                            // For dual brand, use learningResources; otherwise use resources
+                            const resources = journeyId === 'dual-brand' 
+                              ? (currentDay.learningResources || [])
+                              : (Array.isArray(currentDay.resources) ? currentDay.resources : []);
+                            
+                            // Handle nested array structure for dual brand resources
+                            const flattenedResources = [];
+                            resources.forEach(resource => {
+                              if (Array.isArray(resource)) {
+                                flattenedResources.push(...resource);
+                              } else {
+                                flattenedResources.push(resource);
+                              }
+                            });
+                            
+                            return flattenedResources.length > 0 ? (
+                              <ul className="space-y-3">
+                                {flattenedResources.map((resource, idx) => (
+                                  <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                                    <div>
+                                      <a
+                                        href={resource.url || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-foreground hover:text-primary transition-colors font-medium"
+                                      >
+                                        {resource.title}
+                                      </a>
+                                      {(resource.time || resource.category) && (
+                                        <span className="text-xs text-muted-foreground ml-2">
+                                          ({resource.time || resource.category})
+                                        </span>
+                                      )}
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-muted-foreground">No resources for this day.</p>
+                            );
+                          })()}
                         </Card>
                       ) : (
                         <Card className="p-12 text-center border border-border/50">
@@ -1655,17 +1833,31 @@ export function JourneyDetailV2({
                           </div>
                           {typeof currentDay.reflection === 'string' ? (
                             <p className="text-foreground">{currentDay.reflection}</p>
-                          ) : currentDay.reflection.questions && Array.isArray(currentDay.reflection.questions) ? (
-                            <ul className="space-y-3">
-                              {currentDay.reflection.questions.map((question, idx) => (
-                                <li key={idx} className="flex items-start gap-2 text-foreground">
-                                  <span className="text-primary mt-1">•</span>
-                                  <span>{question}</span>
-                                </li>
-                              ))}
-                            </ul>
                           ) : (
-                            <p className="text-foreground">{String(currentDay.reflection)}</p>
+                            <>
+                              {currentDay.reflection.prompt && (
+                                <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                                  <p className="text-sm font-semibold text-primary mb-1">Reflection Prompt:</p>
+                                  <p className="text-foreground">{currentDay.reflection.prompt}</p>
+                                </div>
+                              )}
+                              {currentDay.reflection.questions && Array.isArray(currentDay.reflection.questions) && currentDay.reflection.questions.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-semibold text-foreground mb-2">Reflection Questions:</h4>
+                                  <ul className="space-y-3">
+                                    {currentDay.reflection.questions.map((question, idx) => (
+                                      <li key={idx} className="flex items-start gap-2 text-foreground">
+                                        <span className="text-primary mt-1">•</span>
+                                        <span>{question}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              {!currentDay.reflection.prompt && !currentDay.reflection.questions && (
+                                <p className="text-foreground">{String(currentDay.reflection)}</p>
+                              )}
+                            </>
                           )}
                         </Card>
                       ) : (
