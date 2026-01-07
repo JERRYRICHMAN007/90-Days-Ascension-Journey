@@ -83,18 +83,25 @@ class ApiClient {
                             window.location.protocol === 'https:' &&
                             !window.location.hostname.includes('localhost'));
       
+      // Always show helpful error with instructions
       const errorMessage = isProduction
-        ? 'Cannot connect to authentication server. Please check your internet connection and try again.'
+        ? 'Backend server is not configured. The administrator needs to set up the backend connection.'
         : 'Production API URL not configured. Please set VITE_API_BASE_URL in Vercel environment variables.';
       
       const error = new Error(errorMessage);
       error.code = 'API_URL_NOT_CONFIGURED';
       
       // Log detailed error for developers/debugging
-      if (!isProduction) {
-        console.error('❌ Production API URL not configured!');
-        console.error('   Set VITE_API_BASE_URL in Vercel environment variables.');
-      }
+      console.error('❌ Backend Configuration Error:');
+      console.error('   API URL:', this.baseURL);
+      console.error('   Environment:', isProduction ? 'production' : 'development');
+      console.error('   Fix: Set VITE_API_BASE_URL in Vercel environment variables');
+      console.error('   Steps:');
+      console.error('   1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables');
+      console.error('   2. Add: VITE_API_BASE_URL');
+      console.error('   3. Value: https://your-backend.railway.app/v1');
+      console.error('   4. Set for: Production environment');
+      console.error('   5. Redeploy frontend');
       
       throw error;
     }
@@ -240,7 +247,13 @@ class ApiClient {
             if (this.baseURL === 'PRODUCTION_API_URL_NOT_CONFIGURED' || 
                 this.baseURL.includes('localhost') || 
                 this.baseURL.includes('127.0.0.1')) {
-              errorMessage = 'Backend server is not configured. Please contact support.';
+              // More helpful error message with instructions
+              console.error('❌ Backend Configuration Error:');
+              console.error('   API URL:', this.baseURL);
+              console.error('   Fix: Set VITE_API_BASE_URL in Vercel environment variables');
+              console.error('   Go to: Vercel Dashboard → Settings → Environment Variables');
+              console.error('   Add: VITE_API_BASE_URL = https://your-backend.railway.app/v1');
+              errorMessage = 'Backend server is not configured. The administrator needs to set up the backend connection.';
             } else {
               errorMessage = 'Cannot connect to authentication server. Please check your internet connection and try again.';
             }
