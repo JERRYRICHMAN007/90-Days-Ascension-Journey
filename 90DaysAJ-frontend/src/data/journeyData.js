@@ -856,7 +856,7 @@ function getBibleReading(weekNum, dayIndex) {
   }[book] || "PRO";
   
   // YouVersion Bible.com link format
-  const bibleLink = `https://www.bible.com/bible/1/${bookAbbrev}.${chapter}.KJV`;
+  const bibleLink = `https://www.bible.com/bible/1/${bookAbbrev}.${chapter}.NLT`;
   
   return {
     text: chapterName,

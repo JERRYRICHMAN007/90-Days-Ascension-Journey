@@ -23,7 +23,7 @@ import { Progress } from "./ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { JourneySidebar } from "./journey/JourneySidebar";
 import { JourneyDetailV2 } from "./journey/JourneyDetailV2";
-import { getCurrentPhase } from "../utils/dates";
+import { getCurrentPhase, getCurrentDayNumber } from "../utils/dates";
 import "./JourneyDetail.css";
 
 function JourneyDetail({
@@ -46,15 +46,13 @@ function JourneyDetail({
   const firstWeek = weeks && weeks.length > 0 ? weeks[0] : null;
   const firstDay = firstWeek?.days && firstWeek.days.length > 0 ? firstWeek.days[0] : null;
   const currentPhase = getCurrentPhase();
-  // Check if today is January 5, 2026 (Day 0)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const day0Date = new Date('2026-01-05');
-  day0Date.setHours(0, 0, 0, 0);
-  const isDay0Date = today.getTime() === day0Date.getTime();
-  // Default to Day 0 if it's January 5, 2026, or in preparation phase, otherwise use first day
-  const defaultDay = (isDay0Date || currentPhase === 'preparation' || currentPhase === 'before') ? 0 : (firstDay?.dayNumber || 1);
-  const [selectedWeek, setSelectedWeek] = useState(firstWeek?.weekNumber || 1);
+  // Get current day number - defaults to present day
+  const currentDayNumber = getCurrentDayNumber();
+  // Default to current day number, or Day 0 if in preparation phase, or first day as fallback
+  const defaultDay = currentDayNumber !== null ? currentDayNumber : (currentPhase === 'preparation' || currentPhase === 'before' ? 0 : (firstDay?.dayNumber || 1));
+  // Calculate default week based on default day
+  const defaultWeek = defaultDay === 0 ? 1 : Math.ceil(defaultDay / 7);
+  const [selectedWeek, setSelectedWeek] = useState(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);

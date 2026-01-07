@@ -4,12 +4,45 @@
  * This module provides a centralized API client for making HTTP requests.
  */
 
-// Default to backend on port 5001 (direct run) or 4000 (Docker)
-// Set VITE_API_BASE_URL in .env.local to override
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/v1';
+// Environment-aware API Base URL
+// Priority: VITE_API_BASE_URL env var > production detection > localhost fallback
+const getApiBaseUrl = () => {
+  // 1. Check for explicit environment variable (highest priority)
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  
+  // 2. Detect production environment
+  const isProduction = import.meta.env.PROD || 
+                       window.location.hostname !== 'localhost' && 
+                       window.location.hostname !== '127.0.0.1';
+  
+  if (isProduction) {
+    // In production, try to detect backend URL from environment or use a default
+    // This should be set via Vercel environment variables
+    const prodUrl = import.meta.env.VITE_PROD_API_URL;
+    if (prodUrl) {
+      return prodUrl;
+    }
+    
+    // Fallback: construct from current hostname (if backend is on same domain)
+    // Or use a default production URL
+    console.warn('⚠️ VITE_API_BASE_URL not set in production. Please configure it in Vercel environment variables.');
+    console.warn('   Set VITE_API_BASE_URL to your production backend URL (e.g., https://your-backend.railway.app/v1)');
+    
+    // Return a placeholder that will fail gracefully with helpful error
+    return 'PRODUCTION_API_URL_NOT_CONFIGURED';
+  }
+  
+  // 3. Development fallback
+  return 'http://localhost:5001/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Log API URL on initialization to help debug
 console.log('🔗 API Base URL:', API_BASE_URL);
+console.log('🌍 Environment:', import.meta.env.PROD ? 'production' : 'development');
 
 class ApiClient {
   constructor(baseURL = API_BASE_URL) {
@@ -27,6 +60,13 @@ class ApiClient {
   }
 
   async request(endpoint, options = {}) {
+    // Check if API URL is configured
+    if (this.baseURL === 'PRODUCTION_API_URL_NOT_CONFIGURED') {
+      const error = new Error('Production API URL not configured. Please set VITE_API_BASE_URL in Vercel environment variables.');
+      error.code = 'API_URL_NOT_CONFIGURED';
+      throw error;
+    }
+    
     const url = `${this.baseURL}${endpoint}`;
     const config = {
       ...options,
@@ -146,17 +186,27 @@ class ApiClient {
           }
         }
         
-        // Provide appropriate error message based on operation type
+        // Provide appropriate error message based on operation type and environment
         let errorMessage;
+        const isProduction = import.meta.env.PROD || 
+                             window.location.hostname !== 'localhost' && 
+                             window.location.hostname !== '127.0.0.1';
+        
         if (isAuthOperation) {
-          // Registration/login requires backend - provide helpful guidance
-          errorMessage = 'Cannot connect to server. Please ensure the backend server is running on http://localhost:5001. Start it with: cd 90DaysAJ-backend && npm run dev';
+          if (isProduction) {
+            errorMessage = 'Cannot connect to authentication server. Please contact support if this issue persists.';
+          } else {
+            errorMessage = 'Cannot connect to server. Please ensure the backend server is running on http://localhost:5001. Start it with: cd 90DaysAJ-backend && npm run dev';
+          }
         } else if (hasValidTokens) {
           // Authenticated users can work offline
           errorMessage = 'Backend service unavailable. The app will work in offline mode using LocalStorage.';
         } else {
-          // Unauthenticated users need backend
-          errorMessage = 'Cannot connect to server. Please ensure the backend server is running on http://localhost:5001.';
+          if (isProduction) {
+            errorMessage = 'Cannot connect to server. Please check your internet connection and try again.';
+          } else {
+            errorMessage = 'Cannot connect to server. Please ensure the backend server is running on http://localhost:5001.';
+          }
         }
         
         const serviceError = new Error(errorMessage);

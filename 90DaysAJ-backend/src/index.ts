@@ -11,8 +11,11 @@ dotenv.config();
 
 const app = express();
 // Use 5001 by default to avoid conflicts and permission issues
+// In production, listen on 0.0.0.0 to accept connections from any interface
 const PORT = process.env.PORT || 5001;
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = process.env.NODE_ENV === "production" 
+  ? (process.env.HOST || "0.0.0.0")
+  : (process.env.HOST || "127.0.0.1");
 
 // Security middleware
 app.use(helmet());
@@ -56,6 +59,27 @@ app.use(
       if (process.env.NODE_ENV === "production" && process.env.APP_URL) {
         // Allow the configured frontend URL and any subdomain
         const frontendUrl = new URL(process.env.APP_URL);
+        const originUrl = origin.startsWith("http") ? new URL(origin) : null;
+
+        if (originUrl) {
+          // Allow exact match
+          if (originUrl.hostname === frontendUrl.hostname) {
+            return callback(null, true);
+          }
+          // Allow subdomains (e.g., www.example.com if APP_URL is example.com)
+          if (originUrl.hostname.endsWith('.' + frontendUrl.hostname)) {
+            return callback(null, true);
+          }
+          // Allow parent domain (e.g., example.com if APP_URL is www.example.com)
+          if (frontendUrl.hostname.endsWith('.' + originUrl.hostname)) {
+            return callback(null, true);
+          }
+        }
+      }
+      
+      // Also check FRONTEND_URL if set
+      if (process.env.NODE_ENV === "production" && process.env.FRONTEND_URL) {
+        const frontendUrl = new URL(process.env.FRONTEND_URL);
         const originUrl = origin.startsWith("http") ? new URL(origin) : null;
 
         if (originUrl && originUrl.hostname === frontendUrl.hostname) {
