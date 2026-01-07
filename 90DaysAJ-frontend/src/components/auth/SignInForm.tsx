@@ -118,7 +118,10 @@ export function SignInForm() {
           errorMessage.includes('SUPABASE_UNAVAILABLE') ||
           errorMessage.includes('503') ||
           errorMessage.includes('Failed to fetch') ||
-          errorMessage.includes('NetworkError')) {
+          errorMessage.includes('NetworkError') ||
+          errorMessage.includes('ERR_NETWORK') ||
+          errorMessage.includes('Network request failed') ||
+          errorMessage.includes('Cannot connect to server')) {
         // #region agent log
         fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:75',message:'Service unavailable error detected - checking for existing tokens',data:{email,errorMessage,hasAccessToken:!!localStorage.getItem('accessToken'),hasRefreshToken:!!localStorage.getItem('refreshToken')},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
         // #endregion
@@ -141,7 +144,8 @@ export function SignInForm() {
           // #region agent log
           fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SignInForm.tsx:94',message:'BLOCKED: New sign-in attempt without backend validation',data:{email,hasAccessToken:false,hasRefreshToken:false},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
           // #endregion
-          setError('Unable to connect to authentication service. Please check your connection and try again.');
+          // Use the error message from the API which should include helpful guidance
+          setError(errorMessage);
           return;
         }
       }

@@ -124,6 +124,8 @@ class ApiClient {
       if (error.message?.includes('Failed to fetch') || 
           error.message?.includes('NetworkError') ||
           error.message?.includes('ERR_CONNECTION_REFUSED') ||
+          error.message?.includes('ERR_NETWORK') ||
+          error.message?.includes('Network request failed') ||
           error.message?.includes('SUPABASE_UNAVAILABLE') ||
           error.message?.includes('503')) {
         
@@ -147,14 +149,14 @@ class ApiClient {
         // Provide appropriate error message based on operation type
         let errorMessage;
         if (isAuthOperation) {
-          // Registration/login requires backend - be clear about this
-          errorMessage = 'Unable to connect to authentication service. Please check your connection and try again.';
+          // Registration/login requires backend - provide helpful guidance
+          errorMessage = 'Cannot connect to server. Please ensure the backend server is running on http://localhost:5001. Start it with: cd 90DaysAJ-backend && npm run dev';
         } else if (hasValidTokens) {
           // Authenticated users can work offline
           errorMessage = 'Backend service unavailable. The app will work in offline mode using LocalStorage.';
         } else {
           // Unauthenticated users need backend
-          errorMessage = 'Unable to connect to server. Please check your connection and try again.';
+          errorMessage = 'Cannot connect to server. Please ensure the backend server is running on http://localhost:5001.';
         }
         
         const serviceError = new Error(errorMessage);
