@@ -13,9 +13,13 @@ const getApiBaseUrl = () => {
   }
   
   // 2. Detect production environment
+  // Check if we're in a production build OR if hostname is not localhost
   const isProduction = import.meta.env.PROD || 
-                       window.location.hostname !== 'localhost' && 
-                       window.location.hostname !== '127.0.0.1';
+                       (typeof window !== 'undefined' && 
+                        window.location.hostname !== 'localhost' && 
+                        window.location.hostname !== '127.0.0.1' &&
+                        !window.location.hostname.includes('localhost') &&
+                        window.location.protocol === 'https:');
   
   if (isProduction) {
     // In production, try to detect backend URL from environment or use a default
@@ -43,6 +47,17 @@ const API_BASE_URL = getApiBaseUrl();
 // Log API URL on initialization to help debug
 console.log('🔗 API Base URL:', API_BASE_URL);
 console.log('🌍 Environment:', import.meta.env.PROD ? 'production' : 'development');
+console.log('🌐 Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
+console.log('🔐 VITE_API_BASE_URL set:', !!import.meta.env.VITE_API_BASE_URL);
+
+// Warn if production but API URL not configured
+if ((import.meta.env.PROD || (typeof window !== 'undefined' && window.location.protocol === 'https:')) && 
+    (API_BASE_URL === 'PRODUCTION_API_URL_NOT_CONFIGURED' || API_BASE_URL.includes('localhost'))) {
+  console.error('⚠️ PRODUCTION WARNING: API URL not configured!');
+  console.error('   Current API URL:', API_BASE_URL);
+  console.error('   Set VITE_API_BASE_URL in Vercel environment variables');
+  console.error('   Example: https://your-backend.railway.app/v1');
+}
 
 class ApiClient {
   constructor(baseURL = API_BASE_URL) {
@@ -62,8 +77,25 @@ class ApiClient {
   async request(endpoint, options = {}) {
     // Check if API URL is configured
     if (this.baseURL === 'PRODUCTION_API_URL_NOT_CONFIGURED') {
-      const error = new Error('Production API URL not configured. Please set VITE_API_BASE_URL in Vercel environment variables.');
+      // In production, show user-friendly error (not technical details)
+      const isProduction = import.meta.env.PROD || 
+                           (typeof window !== 'undefined' && 
+                            window.location.protocol === 'https:' &&
+                            !window.location.hostname.includes('localhost'));
+      
+      const errorMessage = isProduction
+        ? 'Cannot connect to authentication server. Please check your internet connection and try again.'
+        : 'Production API URL not configured. Please set VITE_API_BASE_URL in Vercel environment variables.';
+      
+      const error = new Error(errorMessage);
       error.code = 'API_URL_NOT_CONFIGURED';
+      
+      // Log detailed error for developers/debugging
+      if (!isProduction) {
+        console.error('❌ Production API URL not configured!');
+        console.error('   Set VITE_API_BASE_URL in Vercel environment variables.');
+      }
+      
       throw error;
     }
     
@@ -188,13 +220,30 @@ class ApiClient {
         
         // Provide appropriate error message based on operation type and environment
         let errorMessage;
+        // Detect production more reliably
         const isProduction = import.meta.env.PROD || 
-                             window.location.hostname !== 'localhost' && 
-                             window.location.hostname !== '127.0.0.1';
+                             (typeof window !== 'undefined' && 
+                              window.location.hostname !== 'localhost' && 
+                              window.location.hostname !== '127.0.0.1' &&
+                              !window.location.hostname.includes('localhost') &&
+                              window.location.protocol === 'https:');
         
         if (isAuthOperation) {
           if (isProduction) {
-            errorMessage = 'Cannot connect to authentication server. Please contact support if this issue persists.';
+            // In production, provide helpful debugging info
+            console.error('❌ Authentication failed - Backend connection issue');
+            console.error('   API URL:', this.baseURL);
+            console.error('   Endpoint:', endpoint);
+            console.error('   Error:', error.message);
+            
+            // Check if API URL is configured
+            if (this.baseURL === 'PRODUCTION_API_URL_NOT_CONFIGURED' || 
+                this.baseURL.includes('localhost') || 
+                this.baseURL.includes('127.0.0.1')) {
+              errorMessage = 'Backend server is not configured. Please contact support.';
+            } else {
+              errorMessage = 'Cannot connect to authentication server. Please check your internet connection and try again.';
+            }
           } else {
             errorMessage = 'Cannot connect to server. Please ensure the backend server is running on http://localhost:5001. Start it with: cd 90DaysAJ-backend && npm run dev';
           }
