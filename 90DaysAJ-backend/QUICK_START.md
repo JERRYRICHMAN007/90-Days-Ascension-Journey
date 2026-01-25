@@ -64,10 +64,45 @@ Make sure your `.env` file has:
 
 ## 🆘 Troubleshooting
 
+### Common Issues
+
+#### "Supabase service unavailable" Error
+
+**Most Common Cause: Project is Paused**
+
+Free tier Supabase projects pause after 1 week of inactivity.
+
+**Quick Fix:**
+1. Go to [Supabase Dashboard](https://app.supabase.com)
+2. Find your project: `qeezmjebcgtgvuyfqjxb`
+3. Click **"Restore"** if paused
+4. Wait 1-2 minutes for initialization
+5. Restart your backend server:
+   ```powershell
+   # Stop server (Ctrl+C), then:
+   npm run dev
+   ```
+
+**Test Connection:**
+```powershell
+curl http://localhost:4000/v1/health/supabase
+```
+
+**For detailed troubleshooting, see:** `SUPABASE_TROUBLESHOOTING.md`
+
+### Other Issues
+
 If the server doesn't start:
 1. Check that `.env` file exists and has all Supabase credentials
 2. Check for TypeScript errors: `npm run build`
 3. Make sure port 4000 is not in use
+4. Verify Supabase project is active in dashboard
+
+## 📚 Documentation
+
+- See `SUPABASE_TROUBLESHOOTING.md` for connection issues
+- See `SUPABASE_INTEGRATION_COMPLETE.md` for full details
+- See `PROPER_SUPABASE_SETUP.md` for integration approach
 
 Your backend is now properly connected to Supabase! 🎉
 

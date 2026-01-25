@@ -1,11 +1,12 @@
 // Complete journey data with all 13 weeks
+import { getExecutionTasks } from './dualBrandExecutionPlan.js';
 
 export const journeys = [
   {
     id: "body-transformation",
     title: "Body Transformation",
     icon: "💪",
-    timeBlock: "Time: 5:30-6:00 AM (Weekdays & Sunday)",
+    timeBlock: "Time: 5:30-6:30 AM (Monday-Friday)",
     description: "Upper Body → Lower Body → Core → Functional → Mobility",
     totalDays: 90,
     color: "#667eea",
@@ -14,7 +15,7 @@ export const journeys = [
     id: "dual-brand",
     title: "Dual Brand",
     icon: "🎨",
-    timeBlock: "Time: 5:00-6:00 PM (Weekdays & Saturday)",
+    timeBlock: "Time: 4:45-5:30 AM (Mon-Fri), 5:00-6:00 AM (Saturday)",
     description: "Ryxen + HavenX Brand Building",
     totalDays: 90,
     color: "#f093fb",
@@ -23,8 +24,8 @@ export const journeys = [
     id: "reading",
     title: "Reading",
     icon: "📚",
-    timeBlock: "Multiple Time Blocks",
-    description: "E-books → Physical Books → Bible",
+    timeBlock: "Bible: 6:00-6:15 AM (Weekdays & Sunday) | E-Book: 6:15-6:45 AM (Mon-Wed) | Physical: 6:15-6:45 AM (Thu-Fri), 8:00-8:30 PM (Sat)",
+    description: "Bible → E-books → Physical Books",
     totalDays: 90,
     color: "#4facfe",
   },
@@ -41,17 +42,18 @@ export const journeys = [
     id: "software-engineering",
     title: "Software Engineering",
     icon: "💻",
-    timeBlock: "3 Hours Daily",
-    description: "Mobile → Frontend → Backend → Systems Engineering",
+    timeBlock: "Mobile: 6:45-8:00 AM (Mon-Wed), 1:30-3:00 PM Rev (Sat) | Frontend: 6:45-8:00 AM (Thu-Fri), 3:00-4:00 PM Rev (Sat) | Backend: 7:30-9:00 PM (Fri), 4:00-5:00 PM Rev (Sat) | WordPress: 5:00-6:00 AM (Sun)",
+    description: "Mobile → Frontend → Backend → WordPress",
     totalDays: 90,
     color: "#fa709a",
   },
 ];
 
-// OFFICIAL START DATE: January 5, 2026 (Day 0 - Preparation - Monday)
-// Day 0 = January 5, 2026 (Preparation - Monday)
-// Day 1 = January 6, 2026 (First actual day - Tuesday)
-// All journeys start January 6, 2026 - Official Ascension Phase begins!
+// OFFICIAL START DATE: January 18, 2026 (Day 0 - Sunday - Preparation)
+// Day 0 = January 18, 2026 (Sunday) - Preparation/Setup Day
+// Day 1 = January 19, 2026 (Monday) - Testing & Trials Week Begins
+// Week 1 (Days 1-7): January 19-25, 2026 - Testing & Trials (No iterations)
+// All journeys start January 19, 2026 - Official Ascension Phase begins!
 
 // Helper function to generate all weeks
 function generateWeeks(startDate, numWeeks) {
@@ -77,7 +79,7 @@ function generateWeeks(startDate, numWeeks) {
 
 function getWeekTheme(weekNum) {
   const themes = {
-    1: "Foundation Week - Establishing routines and systems",
+    1: "Testing & Trials Week - System familiarization and experimentation (No iterations)",
     2: "Building Momentum - Consistency and habit formation",
     3: "Deepening Practice - Advanced techniques and refinement",
     4: "Integration Phase - Combining all elements",
@@ -350,12 +352,25 @@ function getDualBrandReflection(weekNum, dayIndex) {
   const companyBrandTasks = getCompanyBrandTasks(weekNum, dayIndex);
   const outcome = getDualBrandOutcome(weekNum, dayIndex);
 
+  // Format tasks for reflection - handle both arrays and strings
+  const formatTasks = (tasks) => {
+    if (!tasks || tasks.length === 0) return "No tasks completed";
+    if (Array.isArray(tasks)) {
+      if (tasks.length === 1) return tasks[0];
+      return tasks.slice(0, 3).join(", ") + (tasks.length > 3 ? ` and ${tasks.length - 3} more` : "");
+    }
+    return tasks;
+  };
+
+  const personalTasksText = formatTasks(personalBrandTasks);
+  const companyTasksText = formatTasks(companyBrandTasks);
+
   return {
     prompt: `Reflect on today's ${focus} work for both Personal Brand and Company Brand`,
     questions: [
       `What progress did I make on ${focus}?`,
-      `Personal Brand (_jerryrichman007): How did ${personalBrandTasks} go?`,
-      `Company Brand (_ryxen007): How did ${companyBrandTasks} go?`,
+      `Personal Brand (_jerryrichman007): How did today's tasks go? ${personalTasksText}`,
+      `Company Brand (_ryxen007): How did today's tasks go? ${companyTasksText}`,
       `Did I achieve the expected outcome: ${outcome}?`,
       "What challenges did I face?",
       "What will I focus on improving tomorrow?",
@@ -365,7 +380,7 @@ function getDualBrandReflection(weekNum, dayIndex) {
 }
 
 // Body Transformation Journey - Complete 13 weeks
-export const bodyTransformationWeeks = generateWeeks("2026-01-06", 13).map(
+export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
   (week, idx) => {
     const days = [];
     const workoutTypes = [
@@ -397,8 +412,14 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-06", 13).map(
       ];
       const actualDayName = dayNames[dayDate.getDay()];
 
-      const workoutData = getWorkoutForDay(idx + 1, i);
-      const workoutResources = getWorkoutResources(idx + 1, i);
+      // Week 1 (Days 1-7) is for testing and trials - no iterations
+      // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
+      const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
+      const isTestRun = idx === 0 && dayNumber <= 7;
+
+      // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
+      const workoutData = isTestRun ? { name: "System Testing - No Workout", link: null } : getWorkoutForDay(contentWeekNum, i);
+      const workoutResources = isTestRun ? [] : getWorkoutResources(contentWeekNum, i);
 
       days.push({
         dayNumber: dayNumber,
@@ -407,23 +428,29 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-06", 13).map(
         focus: workoutTypes[i],
         workout: workoutData.name || workoutData,
         workoutLink: workoutData.link || null,
-        nutrition: getNutritionForWeek(idx + 1, i),
+        nutrition: isTestRun ? "Testing Week - Focus on system exploration" : getNutritionForWeek(contentWeekNum, i),
         mindset: getMindsetAffirmation(i),
         resources: workoutResources,
         // Add missing fields for Learning, Project, Reflection tabs
-        dailyLearning: getBodyTransformationLearning(idx + 1, i),
-        project: getBodyTransformationProject(idx + 1, i),
-        reflection: getBodyTransformationReflection(idx + 1, i),
-        isTestRun: false,
-        testRunNote: null,
-        testRunTasks: null,
+        dailyLearning: isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getBodyTransformationLearning(contentWeekNum, i),
+        project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getBodyTransformationProject(contentWeekNum, i),
+        reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getBodyTransformationReflection(contentWeekNum, i),
+        isTestRun: isTestRun,
+        testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
+        testRunTasks: isTestRun ? [
+          "Explore the app interface and navigation",
+          "Test all features and functionality",
+          "Get familiar with the journey structure",
+          "Identify any issues or improvements",
+          "Prepare mentally for Day 8 onwards"
+        ] : null,
       });
     }
 
-    // Override theme for week 1 to focus on preparing mind, body, and soul
+    // Override theme for week 1 to reflect testing & trials week
     const weekTheme =
       idx === 0
-        ? "Preparing Mind, Body, and Soul for the Journey Ahead"
+        ? "Testing & Trials Week - System familiarization and experimentation (No iterations)"
         : week.theme;
 
     return { ...week, theme: weekTheme, days };
@@ -611,7 +638,7 @@ function getWorkoutResources(weekNum, dayIndex) {
 }
 
 // Reading Journey - Complete 13 weeks
-export const readingWeeks = generateWeeks("2026-01-06", 13).map((week, idx) => {
+export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
   const days = [];
 
   for (let i = 0; i < 7; i++) {
@@ -634,24 +661,37 @@ export const readingWeeks = generateWeeks("2026-01-06", 13).map((week, idx) => {
     const actualDayName = dayNames[dayDate.getDay()];
 
     const isWeekend = i >= 5;
-    const readingResources = getReadingResources(idx + 1, i);
+    
+    // Week 1 (Days 1-7) is for testing and trials - no iterations
+    // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
+    const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
+    const isTestRun = idx === 0 && dayNumber <= 7;
+
+    // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
+    const readingResources = isTestRun ? [] : getReadingResources(contentWeekNum, i);
 
     days.push({
       dayNumber: dayNumber,
       date: dayDateString,
       dayName: actualDayName,
-      readingSessions: isWeekend
-        ? getWeekendReading(idx + 1, i)
-        : getWeekdayReading(idx + 1, i),
-      theme: getReadingTheme(idx + 1),
+      readingSessions: isTestRun 
+        ? [] 
+        : (isWeekend ? getWeekendReading(contentWeekNum, i) : getWeekdayReading(contentWeekNum, i)),
+      theme: isTestRun ? "Testing & Trials Week" : getReadingTheme(contentWeekNum),
       resources: readingResources,
       // Add missing fields for Learning, Project, Reflection tabs
-      dailyLearning: getReadingLearning(idx + 1, i),
-      project: getReadingProject(idx + 1, i),
-      reflection: getReadingReflection(idx + 1, i),
-      isTestRun: false,
-      testRunNote: null,
-      testRunTasks: null,
+      dailyLearning: isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getReadingLearning(contentWeekNum, i),
+      project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getReadingProject(contentWeekNum, i),
+      reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getReadingReflection(contentWeekNum, i),
+      isTestRun: isTestRun,
+      testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
+      testRunTasks: isTestRun ? [
+        "Explore the app interface and navigation",
+        "Test all features and functionality",
+        "Get familiar with the journey structure",
+        "Identify any issues or improvements",
+        "Prepare mentally for Day 8 onwards"
+      ] : null,
     });
   }
 
@@ -953,7 +993,7 @@ function getReadingResources(weekNum, dayIndex) {
 }
 
 // Dual Brand Journey - Complete 13 weeks
-export const dualBrandWeeks = generateWeeks("2026-01-06", 13).map(
+export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
   (week, idx) => {
     const days = [];
 
@@ -976,32 +1016,46 @@ export const dualBrandWeeks = generateWeeks("2026-01-06", 13).map(
       ];
       const actualDayName = dayNames[dayDate.getDay()];
 
+      // Week 1 (Days 1-7) is for testing and trials - no iterations
+      // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
+      const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
+      const isTestRun = idx === 0 && dayNumber <= 7;
+
+      // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
+      const focus = isTestRun ? "System Testing" : getDualBrandFocus(contentWeekNum, i);
+
       days.push({
         dayNumber: dayNumber,
         date: dayDateString,
         dayName: actualDayName,
-        focus: getDualBrandFocus(idx + 1, i),
-        personalBrandTasks: getPersonalBrandTasks(idx + 1, i),
-        companyBrandTasks: getCompanyBrandTasks(idx + 1, i),
+        focus: focus,
+        personalBrandTasks: isTestRun ? [] : getPersonalBrandTasks(contentWeekNum, i),
+        companyBrandTasks: isTestRun ? [] : getCompanyBrandTasks(contentWeekNum, i),
         // Keep legacy fields for backward compatibility
-        ryxenTasks: getPersonalBrandTasks(idx + 1, i),
-        havenXTasks: getCompanyBrandTasks(idx + 1, i),
-        theme: getDualBrandTheme(idx + 1),
-        learningResources: getDualBrandLearningResources(idx + 1, i),
-        outcome: getDualBrandOutcome(idx + 1, i),
+        ryxenTasks: isTestRun ? [] : getPersonalBrandTasks(contentWeekNum, i),
+        havenXTasks: isTestRun ? [] : getCompanyBrandTasks(contentWeekNum, i),
+        theme: isTestRun ? "Testing & Trials Week" : getDualBrandTheme(contentWeekNum),
+        learningResources: isTestRun ? [] : getDualBrandLearningResources(contentWeekNum, i),
+        outcome: isTestRun ? "System testing and exploration" : getDualBrandOutcome(contentWeekNum, i),
         // Platform-specific sessions for content planning
-        platformSessions: getPlatformSessions(idx + 1, i),
+        platformSessions: isTestRun ? [] : getPlatformSessions(contentWeekNum, i),
         // Project content for dual brand
-        project: getDualBrandProject(idx + 1, i),
+        project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getDualBrandProject(contentWeekNum, i),
         // Add missing fields for Learning, Reflection tabs
         dailyLearning: {
-          title: getDualBrandFocus(idx + 1, i),
-          description: `Today's focus: ${getDualBrandFocus(idx + 1, i)}`,
+          title: focus,
+          description: isTestRun ? "Explore and test the app features" : `Today's focus: ${focus}`,
         },
-        reflection: getDualBrandReflection(idx + 1, i),
-        isTestRun: false,
-        testRunNote: null,
-        testRunTasks: null,
+        reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getDualBrandReflection(contentWeekNum, i),
+        isTestRun: isTestRun,
+        testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
+        testRunTasks: isTestRun ? [
+          "Explore the app interface and navigation",
+          "Test all features and functionality",
+          "Get familiar with the journey structure",
+          "Identify any issues or improvements",
+          "Prepare mentally for Day 8 onwards"
+        ] : null,
       });
     }
 
@@ -1756,6 +1810,21 @@ function getDualBrandLearningResources(weekNum, dayIndex) {
 }
 
 function getPersonalBrandTasks(weekNum, dayIndex) {
+  // Use execution plan for Week 2+ (Week 1 is testing)
+  // Note: Import handled dynamically to avoid circular dependencies
+  try {
+    if (weekNum >= 2) {
+      const { getExecutionTasks } = require('./dualBrandExecutionPlan.js');
+      const executionTasks = getExecutionTasks(weekNum, dayIndex, 'ryxen');
+      if (executionTasks && executionTasks.ryxen && executionTasks.ryxen.length > 0) {
+        return executionTasks.ryxen;
+      }
+    }
+  } catch (e) {
+    // Fallback if execution plan not available
+  }
+
+  // Fallback for Week 1 or if execution plan not available
   const tasks = [
     [
       "Define Personal Brand (_jerryrichman007) mission, values, target persona",
@@ -1879,6 +1948,19 @@ function getPersonalBrandTasks(weekNum, dayIndex) {
 }
 
 function getCompanyBrandTasks(weekNum, dayIndex) {
+  // Use execution plan for Week 2+ (Week 1 is testing)
+  try {
+    if (weekNum >= 2) {
+      const executionTasks = getExecutionTasks(weekNum, dayIndex, 'havenx');
+      if (executionTasks && executionTasks.havenx && executionTasks.havenx.length > 0) {
+        return executionTasks.havenx;
+      }
+    }
+  } catch (e) {
+    // Fallback if execution plan not available
+  }
+
+  // Fallback for Week 1 or if execution plan not available
   const tasks = [
     [
       "Define Company Brand (_ryxen007) mission, positioning, ideal client",
@@ -3117,7 +3199,7 @@ function getDualBrandProject(weekNum, dayIndex) {
 }
 
 // Writer's Journey - Complete 12 weeks (60 days, Mon-Fri only)
-export const writersWeeks = generateWeeks("2026-01-06", 12).map((week, idx) => {
+export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
   const days = [];
 
   for (let i = 0; i < 5; i++) {
@@ -3139,30 +3221,44 @@ export const writersWeeks = generateWeeks("2026-01-06", 12).map((week, idx) => {
     ];
     const actualDayName = dayNames[dayDate.getDay()];
 
-    const writerResources = getWriterResources(idx + 1, i);
+    // Week 1 (Days 1-5 for writers journey, weekdays only) is for testing and trials - no iterations
+    // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
+    const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
+    const isTestRun = idx === 0 && dayNumber <= 5;
+
+    // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
+    const writerResources = isTestRun ? [] : getWriterResources(contentWeekNum, i);
+    const learning = isTestRun ? "System Testing" : getWriterLearning(contentWeekNum, i);
+    const execution = isTestRun ? "Test app features" : getWriterExecution(contentWeekNum, i);
 
     days.push({
       dayNumber: dayNumber,
       date: dayDateString,
       dayName: actualDayName,
-      learning: getWriterLearning(idx + 1, i),
-      execution: getWriterExecution(idx + 1, i),
-      reflection: getWriterReflection(idx + 1, i),
-      theme: getWriterTheme(idx + 1),
+      learning: learning,
+      execution: execution,
+      reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getWriterReflection(contentWeekNum, i),
+      theme: isTestRun ? "Testing & Trials Week" : getWriterTheme(contentWeekNum),
       resources: writerResources,
       // Add missing fields for Learning, Project tabs (map from existing fields)
       dailyLearning: {
-        title: getWriterLearning(idx + 1, i),
-        description: `Learn about ${getWriterLearning(idx + 1, i)}`,
+        title: learning,
+        description: isTestRun ? "Explore and test the app features" : `Learn about ${learning}`,
       },
       project: {
-        title: getWriterExecution(idx + 1, i),
-        description: `Execute: ${getWriterExecution(idx + 1, i)}`,
-        requirements: [getWriterExecution(idx + 1, i)],
+        title: execution,
+        description: isTestRun ? "Test all features" : `Execute: ${execution}`,
+        requirements: isTestRun ? [] : [execution],
       },
-      isTestRun: false,
-      testRunNote: null,
-      testRunTasks: null,
+      isTestRun: isTestRun,
+      testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
+      testRunTasks: isTestRun ? [
+        "Explore the app interface and navigation",
+        "Test all features and functionality",
+        "Get familiar with the journey structure",
+        "Identify any issues or improvements",
+        "Prepare mentally for Day 6 onwards"
+      ] : null,
     });
   }
 
@@ -4897,9 +4993,9 @@ function getProjectComponentForDay(dayNumber, discipline) {
 }
 
 // Software Engineering Journey - Full 13-Week Journey
-// January 6, 2026 - April 5, 2026 (90 days)
-// Official Ascension Phase - Day 1 = January 6, 2026 (Tuesday)
-export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
+// January 19, 2026 - April 18, 2026 (90 days)
+// Official Ascension Phase - Day 1 = January 19, 2026 (Monday)
+export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
   (week, idx) => {
     const days = [];
     const weekNum = idx + 1;
@@ -4923,11 +5019,16 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
       ];
       const actualDayName = dayNames[dayDate.getDay()];
 
-      // Get learning content for this week and day
-      const learningData = getSoftwareEngineeringLearning(weekNum, i);
-      const workflowData = getSoftwareEngineeringCursorWorkflow(weekNum, i);
-      let projectData = getSoftwareEngineeringProject(weekNum, i);
-      const disciplineRotation = getDisciplineRotation(weekNum, i);
+      // Week 1 (Days 1-7) is for testing and trials - no iterations
+      // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
+      const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
+      const isTestRun = idx === 0 && dayNumber <= 7;
+
+      // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
+      const learningData = isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getSoftwareEngineeringLearning(contentWeekNum, i);
+      const workflowData = isTestRun ? null : getSoftwareEngineeringCursorWorkflow(contentWeekNum, i);
+      let projectData = isTestRun ? { title: "System Testing", description: "Test all features" } : getSoftwareEngineeringProject(contentWeekNum, i);
+      const disciplineRotation = isTestRun ? { primary: "Frontend" } : getDisciplineRotation(contentWeekNum, i);
       const timeBlocks = getTimeBlocks(i); // dayIndex only
 
       // Enrich project data with project-driven information for each discipline
@@ -4964,12 +5065,12 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
         }
       }
 
-      // Map content to time blocks
-      const scheduledContent = organizeContentBySchedule(
+      // Map content to time blocks (skip for test run)
+      const scheduledContent = isTestRun ? null : organizeContentBySchedule(
         learningData,
         projectData,
         workflowData,
-        weekNum,
+        contentWeekNum,
         i,
         disciplineRotation,
         timeBlocks,
@@ -4977,7 +5078,7 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
       );
 
       // Get project component information for each discipline
-      const projectInfo = {
+      const projectInfo = isTestRun ? {} : {
         frontend: getProjectComponentForDay(dayNumber, "Frontend"),
         mobile: getProjectComponentForDay(dayNumber, "Mobile"),
         backend: getProjectComponentForDay(dayNumber, "Backend"),
@@ -4988,52 +5089,61 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
       };
 
       // Create discipline-specific project information
-      const disciplineProjects = {
+      const disciplineProjects = isTestRun ? {} : {
         Frontend: {
           name: DISCIPLINE_PROJECTS.Frontend.name,
           description: DISCIPLINE_PROJECTS.Frontend.description,
           components: projectInfo,
-          buildPhase: getBuildPhaseForWeek(weekNum),
+          buildPhase: getBuildPhaseForWeek(contentWeekNum),
         },
         Mobile: {
           name: DISCIPLINE_PROJECTS.Mobile.name,
           description: DISCIPLINE_PROJECTS.Mobile.description,
           components: projectInfo,
-          buildPhase: getBuildPhaseForWeek(weekNum),
+          buildPhase: getBuildPhaseForWeek(contentWeekNum),
         },
         Backend: {
           name: DISCIPLINE_PROJECTS.Backend.name,
           description: DISCIPLINE_PROJECTS.Backend.description,
           components: projectInfo,
-          buildPhase: getBuildPhaseForWeek(weekNum),
+          buildPhase: getBuildPhaseForWeek(contentWeekNum),
         },
         "Systems Engineering": {
           name: DISCIPLINE_PROJECTS["Systems Engineering"].name,
           description: DISCIPLINE_PROJECTS["Systems Engineering"].description,
           components: projectInfo,
-          buildPhase: getBuildPhaseForWeek(weekNum),
+          buildPhase: getBuildPhaseForWeek(contentWeekNum),
         },
       };
 
       // Get primary discipline for backward compatibility
       const primaryDiscipline = disciplineRotation.primary || "Frontend";
-      const defaultProject = disciplineProjects[primaryDiscipline] || disciplineProjects.Frontend;
+      const defaultProject = isTestRun ? { title: "System Testing", description: "Test all features" } : (disciplineProjects[primaryDiscipline] || disciplineProjects.Frontend);
 
       days.push({
         dayNumber: dayNumber,
         date: dayDateString,
         dayName: actualDayName,
-        theme: getSoftwareEngineeringTheme(weekNum),
+        theme: isTestRun ? "Testing & Trials Week" : getSoftwareEngineeringTheme(contentWeekNum),
         dailyLearning: learningData,
         cursorWorkflow: workflowData,
         miniProject: projectData,
-        resources: getSoftwareEngineeringResources(weekNum, i),
-        monetization: getSoftwareEngineeringMonetization(weekNum, i),
-        quiz: getSoftwareEngineeringQuizzes(weekNum, i),
-        socialPosting: getSoftwareEngineeringSocialPosting(weekNum, i),
-        reflection: getSoftwareEngineeringReflection(weekNum, i),
-        dailyQuiz: getDailyCumulativeQuiz(weekNum, i, dayNumber),
-        practicalAssessment: getDailyPracticalAssessment(weekNum, i, dayNumber),
+        resources: isTestRun ? [] : getSoftwareEngineeringResources(contentWeekNum, i),
+        monetization: isTestRun ? null : getSoftwareEngineeringMonetization(contentWeekNum, i),
+        quiz: isTestRun ? null : getSoftwareEngineeringQuizzes(contentWeekNum, i),
+        socialPosting: isTestRun ? null : getSoftwareEngineeringSocialPosting(contentWeekNum, i),
+        reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getSoftwareEngineeringReflection(contentWeekNum, i),
+        dailyQuiz: isTestRun ? null : getDailyCumulativeQuiz(contentWeekNum, i, dayNumber),
+        practicalAssessment: isTestRun ? null : getDailyPracticalAssessment(contentWeekNum, i, dayNumber),
+        isTestRun: isTestRun,
+        testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
+        testRunTasks: isTestRun ? [
+          "Explore the app interface and navigation",
+          "Test all features and functionality",
+          "Get familiar with the journey structure",
+          "Identify any issues or improvements",
+          "Prepare mentally for Day 8 onwards"
+        ] : null,
         schedule: {
           timeBlocks: timeBlocks,
           disciplineRotation: disciplineRotation,
@@ -5043,9 +5153,15 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-06", 13).map(
         project: defaultProject,
         // Discipline-specific projects (for UI to switch between)
         disciplineProjects: disciplineProjects,
-        isTestRun: false,
-        testRunNote: null,
-        testRunTasks: null,
+        isTestRun: isTestRun,
+        testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
+        testRunTasks: isTestRun ? [
+          "Explore the app interface and navigation",
+          "Test all features and functionality",
+          "Get familiar with the journey structure",
+          "Identify any issues or improvements",
+          "Prepare mentally for Day 8 onwards"
+        ] : null,
       });
     }
 
@@ -5187,8 +5303,8 @@ function organizeContentBySchedule(
   }
 
   if (isSunday) {
-    // Sunday: Systems Engineering only
-    // Systems Engineering Learning
+    // Sunday: WordPress only
+    // WordPress Learning
     if (timeBlocks.deepLearning && timeBlocks.deepLearning.length > 0) {
       timeBlocks.deepLearning.forEach((block) => {
         const learningDataWithDayIndex = {
@@ -5213,7 +5329,7 @@ function organizeContentBySchedule(
       });
     }
 
-    // Frontend & Backend Revision (Focused Implementation)
+    // WordPress Implementation (if any)
     if (
       timeBlocks.focusedImplementation &&
       timeBlocks.focusedImplementation.length > 0
@@ -5244,8 +5360,8 @@ function organizeContentBySchedule(
     return scheduled;
   }
 
-  // Monday-Friday: Mobile, Frontend, Backend
-  const allDisciplines = disciplineRotation.allDisciplines; // ['Frontend', 'Backend', 'Mobile', 'Systems Engineering']
+  // Monday-Friday: Mobile (Mon-Wed), Frontend (Thu-Fri), Backend (Fri evening)
+  const allDisciplines = disciplineRotation.allDisciplines; // ['Mobile'] or ['Frontend', 'Backend'] or ['Frontend']
 
   // Collect all discipline content for syncing
   const allDisciplinesContent = {};
@@ -8882,16 +8998,26 @@ function getDisciplineContent(
 }
 
 // Scheduling and Discipline Rotation Helpers
-// Updated schedule based on final time allocations
+// Updated schedule based on final time allocations (January 2026)
+// Schedule Structure:
+// - Body Transformation: Mon-Fri, 5:30 AM - 6:30 AM
+// - Dual Branding: Mon-Fri, 4:45 AM - 5:30 AM; Saturday, 5:00 AM - 6:00 AM
+// - Reading: Bible (Weekdays & Sunday, 6:00-6:15 AM), E-Book (Mon-Wed, 6:15-6:45 AM), Physical (Thu-Fri, 6:15-6:45 AM; Sat, 8:00-8:30 PM)
+// - Software Engineering: Mobile (Mon-Wed, 6:45-8:00 AM; Sat Revision 1:30-3:00 PM), Frontend (Thu-Fri, 6:45-8:00 AM; Sat Revision 3:00-4:00 PM), Backend (Fri, 7:30-9:00 PM; Sat Revision 4:00-5:00 PM), WordPress (Sunday, 5:00-6:00 AM)
 function getTimeBlocks(dayIndex) {
   const isSaturday = dayIndex === 5;
   const isSunday = dayIndex === 6;
   const isMonday = dayIndex === 0; // Monday (0=Monday)
-  const isTuesdayToFriday = dayIndex >= 1 && dayIndex <= 4; // Tuesday-Friday (1=Tuesday, 4=Friday)
+  const isTuesday = dayIndex === 1; // Tuesday
+  const isWednesday = dayIndex === 2; // Wednesday
+  const isThursday = dayIndex === 3; // Thursday
+  const isFriday = dayIndex === 4; // Friday
+  const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2; // Monday-Wednesday
+  const isThursdayToFriday = dayIndex >= 3 && dayIndex <= 4; // Thursday-Friday
   const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
 
   if (isSaturday) {
-    // Saturday: Mobile Revision, Frontend, Backend
+    // Saturday: Mobile Revision (1:30-3:00 PM), Frontend Revision (3:00-4:00 PM), Backend Revision (4:00-5:00 PM)
     return {
       deepLearning: [
         {
@@ -8904,32 +9030,32 @@ function getTimeBlocks(dayIndex) {
         {
           time: "3:00 PM - 4:00 PM",
           discipline: "Frontend",
-          type: "study",
+          type: "revision",
           duration: "60 min",
-          isRevision: false,
+          isRevision: true,
         },
       ],
       focusedImplementation: [
         {
           time: "4:00 PM - 5:00 PM",
           discipline: "Backend",
-          type: "build",
+          type: "revision",
           duration: "60 min",
-          isRevision: false,
+          isRevision: true,
         },
       ],
     };
   }
 
   if (isSunday) {
-    // Sunday: Systems Engineering only
+    // Sunday: WordPress (5:00-6:00 AM)
     return {
       deepLearning: [
         {
-          time: "3:00 AM - 5:30 AM",
-          discipline: "Systems Engineering",
+          time: "5:00 AM - 6:00 AM",
+          discipline: "WordPress",
           type: "study",
-          duration: "150 min",
+          duration: "60 min",
           isRevision: false,
         },
       ],
@@ -8937,29 +9063,15 @@ function getTimeBlocks(dayIndex) {
     };
   }
 
-  if (isMonday) {
-    // Monday: Mobile (4:00 AM - 5:30 AM), Frontend (2:45 PM - 4:15 PM), Backend (8:00 PM - 9:30 PM)
+  if (isMondayToWednesday) {
+    // Monday-Wednesday: Mobile (6:45 AM - 8:00 AM)
     return {
       deepLearning: [
         {
-          time: "4:00 AM - 5:30 AM",
+          time: "6:45 AM - 8:00 AM",
           discipline: "Mobile",
           type: "study",
-          duration: "90 min",
-          isRevision: false,
-        },
-        {
-          time: "2:45 PM - 4:15 PM",
-          discipline: "Frontend",
-          type: "study",
-          duration: "90 min",
-          isRevision: false,
-        },
-        {
-          time: "8:00 PM - 9:30 PM",
-          discipline: "Backend",
-          type: "study",
-          duration: "90 min",
+          duration: "75 min",
           isRevision: false,
         },
       ],
@@ -8967,34 +9079,34 @@ function getTimeBlocks(dayIndex) {
     };
   }
 
-  if (isTuesdayToFriday) {
-    // Tuesday-Friday: Mobile (2:00 AM - 4:00 AM), Frontend (2:45 PM - 4:15 PM), Backend (8:00 PM - 9:30 PM)
-    return {
+  if (isThursdayToFriday) {
+    // Thursday-Friday: Frontend (6:45 AM - 8:00 AM)
+    // Friday: Backend (7:30 PM - 9:00 PM)
+    const blocks = {
       deepLearning: [
         {
-          time: "2:00 AM - 4:00 AM",
-          discipline: "Mobile",
-          type: "study",
-          duration: "120 min",
-          isRevision: false,
-        },
-        {
-          time: "2:45 PM - 4:15 PM",
+          time: "6:45 AM - 8:00 AM",
           discipline: "Frontend",
           type: "study",
-          duration: "90 min",
-          isRevision: false,
-        },
-        {
-          time: "8:00 PM - 9:30 PM",
-          discipline: "Backend",
-          type: "study",
-          duration: "90 min",
+          duration: "75 min",
           isRevision: false,
         },
       ],
       focusedImplementation: [],
     };
+
+    // Add Backend on Friday evening
+    if (isFriday) {
+      blocks.focusedImplementation.push({
+        time: "7:30 PM - 9:00 PM",
+        discipline: "Backend",
+        type: "build",
+        duration: "90 min",
+        isRevision: false,
+      });
+    }
+
+    return blocks;
   }
 
   // Fallback (should not reach here)
@@ -9008,10 +9120,15 @@ function getDisciplineRotation(weekNum, dayIndex) {
   const isSaturday = dayIndex === 5;
   const isSunday = dayIndex === 6;
   const isMonday = dayIndex === 0;
-  const isTuesdayToFriday = dayIndex >= 1 && dayIndex <= 4; // Tuesday-Friday
+  const isTuesday = dayIndex === 1;
+  const isWednesday = dayIndex === 2;
+  const isThursday = dayIndex === 3;
+  const isFriday = dayIndex === 4;
+  const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2; // Monday-Wednesday
+  const isThursdayToFriday = dayIndex >= 3 && dayIndex <= 4; // Thursday-Friday
   const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
 
-  // Saturday: Mobile Revision, Frontend, Backend
+  // Saturday: Mobile Revision, Frontend Revision, Backend Revision
   if (isSaturday) {
     return {
       primary: "Mobile",
@@ -9025,29 +9142,61 @@ function getDisciplineRotation(weekNum, dayIndex) {
     };
   }
 
-  // Sunday: Systems Engineering only
+  // Sunday: WordPress only
   if (isSunday) {
     return {
-      primary: "Systems Engineering",
+      primary: "WordPress",
       secondary: null,
       tertiary: null,
       quaternary: null,
-      allDisciplines: ["Systems Engineering"],
-      priorityOrder: ["Systems Engineering"],
-      rotationOrder: ["Systems Engineering"],
-      earlyMorningDiscipline: "Systems Engineering",
+      allDisciplines: ["WordPress"],
+      priorityOrder: ["WordPress"],
+      rotationOrder: ["WordPress"],
+      earlyMorningDiscipline: "WordPress",
     };
   }
 
-  // Monday-Friday: Mobile, Frontend, Backend (no WordPress)
+  // Monday-Wednesday: Mobile only
+  if (isMondayToWednesday) {
+    return {
+      primary: "Mobile",
+      secondary: null,
+      tertiary: null,
+      quaternary: null,
+      allDisciplines: ["Mobile"],
+      priorityOrder: ["Mobile"],
+      rotationOrder: ["Mobile"],
+      earlyMorningDiscipline: "Mobile",
+    };
+  }
+
+  // Thursday-Friday: Frontend (and Backend on Friday evening)
+  if (isThursdayToFriday) {
+    const disciplines = isFriday 
+      ? ["Frontend", "Backend"]
+      : ["Frontend"];
+    
+    return {
+      primary: "Frontend",
+      secondary: isFriday ? "Backend" : null,
+      tertiary: null,
+      quaternary: null,
+      allDisciplines: disciplines,
+      priorityOrder: disciplines,
+      rotationOrder: disciplines,
+      earlyMorningDiscipline: "Frontend",
+    };
+  }
+
+  // Fallback (should not reach here)
   return {
     primary: "Mobile",
-    secondary: "Frontend",
-    tertiary: "Backend",
+    secondary: null,
+    tertiary: null,
     quaternary: null,
-    allDisciplines: ["Mobile", "Frontend", "Backend"],
-    priorityOrder: ["Mobile", "Frontend", "Backend"],
-    rotationOrder: ["Mobile", "Frontend", "Backend"],
+    allDisciplines: ["Mobile"],
+    priorityOrder: ["Mobile"],
+    rotationOrder: ["Mobile"],
     earlyMorningDiscipline: "Mobile",
   };
 }

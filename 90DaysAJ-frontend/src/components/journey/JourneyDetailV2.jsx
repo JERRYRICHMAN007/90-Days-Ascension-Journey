@@ -23,7 +23,8 @@ import {
   CheckCircle2,
   Menu,
   X,
-  Circle
+  Circle,
+  Info
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -51,7 +52,7 @@ export function JourneyDetailV2({
   journeyId,
 }) {
   const navigate = useNavigate();
-  const { xp, getLevel } = useGamification();
+  const { xp, getLevel, completeTask, addXP, achievements, streaks } = useGamification();
   const { user } = useAuth();
   
   // Get greeting based on time of day
@@ -110,16 +111,12 @@ export function JourneyDetailV2({
   const currentPhase = getCurrentPhase();
   const currentDayNumber = getCurrentDayNumber();
   
-  // Day 0 is January 5, 2026 - accessible on that date or when explicitly selected
+  // Day 1 starts on January 18, 2026 - no Day 0 preparation phase
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const day0Date = new Date('2026-01-05');
-  day0Date.setHours(0, 0, 0, 0);
-  const isDay0Date = today.getTime() === day0Date.getTime();
   
-  // Show preparation ONLY if Day 0 is explicitly selected
-  // Day 1 and other days should show their content even if it's January 5, 2026 (preview mode)
-  const isPreparationPhase = selectedDay === 0;
+  // No preparation phase - journey starts directly on Day 1
+  const isPreparationPhase = false;
   
   // Always get preparation data so Day 0 is always available
   const preparationData = getJourneyPreparation(journeyId);
@@ -137,14 +134,26 @@ export function JourneyDetailV2({
       effectiveWeek = calculatedWeek;
     }
   }
-  const currentWeek = weeks.find((w) => w && w.weekNumber === effectiveWeek) || weeks[0] || null;
+  // Find current week - prioritize selected week, but fallback to effective week if day not found
+  let currentWeek = weeks.find((w) => w && w.weekNumber === selectedWeek) || weeks[0] || null;
   
-  // Find current day - search across all weeks if needed
+  // Find current day - search in selected week first, then across all weeks if needed
   let currentDay = null;
   if (!isPreparationPhase && selectedDay > 0) {
-    // First, try to find the day in the effective week
+    // First, try to find the day in the selected week
     if (currentWeek?.days && Array.isArray(currentWeek.days) && currentWeek.days.length > 0) {
       currentDay = currentWeek.days.find((d) => d && d.dayNumber === selectedDay) || null;
+    }
+    
+    // If not found in selected week, try effective week
+    if (!currentDay && effectiveWeek !== selectedWeek) {
+      const effectiveWeekData = weeks.find((w) => w && w.weekNumber === effectiveWeek);
+      if (effectiveWeekData?.days && Array.isArray(effectiveWeekData.days) && effectiveWeekData.days.length > 0) {
+        currentDay = effectiveWeekData.days.find((d) => d && d.dayNumber === selectedDay) || null;
+        if (currentDay) {
+          currentWeek = effectiveWeekData;
+        }
+      }
     }
     
     // If not found in current week, search across all weeks for the selected day
@@ -180,6 +189,50 @@ export function JourneyDetailV2({
   // Discipline state for Software Engineering
   const [activeDiscipline, setActiveDiscipline] = useState('Mobile');
   
+  // Auto-select current day and week based on today's date (only on mount or when currentDayNumber changes)
+  useEffect(() => {
+    // Only auto-select if we have a valid current day number
+    if (currentDayNumber !== null && currentDayNumber !== undefined && weeks.length > 0) {
+      // Calculate which week contains the current day
+      const currentWeekNumber = currentDayNumber === 0 ? 1 : Math.ceil(currentDayNumber / 7);
+      
+      // Only update if the selected day/week doesn't match the current day
+      // This prevents infinite loops by checking if we need to update
+      if (selectedDay !== currentDayNumber || selectedWeek !== currentWeekNumber) {
+        // Update week first if needed
+        if (selectedWeek !== currentWeekNumber && currentWeekNumber >= 1 && currentWeekNumber <= weeks.length) {
+          onWeekChange(currentWeekNumber);
+        }
+        // Then update day
+        if (selectedDay !== currentDayNumber) {
+          onDayChange(currentDayNumber);
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDayNumber, weeks.length]); // Only run when currentDayNumber or weeks data changes
+  
+  // Auto-scroll to selected week and day in horizontal navigation
+  useEffect(() => {
+    // Scroll to selected week
+    setTimeout(() => {
+      const weekButton = document.querySelector(`[data-week="${selectedWeek}"]`);
+      if (weekButton) {
+        weekButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }, 100);
+  }, [selectedWeek]);
+  
+  useEffect(() => {
+    // Scroll to selected day
+    setTimeout(() => {
+      const dayButton = document.querySelector(`[data-day="${selectedDay}"]`);
+      if (dayButton) {
+        dayButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }, 150);
+  }, [selectedDay]);
+  
   // Get day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
   const dayOfWeek = useMemo(() => {
     if (!currentDay?.dayNumber) return null;
@@ -188,24 +241,85 @@ export function JourneyDetailV2({
     return date.getDay(); // 0 = Sunday, 6 = Saturday
   }, [currentDay?.dayNumber]);
 
-  const isSunday = dayOfWeek === 0;
+  // Get day name (Monday, Tuesday, etc.)
+  const dayName = useMemo(() => {
+    if (!currentDay?.dayNumber) return null;
+    const date = getDateForDay(currentDay.dayNumber);
+    if (!date) return null;
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return dayNames[date.getDay()];
+  }, [currentDay?.dayNumber]);
 
-  // Discipline order based on time schedule: Mobile (2:30 AM) → Frontend (2:00 PM) → Backend (3:30 PM) → WordPress (Sunday only)
-  // This matches the chronological order in the daily schedule (Mon-Fri: Mobile first, then Frontend, then Backend)
-  const disciplines = [
+  const isSunday = dayOfWeek === 0;
+  const isMonday = dayOfWeek === 1;
+  const isTuesday = dayOfWeek === 2;
+  const isWednesday = dayOfWeek === 3;
+  const isThursday = dayOfWeek === 4;
+  const isFriday = dayOfWeek === 5;
+  const isSaturday = dayOfWeek === 6;
+  const isMondayToWednesday = isMonday || isTuesday || isWednesday;
+  const isThursdayToFriday = isThursday || isFriday;
+
+  // Get scheduled disciplines for the current day based on schedule
+  const scheduledDisciplines = useMemo(() => {
+    if (journeyId !== 'software-engineering' || !currentDay?.schedule) {
+      return [];
+    }
+    
+    const schedule = currentDay.schedule;
+    const disciplinesSet = new Set();
+    
+    // Check deepLearning sessions
+    if (schedule.scheduledContent?.deepLearning) {
+      schedule.scheduledContent.deepLearning.forEach(block => {
+        if (block.discipline) {
+          disciplinesSet.add(block.discipline);
+        }
+      });
+    }
+    
+    // Check focusedImplementation sessions
+    if (schedule.scheduledContent?.focusedImplementation) {
+      schedule.scheduledContent.focusedImplementation.forEach(block => {
+        if (block.discipline) {
+          disciplinesSet.add(block.discipline);
+        }
+      });
+    }
+    
+    return Array.from(disciplinesSet);
+  }, [journeyId, currentDay?.schedule]);
+
+  // Discipline order based on time schedule - only show disciplines scheduled for this day
+  // Schedule: Mon-Wed: Mobile | Thu-Fri: Frontend | Fri: Backend | Sat: Mobile, Frontend, Backend (Revisions) | Sun: WordPress
+  const allDisciplines = [
     { id: 'Mobile', label: 'Mobile', icon: Smartphone, color: '#f59e0b' },
     { id: 'Frontend', label: 'Frontend', icon: Code, color: '#667eea' },
     { id: 'Backend', label: 'Backend', icon: Server, color: '#10b981' },
-    // Only show WordPress/Systems Engineering on Sundays
-    ...(isSunday ? [{ id: 'WordPress', label: 'WordPress', icon: Globe, color: '#8b5cf6' }] : []),
+    { id: 'WordPress', label: 'WordPress', icon: Globe, color: '#8b5cf6' },
   ];
-  
-  // If activeDiscipline is WordPress but it's not Sunday, switch to Mobile
-  useEffect(() => {
-    if (activeDiscipline === 'WordPress' && !isSunday) {
-      setActiveDiscipline('Mobile');
+
+  // Filter to only show disciplines that are scheduled for this day
+  const disciplines = useMemo(() => {
+    if (journeyId !== 'software-engineering' || scheduledDisciplines.length === 0) {
+      // If no schedule data, show all disciplines (fallback)
+      return allDisciplines.filter(d => d.id !== 'WordPress' || isSunday);
     }
-  }, [isSunday, activeDiscipline]);
+    
+    // Only show disciplines that are in the schedule for this day
+    return allDisciplines.filter(d => scheduledDisciplines.includes(d.id));
+  }, [journeyId, scheduledDisciplines, isSunday]);
+  
+  // Auto-select first available discipline if current one is not scheduled
+  useEffect(() => {
+    if (journeyId === 'software-engineering' && disciplines.length > 0) {
+      const isCurrentDisciplineScheduled = disciplines.some(d => d.id === activeDiscipline);
+      if (!isCurrentDisciplineScheduled) {
+        // Switch to first scheduled discipline
+        setActiveDiscipline(disciplines[0].id);
+      }
+    }
+  }, [journeyId, disciplines, activeDiscipline]);
 
   // Filter schedule content by active discipline for Software Engineering
   const getDisciplineContent = () => {
@@ -213,9 +327,19 @@ export function JourneyDetailV2({
       return null;
     }
 
-    // Don't show Systems Engineering/WordPress content unless it's Sunday
-    if (activeDiscipline === 'WordPress' && !isSunday) {
-      return null;
+    // Check if this discipline is scheduled for today
+    const isDisciplineScheduled = scheduledDisciplines.includes(activeDiscipline) || 
+      (activeDiscipline === 'WordPress' && scheduledDisciplines.includes('Systems Engineering'));
+
+    if (!isDisciplineScheduled) {
+      // Return empty content with a flag to show "not scheduled" message
+      return {
+        deepLearning: [],
+        implementation: [],
+        resources: [],
+        reflection: null,
+        notScheduled: true
+      };
     }
 
     const schedule = currentDay.schedule;
@@ -235,7 +359,8 @@ export function JourneyDetailV2({
       deepLearning: deepLearningSessions,
       implementation: implementationSessions,
       resources: disciplineResources,
-      reflection: disciplineReflection
+      reflection: disciplineReflection,
+      notScheduled: false
     };
   };
 
@@ -256,6 +381,10 @@ export function JourneyDetailV2({
   // Extract all tasks from current day (discipline-aware for Software Engineering)
   const extractTasks = (day) => {
     if (!day) return [];
+    
+    // Don't extract tasks for Week 1 (Testing & Trials Week)
+    if (day.isTestRun) return [];
+    
     const tasks = [];
     
     // Dual Brand tasks
@@ -417,11 +546,18 @@ export function JourneyDetailV2({
 
   // Toggle task completion
   const toggleTask = (taskId) => {
+    const wasCompleted = taskCompletion[taskId] === true;
     const newCompletion = {
       ...taskCompletion,
-      [taskId]: !taskCompletion[taskId]
+      [taskId]: !wasCompleted
     };
     setTaskCompletion(newCompletion);
+    
+    // Award XP when task is completed (not when uncompleting)
+    if (!wasCompleted && completeTask) {
+      completeTask('medium', journeyId);
+    }
+    
     if (currentDay?.dayNumber) {
       const key = journeyId === 'software-engineering' && currentDay?.dayNumber
         ? `tasks_${journeyId}_${currentDay.dayNumber}_${activeDiscipline}`
@@ -435,6 +571,30 @@ export function JourneyDetailV2({
     if (dayTasks.length === 0) return true; // No tasks means "completed"
     return dayTasks.every(task => taskCompletion[task.id] === true);
   }, [dayTasks, taskCompletion]);
+
+  // Automatically mark day as complete when all tasks are completed
+  useEffect(() => {
+    // Only auto-complete if:
+    // 1. We have a current day
+    // 2. All tasks are completed
+    // 3. The day is not already marked as complete
+    // 4. The day can be completed (today only)
+    if (
+      currentDay?.dayNumber &&
+      allTasksCompleted &&
+      dayTasks.length > 0 && // Only if there are tasks (don't auto-complete days with no tasks)
+      !getDayProgress(currentDay) &&
+      canCompleteDay(currentDay.dayNumber)
+    ) {
+      // Automatically mark the day as complete
+      updateProgress(journeyId, currentDay.dayNumber, true);
+      // Award XP for completing a day
+      if (addXP) {
+        addXP(50, journeyId); // 50 XP for completing a day
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allTasksCompleted, currentDay?.dayNumber, dayTasks.length, journeyId, updateProgress, journeyProgress]);
   
   const getWeekProgress = (week) => {
     if (!week || !week.days) return 0;
@@ -567,6 +727,62 @@ export function JourneyDetailV2({
             </div>
           </div>
           
+          {/* Gamification Display */}
+          {currentDay && !isPreparationPhase && (
+            <div className="mt-3 sm:mt-4 p-3 sm:p-3.5 md:p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-lg">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">XP</p>
+                      <p className="text-sm sm:text-base font-bold text-foreground">{journeyXP}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Level</p>
+                      <p className="text-sm sm:text-base font-bold text-foreground">{journeyLevel?.level || 1}</p>
+                    </div>
+                  </div>
+                  {streaks && (
+                    <div className="flex items-center gap-2">
+                      <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Streak</p>
+                        <p className="text-sm sm:text-base font-bold text-foreground">{streaks.current || 0}</p>
+                      </div>
+                    </div>
+                  )}
+                  {achievements && achievements.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🏆</span>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Badges</p>
+                        <p className="text-sm sm:text-base font-bold text-foreground">{achievements.length}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {journeyLevel && journeyLevel.xpToNext > 0 && (
+                  <div className="flex-1 min-w-[150px] max-w-[300px]">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                      <span>Progress to Level {journeyLevel.level + 1}</span>
+                      <span>{journeyLevel.currentXP} / {journeyLevel.xpToNext}</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-primary to-purple-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${(journeyLevel.currentXP / journeyLevel.xpToNext) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Lightweight Helper Banner */}
           {currentDay && !isPreparationPhase && (
             <div className="mt-3 sm:mt-4 p-3 sm:p-3.5 md:p-4 bg-primary/5 border border-primary/20 rounded-lg">
@@ -660,35 +876,158 @@ export function JourneyDetailV2({
         </div>
       </div>
 
-      {/* Section C - Main Content Area */}
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden relative">
-        {/* Mobile Sidebar Toggle Button */}
-        <button
-          onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          className="lg:hidden fixed top-16 sm:top-20 left-3 sm:left-4 z-50 p-2.5 sm:p-3 rounded-lg bg-card border border-border shadow-lg touch-manipulation"
-          aria-label="Toggle navigation"
-          style={{ minWidth: '44px', minHeight: '44px' }}
-        >
-          {isMobileSidebarOpen ? (
-            <X className="w-5 h-5" />
-          ) : (
-            <Menu className="w-5 h-5" />
+      {/* Horizontal Navigation Bar - Weeks and Days */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/50 shadow-sm shrink-0">
+        <div className="w-full">
+          {/* Weeks Navigation - Horizontal */}
+          <div className="py-3 sm:py-4 px-4 sm:px-6">
+            <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-3 uppercase tracking-wide">Learning Plan</h3>
+            <div 
+              id="weeks-nav"
+              className="flex gap-2 sm:gap-3 overflow-x-auto overflow-y-hidden pb-2 scrollbar-hide -mx-4 sm:-mx-6 px-4 sm:px-6"
+              style={{ 
+                scrollBehavior: 'smooth',
+                WebkitOverflowScrolling: 'touch',
+                touchAction: 'pan-x'
+              }}
+            >
+              {weeks.map((week) => {
+                const weekProgress = getWeekProgress(week);
+                const isActive = week.weekNumber === selectedWeek;
+                
+                return (
+                  <button
+                    key={week.weekNumber}
+                    onClick={() => {
+                      onWeekChange(week.weekNumber);
+                      // Automatically select the first day of the selected week
+                      const selectedWeekData = weeks.find(w => w.weekNumber === week.weekNumber);
+                      if (selectedWeekData?.days && selectedWeekData.days.length > 0) {
+                        // Find the first available day (skip Day 0 if it exists, otherwise use first day)
+                        const firstDay = selectedWeekData.days.find(d => d && d.dayNumber > 0) || selectedWeekData.days[0];
+                        if (firstDay && firstDay.dayNumber !== selectedDay) {
+                          onDayChange(firstDay.dayNumber);
+                        }
+                      }
+                      // Auto-scroll to selected week
+                      setTimeout(() => {
+                        const button = document.querySelector(`[data-week="${week.weekNumber}"]`);
+                        button?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                      }, 100);
+                    }}
+                    data-week={week.weekNumber}
+                    className={cn(
+                      'shrink-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 touch-manipulation min-w-[80px] sm:min-w-[100px]',
+                      isActive 
+                        ? `bg-gradient-to-br ${colors.gradient} text-white shadow-lg scale-105` 
+                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-border/50'
+                    )}
+                  >
+                    <span>Week {week.weekNumber}</span>
+                    {weekProgress > 0 && (
+                      <span className={cn(
+                        'text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-semibold',
+                        isActive ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
+                      )}>
+                        {weekProgress}%
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+              </div>
+            </div>
+
+          {/* Days Navigation - Horizontal (for selected week) */}
+          {currentWeek?.days && currentWeek.days.length > 0 && (
+            <div className="py-3 sm:py-4 border-t border-border/30 px-4 sm:px-6">
+              <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 sm:mb-3 uppercase tracking-wide">
+                Week {selectedWeek} - Days
+              </h3>
+              <div 
+                id="days-nav"
+                className="flex gap-2 sm:gap-3 overflow-x-auto overflow-y-hidden pb-2 scrollbar-hide -mx-4 sm:-mx-6 px-4 sm:px-6"
+                style={{ 
+                  scrollBehavior: 'smooth',
+                  WebkitOverflowScrolling: 'touch',
+                  touchAction: 'pan-x'
+                }}
+              >
+                {/* Day 0 - Preparation (only show in Week 1) */}
+                {preparationData && selectedWeek === 1 && (
+                  <button
+                    onClick={() => {
+                      onDayChange(0);
+                      setTimeout(() => {
+                        const button = document.querySelector('[data-day="0"]');
+                        button?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                      }, 100);
+                    }}
+                    data-day="0"
+                    className={cn(
+                      'shrink-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation min-w-[70px] sm:min-w-[80px]',
+                      selectedDay === 0
+                        ? `bg-gradient-to-br ${colors.gradient} text-white shadow-lg scale-105` 
+                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-border/50'
+                    )}
+                  >
+                    <span className="text-base sm:text-lg font-bold">0</span>
+                    <span className="text-[10px] sm:text-xs">Prep</span>
+                  </button>
+                )}
+                
+                {/* Days for current week */}
+                {currentWeek.days.map((day) => {
+                  if (!day || !day.dayNumber) return null;
+                  
+                  const isCompleted = getDayProgress(day);
+                  const isActive = day.dayNumber === selectedDay;
+                  const dayIsTomorrow = isTomorrow(day.dayNumber);
+                  
+                  return (
+                    <button
+                      key={day.dayNumber}
+                      onClick={() => {
+                        onDayChange(day.dayNumber);
+                        setTimeout(() => {
+                          const button = document.querySelector(`[data-day="${day.dayNumber}"]`);
+                          button?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                        }, 100);
+                      }}
+                      data-day={day.dayNumber}
+                      className={cn(
+                        'shrink-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation min-w-[70px] sm:min-w-[80px] relative',
+                        isActive 
+                          ? `bg-gradient-to-br ${colors.gradient} text-white shadow-lg scale-105` 
+                          : isCompleted
+                          ? 'bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20'
+                          : dayIsTomorrow
+                          ? 'bg-primary/5 text-primary border-2 border-primary/30 hover:bg-primary/10'
+                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-border/50'
+                      )}
+                    >
+                      {isCompleted && (
+                        <Check className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 text-primary bg-background rounded-full p-0.5" />
+                      )}
+                      <span className="text-base sm:text-lg font-bold">{day.dayNumber}</span>
+                      <span className="text-[10px] sm:text-xs truncate max-w-full">
+                        {day.date ? formatDateShort(day.date) : `Day ${day.dayNumber}`}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
-        </button>
-        
-        {/* Mobile Sidebar Overlay */}
-        {isMobileSidebarOpen && (
-          <div
-            className="lg:hidden fixed inset-0 bg-black/50 z-40"
-            onClick={() => setIsMobileSidebarOpen(false)}
-          />
-        )}
-        
-        <div className="max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-4 sm:gap-6 px-4 sm:px-6 py-4 sm:py-6 overflow-x-hidden">
-          {/* Left Column - Navigation (Sticky, Non-scrolling) */}
+        </div>
+      </div>
+
+      {/* Section C - Main Content Area */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
+        <div className="max-w-7xl mx-auto w-full flex flex-col gap-4 sm:gap-6 px-4 sm:px-6 py-4 sm:py-6 overflow-x-hidden">
+          {/* Left Column - Navigation (Hidden - replaced by horizontal nav) */}
           <aside className={cn(
-            "w-full lg:w-64 shrink-0 lg:block",
-            isMobileSidebarOpen ? "block fixed left-0 top-0 h-full z-50 bg-card border-r overflow-y-auto" : "hidden"
+            "hidden"
           )}>
             <div className="lg:sticky lg:top-6 space-y-3 lg:h-[calc(100vh-200px)] overflow-y-auto">
               {/* Mobile Sidebar Header */}
@@ -772,7 +1111,7 @@ export function JourneyDetailV2({
                         Day 0 - Preparation
                       </div>
                       <div className={cn('text-[10px] sm:text-xs md:text-sm truncate', selectedDay === 0 ? 'text-white/80' : 'text-muted-foreground')}>
-                        Jan 5, 2026 • Setup & Environment
+                        Jan 18, 2026 • Journey Start
                       </div>
                     </div>
                   </button>
@@ -824,11 +1163,6 @@ export function JourneyDetailV2({
                               Tomorrow
                             </span>
                           )}
-                          {!day1IsAccessible && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-normal">
-                              Locked
-                            </span>
-                          )}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {formatDateShort(day1.date)} • {formatDayName(day1.date)}
@@ -847,23 +1181,19 @@ export function JourneyDetailV2({
                   const isActive = day.dayNumber === selectedDay;
                   const dayIsAccessible = isDayAccessible(day.dayNumber);
                   const dayIsTomorrow = isTomorrow(day.dayNumber);
-                  const isLocked = !dayIsAccessible;
+                  // All days are now unlocked
+                  const isLocked = false;
                   
                   return (
                     <button
                       key={day.dayNumber}
                       onClick={() => {
-                        if (dayIsAccessible) {
-                          onDayChange(day.dayNumber);
-                          setIsMobileSidebarOpen(false);
-                        }
+                        onDayChange(day.dayNumber);
+                        setIsMobileSidebarOpen(false);
                       }}
-                      disabled={isLocked}
                       className={cn(
                         'w-full flex items-center gap-2 sm:gap-2.5 md:gap-3 p-2.5 sm:p-3 md:p-3.5 rounded-lg text-left transition-all group touch-manipulation',
-                        isLocked 
-                          ? 'opacity-50 cursor-not-allowed' 
-                          : isActive 
+                        isActive 
                           ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg` 
                           : isCompleted
                           ? 'bg-muted/50 hover:bg-muted'
@@ -890,11 +1220,6 @@ export function JourneyDetailV2({
                           {dayIsTomorrow && (
                             <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-primary/20 text-primary font-normal whitespace-nowrap shrink-0">
                               Tomorrow
-                            </span>
-                          )}
-                          {isLocked && (
-                            <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-normal whitespace-nowrap shrink-0">
-                              Locked
                             </span>
                           )}
                         </div>
@@ -1005,8 +1330,38 @@ export function JourneyDetailV2({
                   )}
                   {(currentDay || isPreparationPhase) && (
                     <div className="space-y-6">
-                {/* Daily Quote/Motivation Card */}
-                {(() => {
+                {/* Week 1 Testing & Trials Message */}
+                {currentDay?.isTestRun && currentDay?.testRunNote && (
+                  <Card className="p-6 sm:p-8 border-2 border-orange-500/50 bg-gradient-to-br from-orange-500/10 to-amber-500/10">
+                    <div className="flex items-start gap-4">
+                      <div className="text-3xl sm:text-4xl shrink-0">🧪</div>
+                      <div className="flex-1">
+                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2">
+                          Testing & Trials Week
+                        </h3>
+                        <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                          {currentDay.testRunNote}
+                        </p>
+                        {currentDay.testRunTasks && currentDay.testRunTasks.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-semibold text-foreground mb-2">This Week's Focus:</p>
+                            <ul className="space-y-1.5">
+                              {currentDay.testRunTasks.map((task, idx) => (
+                                <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                  <span className="text-orange-500 mt-1">•</span>
+                                  <span>{task}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Daily Quote/Motivation Card - Only show if not Week 1 */}
+                {!currentDay?.isTestRun && (() => {
                   const dailyQuote = getQuoteOfTheDay(journeyId, completedDays);
                   return (
                     <Card className={`p-4 sm:p-5 md:p-6 lg:p-8 bg-gradient-to-br ${colors.gradient} border-0 text-white`}>
@@ -1032,7 +1387,7 @@ export function JourneyDetailV2({
                         <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display mb-2 break-words">{preparationData.title}</h2>
                         <p className="text-sm sm:text-base text-muted-foreground mb-2 break-words">{preparationData.subtitle}</p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          Monday, January 5, 2026
+                          Sunday, January 18, 2026
                         </p>
                       </div>
                     </div>
@@ -1062,13 +1417,22 @@ export function JourneyDetailV2({
                           )}
                         </div>
                         <p className="text-sm sm:text-base text-muted-foreground break-words">
+                          {dayName && (
+                            <span className="font-semibold text-foreground mr-2">{dayName},</span>
+                          )}
                           {currentDay.date && new Date(currentDay.date).toLocaleDateString('en-US', {
-                            weekday: 'long',
                             month: 'long',
                             day: 'numeric',
                             year: 'numeric'
                           })}
                         </p>
+                        {/* Time Allocation */}
+                        {journey && journey.timeBlock && (
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span>{journey.timeBlock}</span>
+                          </p>
+                        )}
                       </div>
                       {canCompleteDay(currentDay.dayNumber) ? (
                         <Button
@@ -1078,7 +1442,36 @@ export function JourneyDetailV2({
                               alert(`Please complete all ${dayTasks.length} task(s) before marking the day as complete.`);
                               return;
                             }
-                            updateProgress(journeyId, currentDay.dayNumber, !getDayProgress(currentDay));
+                            
+                            // Check if this is the end of a week (Day 7, 14, 21, 28, etc.)
+                            // Day 7 % 7 = 0, Day 14 % 7 = 0, Day 21 % 7 = 0, etc.
+                            const isWeekEnd = currentDay.dayNumber % 7 === 0;
+                            const isCurrentlyComplete = getDayProgress(currentDay);
+                            
+                            if (isWeekEnd && !isCurrentlyComplete) {
+                              // Mark entire week as complete (only when marking as complete, not when unmarking)
+                              // Calculate week start: Day 7 -> Week 1 (Days 1-7), Day 14 -> Week 2 (Days 8-14), etc.
+                              const weekNumber = Math.floor((currentDay.dayNumber - 1) / 7) + 1;
+                              const weekStart = (weekNumber - 1) * 7 + 1;
+                              const weekEndDay = weekStart + 6;
+                              
+                              // Mark all days in the week as complete
+                              for (let dayNum = weekStart; dayNum <= weekEndDay && dayNum <= journey.totalDays; dayNum++) {
+                                updateProgress(journeyId, dayNum, true);
+                              }
+                              // Award XP for completing a week (bonus)
+                              if (addXP) {
+                                addXP(100, journeyId); // 100 XP bonus for completing a week
+                              }
+                            } else {
+                              // Mark/unmark only this specific day
+                              const wasComplete = isCurrentlyComplete;
+                              updateProgress(journeyId, currentDay.dayNumber, !wasComplete);
+                              // Award XP when marking as complete (not when unmarking)
+                              if (!wasComplete && addXP) {
+                                addXP(50, journeyId); // 50 XP for completing a day
+                              }
+                            }
                           }}
                           className={cn(
                             'touch-manipulation',
@@ -1105,18 +1498,17 @@ export function JourneyDetailV2({
                           ) : (
                             <>
                               <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                              <span className="text-sm sm:text-base">Mark Complete</span>
+                              <span className="text-sm sm:text-base">
+                                {currentDay.dayNumber % 7 === 0 || currentDay.dayNumber === 7 
+                                  ? 'Mark Week Complete' 
+                                  : 'Mark Complete'}
+                              </span>
                             </>
                           )}
                         </Button>
-                      ) : isTomorrow(currentDay.dayNumber) ? (
-                        <div className="text-sm sm:text-base text-muted-foreground flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-md bg-muted/50 border border-border/50">
-                          <span>Preview Only</span>
-                          <span className="text-xs sm:text-sm hidden sm:inline">• Complete tomorrow</span>
-                        </div>
                       ) : (
                         <div className="text-sm sm:text-base text-muted-foreground flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-md bg-muted/50 border border-border/50">
-                          <span>Locked</span>
+                          <span>Day 0 - Cannot Complete</span>
                         </div>
                       )}
                     </div>
@@ -1128,8 +1520,8 @@ export function JourneyDetailV2({
                       </div>
                     )}
 
-                    {/* Task Checklist */}
-                    {dayTasks.length > 0 && (
+                    {/* Task Checklist - Hide for Week 1 (Testing & Trials) */}
+                    {!currentDay?.isTestRun && dayTasks.length > 0 && (
                       <Card className="p-4 sm:p-6 border border-border/50">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
@@ -1286,8 +1678,8 @@ export function JourneyDetailV2({
                       exit={{ opacity: 0, y: -10 }}
                       className="space-y-4"
                     >
-                      {/* Focus Section (for other journeys) */}
-                      {currentDay.focus && (
+                      {/* Focus Section (for other journeys) - Hide for Week 1 */}
+                      {currentDay.focus && !currentDay.isTestRun && (
                         <Card className="p-4 sm:p-6 border border-border/50">
                           <div className="flex items-center gap-2 mb-4">
                             <Target className="w-5 h-5 text-primary" />
@@ -1309,12 +1701,29 @@ export function JourneyDetailV2({
                         </Card>
                       )}
 
-                      {/* Learning Content */}
+                      {/* Learning Content - Hide for Week 1 */}
                       {/* For Software Engineering: Show schedule-based discipline content */}
-                      {journeyId === 'software-engineering' && currentDay?.schedule && disciplineContent ? (
+                      {!currentDay?.isTestRun && journeyId === 'software-engineering' && currentDay?.schedule && disciplineContent ? (
                         <>
+                          {/* Not Scheduled Message */}
+                          {disciplineContent.notScheduled && (
+                            <Card className="p-4 sm:p-6 border border-border/50 bg-muted/30">
+                              <div className="flex items-center gap-3">
+                                <Info className="w-5 h-5 text-muted-foreground" />
+                                <div>
+                                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+                                    {activeDiscipline} Not Scheduled
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {activeDiscipline} is not scheduled for {dayName || 'this day'}. Please select a discipline that is scheduled for today.
+                                  </p>
+                                </div>
+                              </div>
+                            </Card>
+                          )}
+                          
                           {/* Deep Learning Sessions */}
-                          {disciplineContent.deepLearning.length > 0 && (
+                          {!disciplineContent.notScheduled && disciplineContent.deepLearning.length > 0 && (
                             <div className="space-y-4">
                               <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
                                 <BookOpen className="w-5 h-5 text-primary" />
@@ -1370,7 +1779,7 @@ export function JourneyDetailV2({
                           )}
 
                           {/* Focused Implementation Sessions */}
-                          {disciplineContent.implementation.length > 0 && (
+                          {!disciplineContent.notScheduled && disciplineContent.implementation.length > 0 && (
                             <div className="space-y-4 mt-6">
                               <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
                                 <Code className="w-5 h-5 text-primary" />
@@ -1652,10 +2061,12 @@ export function JourneyDetailV2({
                                   const chapterCount = session.type === "Bible Reading" ? 1 : null; // Bible reading is 1 chapter per 15-minute session
                                   
                                   return (
-                                    <div key={idx} className="p-3 bg-muted/30 rounded-lg">
+                                    <div key={idx} className="p-3 bg-muted/30 rounded-lg border-l-4 border-primary">
                                       <div className="flex items-center justify-between mb-1">
                                         <span className="text-xs font-semibold text-primary">{session.time}</span>
-                                        <span className="text-xs text-muted-foreground">{session.type}</span>
+                                        <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded font-medium">
+                                          {session.type}
+                                        </span>
                                       </div>
                                       <div className="flex items-center gap-2 flex-wrap">
                                         <p className="text-sm font-medium text-foreground">{materialText}</p>
@@ -2276,7 +2687,7 @@ export function JourneyDetailV2({
                     </motion.div>
                   )}
 
-                  {activeTab === 'reflection' && (
+                  {activeTab === 'reflection' && !currentDay?.isTestRun && (
                     <motion.div
                       key="reflection"
                       initial={{ opacity: 0, y: 10 }}

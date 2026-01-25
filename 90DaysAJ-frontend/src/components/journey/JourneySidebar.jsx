@@ -15,16 +15,38 @@ export function JourneySidebar({
   getDayProgress,
   getWeekProgress,
 }) {
-  // Initialize with Week 1 (index 0) open by default
-  const [openWeeks, setOpenWeeks] = useState([0]);
+  // Initialize with all weeks open by default
+  const [openWeeks, setOpenWeeks] = useState(() => 
+    weeks && weeks.length > 0 ? weeks.map((_, index) => index) : []
+  );
+
+  // Ensure all weeks are open by default and the selected week is always open
+  useEffect(() => {
+    if (weeks && weeks.length > 0) {
+      // Open all weeks by default
+      const allWeekIndices = weeks.map((_, index) => index);
+      setOpenWeeks((prev) => {
+        // Merge with existing open weeks to avoid closing manually opened weeks
+        const merged = [...new Set([...prev, ...allWeekIndices])];
+        return merged;
+      });
+    }
+  }, [weeks]);
 
   // Ensure the selected week is always open
   useEffect(() => {
-    const selectedWeekIndex = weeks.findIndex(
-      (w) => w.weekNumber === selectedWeek
-    );
-    if (selectedWeekIndex !== -1 && !openWeeks.includes(selectedWeekIndex)) {
-      setOpenWeeks((prev) => [...prev, selectedWeekIndex]);
+    if (weeks && weeks.length > 0) {
+      const selectedWeekIndex = weeks.findIndex(
+        (w) => w.weekNumber === selectedWeek
+      );
+      if (selectedWeekIndex !== -1) {
+        setOpenWeeks((prev) => {
+          if (!prev.includes(selectedWeekIndex)) {
+            return [...prev, selectedWeekIndex];
+          }
+          return prev;
+        });
+      }
     }
   }, [selectedWeek, weeks]);
 

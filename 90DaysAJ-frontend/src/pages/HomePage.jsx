@@ -297,7 +297,7 @@ export function HomePage({ userProgress }) {
               Getting Ready for Your Ascension
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground px-2">
-              Your journey begins January 5, 2026
+              Day 0: January 18, 2026 • Journey begins January 19, 2026
             </div>
           </>
         )}
@@ -320,7 +320,7 @@ export function HomePage({ userProgress }) {
               Your Ascension Journey
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground px-2">
-              Official start: January 5, 2026
+              Day 0: January 18, 2026 • Start: January 19, 2026
             </div>
           </>
         )}
@@ -458,10 +458,10 @@ export function HomePage({ userProgress }) {
               <p className="text-lg font-semibold">Preparation Phase</p>
               <p className="text-sm text-muted-foreground">
                 Use this time to familiarize yourself with the system, review
-                your journey plans, and prepare for January 5th.
+                your journey plans, and prepare for January 19th.
               </p>
               <p className="text-xs text-muted-foreground mt-4">
-                Your ascension journey begins January 5, 2026
+                Day 0: January 18, 2026 • Journey begins January 19, 2026
               </p>
             </div>
           </Card>
@@ -470,10 +470,10 @@ export function HomePage({ userProgress }) {
           <Card className="p-6">
             <div className="text-center space-y-2">
               <p className="text-lg font-semibold">
-                Official start: January 5, 2026
+                Day 0: January 18, 2026 • Start: January 19, 2026
               </p>
               <p className="text-sm text-muted-foreground">
-                Your ascension journey will begin January 5, 2026
+                Preparation Day: January 18, 2026 • Journey begins January 19, 2026
               </p>
             </div>
           </Card>

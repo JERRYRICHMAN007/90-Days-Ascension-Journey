@@ -11,8 +11,8 @@ import { JourneyCard } from "./dashboard/JourneyCard";
 
 function Dashboard({ userProgress }) {
   const navigate = useNavigate();
-  const startDate = new Date("2026-01-01");
-  const endDate = new Date("2026-03-31");
+  const startDate = new Date("2026-01-18");
+  const endDate = new Date("2026-04-17");
   const today = new Date();
 
   const { progress, daysElapsed, totalDays } = calculateProgress(
@@ -88,10 +88,13 @@ function Dashboard({ userProgress }) {
           </p>
           <div className="space-y-1">
             <p className="text-base font-semibold text-foreground">
-              Start Date: Monday, January 5, 2026
+              Day 0: Sunday, January 18, 2026 (Preparation)
             </p>
             <p className="text-base font-semibold text-foreground">
-              End Date: Sunday, April 5, 2026
+              Start Date: Monday, January 19, 2026 (Day 1)
+            </p>
+            <p className="text-base font-semibold text-foreground">
+              End Date: Friday, April 18, 2026 (Day 90)
             </p>
           </div>
         </motion.div>
@@ -211,7 +214,7 @@ function Dashboard({ userProgress }) {
 }
 
 function getWeekDateRange(weekNumber) {
-  const startDate = new Date("2026-01-01");
+  const startDate = new Date("2026-01-19");
   const weekStart = new Date(startDate);
   weekStart.setDate(startDate.getDate() + (weekNumber - 1) * 7);
   const weekEnd = new Date(weekStart);

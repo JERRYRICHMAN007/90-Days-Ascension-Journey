@@ -19,7 +19,7 @@ function StreakWarning({ userProgress, journeyId, totalDays }) {
     }
     
     const today = new Date()
-    const startDate = new Date('2026-01-01')
+    const startDate = new Date('2026-01-19')
     const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24))
     const daysSinceLastCompletion = lastCompletedDay > 0 ? daysSinceStart - lastCompletedDay + 1 : daysSinceStart + 1
     
