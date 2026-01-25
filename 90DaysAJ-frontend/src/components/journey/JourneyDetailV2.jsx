@@ -35,6 +35,7 @@ import { getQuoteOfTheDay } from '../../data/quotes';
 import { cn } from '../../lib/utils';
 import { getJourneyPreparation } from '../../data/preparationData';
 import { getSoftwareEngineeringReflection, getProjectComponentForDay } from '../../data/journeyData';
+import DailyQuiz from '../DailyQuiz';
 
 /**
  * Journey Detail Page v2.0 - PRD Redesign
@@ -1594,21 +1595,26 @@ export function JourneyDetailV2({
                         Preparation
                       </button>
                     ) : (
-                      ['learning', 'project', 'resources', 'reflection'].map((tab) => (
-                        <button
-                          key={tab}
-                          onClick={() => setActiveTab(tab)}
-                          className={cn(
-                            'px-4 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 touch-manipulation',
-                            activeTab === tab
-                              ? 'border-primary text-primary'
-                              : 'border-transparent text-muted-foreground hover:text-foreground'
-                          )}
-                          style={{ minHeight: '44px' }}
-                        >
-                          {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                        </button>
-                      ))
+                      (() => {
+                        const baseTabs = ['learning', 'project', 'resources', 'reflection'];
+                        // Add quiz tab if dailyQuiz exists
+                        const tabs = currentDay?.dailyQuiz ? [...baseTabs, 'quiz'] : baseTabs;
+                        return tabs.map((tab) => (
+                          <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={cn(
+                              'px-4 py-3 text-sm sm:text-base font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 touch-manipulation',
+                              activeTab === tab
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                            )}
+                            style={{ minHeight: '44px' }}
+                          >
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                          </button>
+                        ));
+                      })()
                     )}
                   </div>
                 </div>
@@ -2684,6 +2690,50 @@ export function JourneyDetailV2({
                           <p className="text-muted-foreground">No resources for this day.</p>
                         </Card>
                       )}
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'quiz' && currentDay?.dailyQuiz && !currentDay?.isTestRun && (
+                    <motion.div
+                      key="quiz"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      <Card className="p-4 sm:p-6 border border-border/50">
+                        <DailyQuiz
+                          dailyQuiz={currentDay.dailyQuiz}
+                          onComplete={(results) => {
+                            console.log("Daily quiz completed:", results);
+                            // Award XP based on quiz performance
+                            if (addXP) {
+                              const baseXP = 30; // Base XP for completing quiz
+                              const performanceBonus = Math.round((results.percentage / 100) * 20); // Up to 20 bonus XP
+                              const totalXP = baseXP + performanceBonus;
+                              addXP(totalXP, journeyId);
+                              
+                              // Award bonus for passing
+                              if (results.passed) {
+                                addXP(20, journeyId); // 20 bonus XP for passing
+                              }
+                            }
+                            
+                            // Save quiz results
+                            try {
+                              const saved = localStorage.getItem(`dailyQuizzes_${journeyId}`) || "[]";
+                              const quizzes = JSON.parse(saved);
+                              quizzes.push({
+                                day: currentDay.dayNumber,
+                                ...results,
+                                completedAt: new Date().toISOString(),
+                              });
+                              localStorage.setItem(`dailyQuizzes_${journeyId}`, JSON.stringify(quizzes));
+                            } catch (error) {
+                              console.error("Error saving quiz results:", error);
+                            }
+                          }}
+                        />
+                      </Card>
                     </motion.div>
                   )}
 

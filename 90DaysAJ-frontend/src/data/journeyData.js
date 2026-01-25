@@ -33,7 +33,7 @@ export const journeys = [
     id: "writers",
     title: "Writer's Journey",
     icon: "✍️",
-    timeBlock: "Time: 4:15-5:00 PM (Weekdays)",
+    timeBlock: "Time: 12:30-1:00 PM (Weekdays)",
     description: "Learning → Execution → Reflection",
     totalDays: 84, // 12 weeks * 7 days
     color: "#43e97b",
@@ -435,6 +435,7 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
         dailyLearning: isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getBodyTransformationLearning(contentWeekNum, i),
         project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getBodyTransformationProject(contentWeekNum, i),
         reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getBodyTransformationReflection(contentWeekNum, i),
+        dailyQuiz: isTestRun ? null : getBodyTransformationQuiz(contentWeekNum, i, dayNumber),
         isTestRun: isTestRun,
         testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
         testRunTasks: isTestRun ? [
@@ -683,6 +684,7 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
       dailyLearning: isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getReadingLearning(contentWeekNum, i),
       project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getReadingProject(contentWeekNum, i),
       reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getReadingReflection(contentWeekNum, i),
+      dailyQuiz: isTestRun ? null : getReadingQuiz(contentWeekNum, i, dayNumber),
       isTestRun: isTestRun,
       testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
       testRunTasks: isTestRun ? [
@@ -1047,6 +1049,7 @@ export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
           description: isTestRun ? "Explore and test the app features" : `Today's focus: ${focus}`,
         },
         reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getDualBrandReflection(contentWeekNum, i),
+        dailyQuiz: isTestRun ? null : getDualBrandQuiz(contentWeekNum, i, dayNumber),
         isTestRun: isTestRun,
         testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
         testRunTasks: isTestRun ? [
@@ -3255,6 +3258,7 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
         description: isTestRun ? "Test all features" : (isRestDay ? "No writing tasks today - enjoy your rest!" : `Execute: ${execution}`),
         requirements: isTestRun ? [] : (isRestDay ? [] : [execution]),
       },
+      dailyQuiz: isTestRun ? null : (isRestDay ? null : getWriterQuiz(contentWeekNum, weekdayIndex !== null ? weekdayIndex : 0, dayNumber)),
       isTestRun: isTestRun,
       isRestDay: isRestDay,
       testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
@@ -11804,4 +11808,281 @@ export function getJourneyData(journeyId) {
     default:
       return { weeks: [], journey: null };
   }
+}
+
+// ==================== QUIZ GENERATOR FUNCTIONS ====================
+
+// Body Transformation Quiz Generator
+function getBodyTransformationQuiz(weekNum, dayIndex, dayNumber) {
+  const workoutTypes = [
+    "Rest & Recovery",
+    "Upper Body Strength",
+    "Lower Body Strength",
+    "Core + Cardio",
+    "Functional Full-Body",
+    "Mobility & Flexibility",
+    "Active Recovery & Basketball",
+  ];
+  const currentWorkout = workoutTypes[dayIndex] || "General Fitness";
+
+  const questions = [
+    {
+      category: "Workout Knowledge",
+      question: `What is the primary focus of ${currentWorkout}?`,
+      options: [
+        "Building muscle mass",
+        "Improving cardiovascular health",
+        "Enhancing flexibility and mobility",
+        "Depends on the workout type",
+      ],
+      correctAnswer: 3,
+      explanation: `Each workout type has a specific focus. ${currentWorkout} targets specific fitness goals.`,
+    },
+    {
+      category: "Nutrition",
+      question: "What is the recommended protein intake for muscle recovery?",
+      options: [
+        "0.5g per kg body weight",
+        "1.0-1.2g per kg body weight",
+        "2.0g per kg body weight",
+        "No protein needed",
+      ],
+      correctAnswer: 1,
+      explanation: "1.0-1.2g per kg body weight is optimal for muscle recovery and growth.",
+    },
+    {
+      category: "Form & Safety",
+      question: "What is the most important aspect of any exercise?",
+      options: [
+        "Speed of execution",
+        "Weight lifted",
+        "Proper form and technique",
+        "Number of reps",
+      ],
+      correctAnswer: 2,
+      explanation: "Proper form prevents injury and ensures maximum effectiveness.",
+    },
+    {
+      category: "Recovery",
+      question: "How many rest days per week are recommended for optimal recovery?",
+      options: [
+        "0-1 days",
+        "1-2 days",
+        "2-3 days",
+        "Every day",
+      ],
+      correctAnswer: 1,
+      explanation: "1-2 rest days per week allow muscles to recover and prevent overtraining.",
+    },
+    {
+      category: "Progression",
+      question: "What is progressive overload?",
+      options: [
+        "Increasing weight only",
+        "Gradually increasing training stress over time",
+        "Doing the same workout every day",
+        "Only training when you feel like it",
+      ],
+      correctAnswer: 1,
+      explanation: "Progressive overload means gradually increasing training stress (weight, reps, sets, or intensity) to continue making progress.",
+    },
+  ];
+
+  return {
+    title: `Day ${dayNumber} Fitness Quiz`,
+    description: `Test your understanding of ${currentWorkout} and fitness fundamentals.`,
+    questions: questions,
+    totalQuestions: questions.length,
+    passingScore: Math.ceil(questions.length * 0.7), // 70% to pass
+    timeLimit: 10, // minutes
+  };
+}
+
+// Reading Journey Quiz Generator
+function getReadingQuiz(weekNum, dayIndex, dayNumber) {
+  const questions = [
+    {
+      category: "Comprehension",
+      question: "What is the main benefit of active reading?",
+      options: [
+        "Reading faster",
+        "Better retention and understanding",
+        "Finishing books quicker",
+        "Impressing others",
+      ],
+      correctAnswer: 1,
+      explanation: "Active reading improves retention and understanding by engaging with the material.",
+    },
+    {
+      category: "Application",
+      question: "How should you apply what you read?",
+      options: [
+        "Memorize everything",
+        "Take notes and implement key concepts",
+        "Read multiple times",
+        "Share on social media only",
+      ],
+      correctAnswer: 1,
+      explanation: "Taking notes and implementing key concepts helps turn knowledge into action.",
+    },
+    {
+      category: "Reflection",
+      question: "Why is reflection important after reading?",
+      options: [
+        "It's not necessary",
+        "It helps internalize and connect ideas",
+        "It takes too much time",
+        "Only for academic reading",
+      ],
+      correctAnswer: 1,
+      explanation: "Reflection helps internalize concepts and connect them to your life and goals.",
+    },
+    {
+      category: "Consistency",
+      question: "What is the best reading strategy?",
+      options: [
+        "Reading only when motivated",
+        "Consistent daily reading, even if short",
+        "Reading entire books in one sitting",
+        "Only reading summaries",
+      ],
+      correctAnswer: 1,
+      explanation: "Consistent daily reading, even in small amounts, builds habits and knowledge over time.",
+    },
+  ];
+
+  return {
+    title: `Day ${dayNumber} Reading Quiz`,
+    description: `Test your understanding of today's reading material and reading strategies.`,
+    questions: questions,
+    totalQuestions: questions.length,
+    passingScore: Math.ceil(questions.length * 0.7),
+    timeLimit: 8, // minutes
+  };
+}
+
+// Dual Brand Quiz Generator
+function getDualBrandQuiz(weekNum, dayIndex, dayNumber) {
+  const questions = [
+    {
+      category: "Brand Strategy",
+      question: "What is the key to building a personal brand?",
+      options: [
+        "Posting every day",
+        "Consistency and value delivery",
+        "Having many followers",
+        "Using trending hashtags only",
+      ],
+      correctAnswer: 1,
+      explanation: "Consistency and delivering value are the foundations of a strong personal brand.",
+    },
+    {
+      category: "Content Creation",
+      question: "What makes content engaging?",
+      options: [
+        "Length of posts",
+        "Value, authenticity, and relevance",
+        "Number of hashtags",
+        "Posting at peak times only",
+      ],
+      correctAnswer: 1,
+      explanation: "Value, authenticity, and relevance create engaging content that resonates with your audience.",
+    },
+    {
+      category: "Growth",
+      question: "How do you grow a brand effectively?",
+      options: [
+        "Buying followers",
+        "Engaging authentically and providing consistent value",
+        "Posting only viral content",
+        "Following everyone back",
+      ],
+      correctAnswer: 1,
+      explanation: "Authentic engagement and consistent value delivery build genuine, lasting growth.",
+    },
+    {
+      category: "Monetization",
+      question: "When should you introduce monetization?",
+      options: [
+        "Immediately",
+        "After building trust and providing value",
+        "Never",
+        "Only when you have 100k followers",
+      ],
+      correctAnswer: 1,
+      explanation: "Monetization works best after establishing trust and consistently providing value to your audience.",
+    },
+  ];
+
+  return {
+    title: `Day ${dayNumber} Dual Brand Quiz`,
+    description: `Test your understanding of brand building, content strategy, and growth principles.`,
+    questions: questions,
+    totalQuestions: questions.length,
+    passingScore: Math.ceil(questions.length * 0.7),
+    timeLimit: 8, // minutes
+  };
+}
+
+// Writers Journey Quiz Generator
+function getWriterQuiz(weekNum, dayIndex, dayNumber) {
+  const questions = [
+    {
+      category: "Writing Fundamentals",
+      question: "What is the most important element of good writing?",
+      options: [
+        "Complex vocabulary",
+        "Clarity and purpose",
+        "Length of content",
+        "Using many adjectives",
+      ],
+      correctAnswer: 1,
+      explanation: "Clarity and purpose make writing effective and engaging, regardless of complexity.",
+    },
+    {
+      category: "Voice & Style",
+      question: "How do you develop your writing voice?",
+      options: [
+        "Copying successful writers",
+        "Writing consistently and authentically",
+        "Using complex sentences",
+        "Only writing when inspired",
+      ],
+      correctAnswer: 1,
+      explanation: "Consistent, authentic writing practice helps develop your unique voice.",
+    },
+    {
+      category: "Client Work",
+      question: "What is essential for freelance writing success?",
+      options: [
+        "Lowest prices",
+        "Understanding client needs and delivering quality",
+        "Fastest turnaround",
+        "Most clients",
+      ],
+      correctAnswer: 1,
+      explanation: "Understanding client needs and delivering quality work builds reputation and repeat business.",
+    },
+    {
+      category: "Portfolio",
+      question: "What makes a strong writing portfolio?",
+      options: [
+        "Many samples",
+        "Quality samples that showcase range and expertise",
+        "Only published work",
+        "Personal writing only",
+      ],
+      correctAnswer: 1,
+      explanation: "Quality samples that showcase your range and expertise demonstrate your value to clients.",
+    },
+  ];
+
+  return {
+    title: `Day ${dayNumber} Writing Quiz`,
+    description: `Test your understanding of writing fundamentals, voice development, and client work.`,
+    questions: questions,
+    totalQuestions: questions.length,
+    passingScore: Math.ceil(questions.length * 0.7),
+    timeLimit: 8, // minutes
+  };
 }
