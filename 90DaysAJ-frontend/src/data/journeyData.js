@@ -269,7 +269,8 @@ function getReadingLearning(weekNum, dayIndex) {
 }
 
 function getReadingProject(weekNum, dayIndex) {
-  const isWeekend = dayIndex >= 5;
+  // dayIndex is now the actual day of week (0-6, where 0=Sunday, 1=Monday, etc.)
+  const isWeekend = dayIndex === 0 || dayIndex === 6; // Sunday or Saturday
   const readingSessions = isWeekend
     ? getWeekendReading(weekNum, dayIndex)
     : getWeekdayReading(weekNum, dayIndex);
@@ -305,7 +306,8 @@ function getReadingProject(weekNum, dayIndex) {
 }
 
 function getReadingReflection(weekNum, dayIndex) {
-  const isWeekend = dayIndex >= 5;
+  // dayIndex is now the actual day of week (0-6, where 0=Sunday, 1=Monday, etc.)
+  const isWeekend = dayIndex === 0 || dayIndex === 6; // Sunday or Saturday
   const readingSessions = isWeekend
     ? getWeekendReading(weekNum, dayIndex)
     : getWeekdayReading(weekNum, dayIndex);
@@ -660,8 +662,9 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
       "Saturday",
     ];
     const actualDayName = dayNames[dayDate.getDay()];
+    const dayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
 
-    const isWeekend = i >= 5;
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
     
     // Week 1 (Days 1-7) is for testing and trials - no iterations
     // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
@@ -671,13 +674,18 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
     // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
     const readingResources = isTestRun ? [] : getReadingResources(contentWeekNum, i);
 
+    // Map dayOfWeek to the correct index for reading functions
+    // For weekdays: Monday(1)->0, Tuesday(2)->1, Wednesday(3)->2, Thursday(4)->3, Friday(5)->4
+    // For weekends: Saturday(6)->5, Sunday(0)->0
+    const readingDayIndex = isWeekend ? dayOfWeek : dayOfWeek - 1;
+
     days.push({
       dayNumber: dayNumber,
       date: dayDateString,
       dayName: actualDayName,
       readingSessions: isTestRun 
         ? [] 
-        : (isWeekend ? getWeekendReading(contentWeekNum, i) : getWeekdayReading(contentWeekNum, i)),
+        : (isWeekend ? getWeekendReading(contentWeekNum, readingDayIndex) : getWeekdayReading(contentWeekNum, readingDayIndex)),
       theme: isTestRun ? "Testing & Trials Week" : getReadingTheme(contentWeekNum),
       resources: readingResources,
       // Add missing fields for Learning, Project, Reflection tabs
@@ -701,134 +709,98 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
 });
 
 function getWeekdayReading(weekNum, dayIndex) {
-  const ebook = getEBookForWeek(weekNum);
-  let material = ebook;
-  let chapters = "";
+  // dayIndex: 0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday
+  const sessions = [];
+  
+  // Bible Reading: ALL weekdays (Monday-Friday), 6:00-6:15 AM
+  sessions.push({
+    time: "6:00-6:15 AM",
+    type: "Bible Reading",
+    material: getBibleReading(weekNum, dayIndex),
+    focus: "Spiritual, financial, wisdom grounding",
+  });
 
-  // Add chapter numbers for Atomic Habits
-  if (ebook === "Atomic Habits") {
-    if (weekNum === 1) {
-      // Week 1: Chapters 1-7 (7 chapters over 5 days)
-      const chaptersPerDay = [1, 1, 2, 2, 1]; // Day 1: Ch 1, Day 2: Ch 2, Day 3: Ch 3-4, Day 4: Ch 5-6, Day 5: Ch 7
-      const startChapter =
-        dayIndex === 0
-          ? 1
-          : dayIndex === 1
-          ? 2
-          : dayIndex === 2
-          ? 3
-          : dayIndex === 3
-          ? 5
-          : 7;
-      const endChapter =
-        dayIndex === 0
-          ? 1
-          : dayIndex === 1
-          ? 2
-          : dayIndex === 2
-          ? 4
-          : dayIndex === 3
-          ? 6
-          : 7;
-      chapters =
-        startChapter === endChapter
+  // E-Book Reading: Monday-Wednesday only (dayIndex 0-2), 6:15-6:45 AM
+  if (dayIndex <= 2) {
+    const ebook = getEBookForWeek(weekNum);
+    let material = ebook;
+    let chapters = "";
+
+    // Add chapter numbers for Atomic Habits
+    if (ebook === "Atomic Habits") {
+      if (weekNum === 1) {
+        // Week 1: Chapters 1-7 (3 days: Mon-Wed)
+        const startChapter = dayIndex === 0 ? 1 : dayIndex === 1 ? 3 : 5;
+        const endChapter = dayIndex === 0 ? 2 : dayIndex === 1 ? 4 : 7;
+        chapters = startChapter === endChapter
           ? `Chapter ${startChapter}`
           : `Chapters ${startChapter}-${endChapter}`;
-    } else if (weekNum === 2) {
-      // Week 2: Chapters 8-14 (7 chapters over 5 days)
-      const startChapter =
-        dayIndex === 0
-          ? 8
-          : dayIndex === 1
-          ? 9
-          : dayIndex === 2
-          ? 10
-          : dayIndex === 3
-          ? 12
-          : 14;
-      const endChapter =
-        dayIndex === 0
-          ? 8
-          : dayIndex === 1
-          ? 9
-          : dayIndex === 2
-          ? 11
-          : dayIndex === 3
-          ? 13
-          : 14;
-      chapters =
-        startChapter === endChapter
+      } else if (weekNum === 2) {
+        // Week 2: Chapters 8-14 (3 days: Mon-Wed)
+        const startChapter = dayIndex === 0 ? 8 : dayIndex === 1 ? 10 : 12;
+        const endChapter = dayIndex === 0 ? 9 : dayIndex === 1 ? 11 : 14;
+        chapters = startChapter === endChapter
           ? `Chapter ${startChapter}`
           : `Chapters ${startChapter}-${endChapter}`;
-    }
-    material = `Atomic Habits - James Clear (${chapters})`;
-  } else if (ebook === "Atomic Habits (Advanced)") {
-    if (weekNum === 6) {
-      // Week 6: Chapters 15-20 (6 chapters over 5 days)
-      const startChapter =
-        dayIndex === 0
-          ? 15
-          : dayIndex === 1
-          ? 16
-          : dayIndex === 2
-          ? 17
-          : dayIndex === 3
-          ? 19
-          : 20;
-      const endChapter =
-        dayIndex === 0
-          ? 15
-          : dayIndex === 1
-          ? 16
-          : dayIndex === 2
-          ? 18
-          : dayIndex === 3
-          ? 19
-          : 20;
-      chapters =
-        startChapter === endChapter
-          ? `Chapter ${startChapter}`
-          : `Chapters ${startChapter}-${endChapter}`;
+      }
       material = `Atomic Habits - James Clear (${chapters})`;
+    } else if (ebook === "Atomic Habits (Advanced)") {
+      if (weekNum === 6) {
+        // Week 6: Chapters 15-20 (3 days: Mon-Wed)
+        const startChapter = dayIndex === 0 ? 15 : dayIndex === 1 ? 17 : 19;
+        const endChapter = dayIndex === 0 ? 16 : dayIndex === 1 ? 18 : 20;
+        chapters = startChapter === endChapter
+          ? `Chapter ${startChapter}`
+          : `Chapters ${startChapter}-${endChapter}`;
+        material = `Atomic Habits - James Clear (${chapters})`;
+      }
     }
-  }
 
-  return [
-    {
-      time: "7:15-7:30 AM",
-      type: "Bible Reading",
-      material: getBibleReading(weekNum, dayIndex),
-      focus: "Spiritual, financial, wisdom grounding",
-    },
-    {
-      time: "7:30-8:15 AM",
+    sessions.push({
+      time: "6:15-6:45 AM",
       type: "E-Reading",
       material: material,
       focus: "Mindset, success, wealth, strategy",
       chapters: chapters || null,
-    },
-  ];
+    });
+  }
+
+  // Physical Book Reading: Thursday-Friday only (dayIndex 3-4), 6:15-6:45 AM
+  if (dayIndex >= 3 && dayIndex <= 4) {
+    sessions.push({
+      time: "6:15-6:45 AM",
+      type: "Physical Book",
+      material: getPhysicalBookForWeek(weekNum),
+      focus: "Deep reading and comprehension",
+    });
+  }
+
+  return sessions;
 }
 
 function getWeekendReading(weekNum, dayIndex) {
-  if (dayIndex === 6) {
-    return [
-      {
-        time: "Rest Day",
-        type: "Reflection",
-        material: "Journal insights from week",
-        focus: "Gratitude, lessons learned, planning ahead",
-      },
-    ];
-  }
-  return [
-    {
-      time: "8:00-9:00 PM",
+  // dayIndex: 0=Sunday (getDay()=0), 6=Saturday (getDay()=6)
+  const sessions = [];
+  
+  if (dayIndex === 0) {
+    // Sunday: Bible Reading only, 6:00-6:15 AM
+    sessions.push({
+      time: "6:00-6:15 AM",
+      type: "Bible Reading",
+      material: getBibleReading(weekNum, 0), // Sunday is day 0
+      focus: "Spiritual, financial, wisdom grounding",
+    });
+  } else if (dayIndex === 6) {
+    // Saturday: Physical Book Reading, 8:00-8:30 PM
+    sessions.push({
+      time: "8:00-8:30 PM",
       type: "Physical Book",
       material: getPhysicalBookForWeek(weekNum),
       focus: "Deep reflection and consolidation",
-    },
-  ];
+    });
+  }
+  
+  return sessions;
 }
 
 function getEBookForWeek(weekNum) {
