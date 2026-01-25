@@ -443,8 +443,8 @@ export function JourneyDetailV2({
       });
     }
     
-    // Writer's Journey tasks
-    if (journeyId === 'writers' && day.execution) {
+    // Writer's Journey tasks (skip rest days)
+    if (journeyId === 'writers' && day.execution && !day.isRestDay) {
       tasks.push({
         id: `writers-${day.dayNumber}`,
         text: day.execution,

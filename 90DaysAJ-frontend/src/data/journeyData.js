@@ -35,7 +35,7 @@ export const journeys = [
     icon: "✍️",
     timeBlock: "Time: 4:15-5:00 PM (Weekdays)",
     description: "Learning → Execution → Reflection",
-    totalDays: 60,
+    totalDays: 84, // 12 weeks * 7 days
     color: "#43e97b",
   },
   {
@@ -3198,18 +3198,18 @@ function getDualBrandProject(weekNum, dayIndex) {
   );
 }
 
-// Writer's Journey - Complete 12 weeks (60 days, Mon-Fri only)
+// Writer's Journey - Complete 12 weeks (84 days, 7 days per week)
 export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
   const days = [];
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 7; i++) {
     const dayDate = new Date(week.startDate);
     dayDate.setDate(new Date(week.startDate).getDate() + i);
 
     const dayDateString = dayDate.toISOString().split("T")[0];
-    const dayNumber = idx * 5 + i + 1;
+    const dayNumber = idx * 7 + i + 1;
 
-    // Get actual day name from the date (only weekdays for writers journey)
+    // Get actual day name from the date
     const dayNames = [
       "Sunday",
       "Monday",
@@ -3220,16 +3220,21 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
       "Saturday",
     ];
     const actualDayName = dayNames[dayDate.getDay()];
+    const isWeekend = i >= 5; // Saturday (5) and Sunday (6)
 
-    // Week 1 (Days 1-5 for writers journey, weekdays only) is for testing and trials - no iterations
+    // Week 1 (Days 1-7) is for testing and trials - no iterations
     // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
     const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
-    const isTestRun = idx === 0 && dayNumber <= 5;
+    const isTestRun = idx === 0 && dayNumber <= 7;
 
+    // For weekends (Saturday/Sunday), no content - rest days
     // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
-    const writerResources = isTestRun ? [] : getWriterResources(contentWeekNum, i);
-    const learning = isTestRun ? "System Testing" : getWriterLearning(contentWeekNum, i);
-    const execution = isTestRun ? "Test app features" : getWriterExecution(contentWeekNum, i);
+    const isRestDay = isWeekend && !isTestRun;
+    // Only get content for weekdays (Monday-Friday, i < 5)
+    const weekdayIndex = i < 5 ? i : null;
+    const writerResources = isTestRun ? [] : (isRestDay ? [] : (weekdayIndex !== null ? getWriterResources(contentWeekNum, weekdayIndex) : []));
+    const learning = isTestRun ? "System Testing" : (isRestDay ? "Rest Day" : (weekdayIndex !== null ? getWriterLearning(contentWeekNum, weekdayIndex) : "Rest Day"));
+    const execution = isTestRun ? "Test app features" : (isRestDay ? "No writing tasks - Rest day" : (weekdayIndex !== null ? getWriterExecution(contentWeekNum, weekdayIndex) : "No writing tasks - Rest day"));
 
     days.push({
       dayNumber: dayNumber,
@@ -3237,27 +3242,28 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
       dayName: actualDayName,
       learning: learning,
       execution: execution,
-      reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getWriterReflection(contentWeekNum, i),
-      theme: isTestRun ? "Testing & Trials Week" : getWriterTheme(contentWeekNum),
+      reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : (isRestDay ? { questions: ["How did the week go?", "What will you focus on next week?"] } : (weekdayIndex !== null ? getWriterReflection(contentWeekNum, weekdayIndex) : { questions: ["How did the week go?", "What will you focus on next week?"] })),
+      theme: isTestRun ? "Testing & Trials Week" : (isRestDay ? "Rest Day" : (weekdayIndex !== null ? getWriterTheme(contentWeekNum) : "Rest Day")),
       resources: writerResources,
       // Add missing fields for Learning, Project tabs (map from existing fields)
       dailyLearning: {
         title: learning,
-        description: isTestRun ? "Explore and test the app features" : `Learn about ${learning}`,
+        description: isTestRun ? "Explore and test the app features" : (isRestDay ? "Take a break and rest. Writing happens on weekdays." : `Learn about ${learning}`),
       },
       project: {
         title: execution,
-        description: isTestRun ? "Test all features" : `Execute: ${execution}`,
-        requirements: isTestRun ? [] : [execution],
+        description: isTestRun ? "Test all features" : (isRestDay ? "No writing tasks today - enjoy your rest!" : `Execute: ${execution}`),
+        requirements: isTestRun ? [] : (isRestDay ? [] : [execution]),
       },
       isTestRun: isTestRun,
+      isRestDay: isRestDay,
       testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
       testRunTasks: isTestRun ? [
         "Explore the app interface and navigation",
         "Test all features and functionality",
         "Get familiar with the journey structure",
         "Identify any issues or improvements",
-        "Prepare mentally for Day 6 onwards"
+        "Prepare mentally for Day 8 onwards"
       ] : null,
     });
   }
