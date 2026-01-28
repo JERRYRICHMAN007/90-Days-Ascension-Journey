@@ -8,6 +8,7 @@ import { TaskCard } from "../components/ui/task-card";
 import { TaskCardV2 } from "../components/ui/task-card-v2";
 import { Card } from "../components/ui/card";
 import { JourneyCardV2 } from "../components/dashboard/JourneyCardV2";
+import { GamificationInfo } from "../components/GamificationInfo";
 import {
   Dumbbell,
   Palette,
@@ -378,6 +379,9 @@ export function HomePage({ userProgress }) {
           value={Object.keys(userProgress).length}
         />
       </div>
+
+      {/* Gamification Info - How to Earn Scores */}
+      <GamificationInfo className="w-full" />
 
       {/* Today's Focus (PRD v2.0) - Better Mobile Layout */}
       <div className="space-y-4">

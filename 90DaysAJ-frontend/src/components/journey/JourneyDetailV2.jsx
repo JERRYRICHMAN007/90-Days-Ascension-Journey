@@ -34,7 +34,7 @@ import { getCurrentDayNumber, getCurrentPhase, getDateForDay, isDayAccessible, c
 import { getQuoteOfTheDay } from '../../data/quotes';
 import { cn } from '../../lib/utils';
 import { getJourneyPreparation } from '../../data/preparationData';
-import { getSoftwareEngineeringReflection, getProjectComponentForDay } from '../../data/journeyData';
+import { getSoftwareEngineeringReflection, getProjectComponentForDay, getDisciplineResources } from '../../data/journeyData';
 import DailyQuiz from '../DailyQuiz';
 
 /**
@@ -123,25 +123,28 @@ export function JourneyDetailV2({
   const preparationData = getJourneyPreparation(journeyId);
   
   // Find current week - handle case where selectedWeek might be out of bounds
-  // When on Day 0 or Day 1, default to Week 1 to ensure Day 1 is accessible
+  // When on Day 0 or Day 1, default to Week 0 to ensure Day 1 is accessible
   // Also ensure we use the correct week for the selected day
+  // Week 0 = Testing (Days 0-6), Week 1 = First week of actual content (Days 7-13), etc.
   let effectiveWeek = selectedWeek;
   if (selectedDay === 0 || selectedDay === 1) {
-    effectiveWeek = 1;
+    effectiveWeek = 0; // Week 0 = Testing week
   } else if (selectedDay > 0) {
     // Calculate which week the selected day belongs to
-    const calculatedWeek = Math.ceil(selectedDay / 7);
-    if (calculatedWeek >= 1 && calculatedWeek <= weeks.length) {
+    // Day 0 = Week 0, Days 1-6 = Week 0, Days 7-13 = Week 1, Days 14-20 = Week 2, etc.
+    const calculatedWeek = selectedDay === 0 ? 0 : Math.floor(selectedDay / 7);
+    if (calculatedWeek >= 0 && calculatedWeek < weeks.length) {
       effectiveWeek = calculatedWeek;
     }
   }
   // Find current week - prioritize selected week, but fallback to effective week if day not found
   let currentWeek = weeks.find((w) => w && w.weekNumber === selectedWeek) || weeks[0] || null;
   
-  // Find current day - search in selected week first, then across all weeks if needed
+  // Find current day - search across all weeks to ensure we find it regardless of selected week
+  // This ensures the mark complete button works for all weeks, not just week 1
   let currentDay = null;
   if (!isPreparationPhase && selectedDay > 0) {
-    // First, try to find the day in the selected week
+    // First, try to find the day in the selected week (optimization)
     if (currentWeek?.days && Array.isArray(currentWeek.days) && currentWeek.days.length > 0) {
       currentDay = currentWeek.days.find((d) => d && d.dayNumber === selectedDay) || null;
     }
@@ -157,14 +160,17 @@ export function JourneyDetailV2({
       }
     }
     
-    // If not found in current week, search across all weeks for the selected day
+    // If still not found, search across ALL weeks for the selected day
+    // This ensures we can find and mark complete days in any week
     if (!currentDay && weeks.length > 0) {
       for (const week of weeks) {
         if (week && week.days && Array.isArray(week.days) && week.days.length > 0) {
           const foundDay = week.days.find((d) => d && d.dayNumber === selectedDay);
           if (foundDay) {
             currentDay = foundDay;
-            // Update selectedWeek to match the week where the day was found
+            currentWeek = week;
+            // Update selectedWeek to match the week where the day was found (only if different)
+            // This ensures the UI shows the correct week when viewing days from other weeks
             if (selectedWeek !== week.weekNumber) {
               onWeekChange(week.weekNumber);
             }
@@ -173,6 +179,12 @@ export function JourneyDetailV2({
         }
       }
     }
+  }
+  
+  // Debug: Log if currentDay is not found (only in development)
+  if (import.meta.env.DEV && selectedDay > 0 && !currentDay && !isPreparationPhase) {
+    console.warn(`[JourneyDetailV2] Day ${selectedDay} not found in any week for journey ${journeyId}`);
+    console.warn('Available weeks:', weeks.map(w => ({ week: w?.weekNumber, days: w?.days?.map(d => d?.dayNumber) })));
   }
 
   // Tab state for content sections
@@ -195,13 +207,14 @@ export function JourneyDetailV2({
     // Only auto-select if we have a valid current day number
     if (currentDayNumber !== null && currentDayNumber !== undefined && weeks.length > 0) {
       // Calculate which week contains the current day
-      const currentWeekNumber = currentDayNumber === 0 ? 1 : Math.ceil(currentDayNumber / 7);
+      // Day 0 = Week 0, Days 1-6 = Week 0, Days 7-13 = Week 1, Days 14-20 = Week 2, etc.
+      const currentWeekNumber = currentDayNumber === 0 ? 0 : Math.floor(currentDayNumber / 7);
       
       // Only update if the selected day/week doesn't match the current day
       // This prevents infinite loops by checking if we need to update
       if (selectedDay !== currentDayNumber || selectedWeek !== currentWeekNumber) {
         // Update week first if needed
-        if (selectedWeek !== currentWeekNumber && currentWeekNumber >= 1 && currentWeekNumber <= weeks.length) {
+        if (selectedWeek !== currentWeekNumber && currentWeekNumber >= 0 && currentWeekNumber < weeks.length) {
           onWeekChange(currentWeekNumber);
         }
         // Then update day
@@ -555,8 +568,9 @@ export function JourneyDetailV2({
     setTaskCompletion(newCompletion);
     
     // Award XP when task is completed (not when uncompleting)
-    if (!wasCompleted && completeTask) {
-      completeTask('medium', journeyId);
+    // IMPORTANT: Day 0 (testing week) does NOT earn any gamification scores
+    if (!wasCompleted && completeTask && currentDay?.dayNumber !== 0) {
+      completeTask('medium', journeyId, currentDay?.dayNumber);
     }
     
     if (currentDay?.dayNumber) {
@@ -588,11 +602,8 @@ export function JourneyDetailV2({
       canCompleteDay(currentDay.dayNumber)
     ) {
       // Automatically mark the day as complete
+      // NOTE: No automatic XP award here - XP is only earned through completing tasks, quizzes, etc.
       updateProgress(journeyId, currentDay.dayNumber, true);
-      // Award XP for completing a day
-      if (addXP) {
-        addXP(50, journeyId); // 50 XP for completing a day
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allTasksCompleted, currentDay?.dayNumber, dayTasks.length, journeyId, updateProgress, journeyProgress]);
@@ -955,7 +966,7 @@ export function JourneyDetailV2({
                 }}
               >
                 {/* Day 0 - Preparation (only show in Week 1) */}
-                {preparationData && selectedWeek === 1 && (
+                {preparationData && selectedWeek === 0 && (
                   <button
                     onClick={() => {
                       onDayChange(0);
@@ -966,7 +977,7 @@ export function JourneyDetailV2({
                     }}
                     data-day="0"
                     className={cn(
-                      'shrink-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation min-w-[70px] sm:min-w-[80px]',
+                      'shrink-0 flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation min-w-[85px] sm:min-w-[95px] max-w-[95px] sm:max-w-[105px]',
                       selectedDay === 0
                         ? `bg-gradient-to-br ${colors.gradient} text-white shadow-lg scale-105` 
                         : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-border/50'
@@ -985,6 +996,10 @@ export function JourneyDetailV2({
                   const isActive = day.dayNumber === selectedDay;
                   const dayIsTomorrow = isTomorrow(day.dayNumber);
                   
+                  // Get date for day name
+                  const dateForDay = day.date || (getDateForDay(day.dayNumber)?.toISOString());
+                  const dayName = dateForDay ? formatDayName(dateForDay) : '';
+                  
                   return (
                     <button
                       key={day.dayNumber}
@@ -997,7 +1012,7 @@ export function JourneyDetailV2({
                       }}
                       data-day={day.dayNumber}
                       className={cn(
-                        'shrink-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation min-w-[70px] sm:min-w-[80px] relative',
+                        'shrink-0 flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation min-w-[85px] sm:min-w-[95px] max-w-[95px] sm:max-w-[105px] relative',
                         isActive 
                           ? `bg-gradient-to-br ${colors.gradient} text-white shadow-lg scale-105` 
                           : isCompleted
@@ -1011,6 +1026,11 @@ export function JourneyDetailV2({
                         <Check className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 text-primary bg-background rounded-full p-0.5" />
                       )}
                       <span className="text-base sm:text-lg font-bold">{day.dayNumber}</span>
+                      {dayName && (
+                        <span className="text-[10px] sm:text-xs font-medium">
+                          {dayName}
+                        </span>
+                      )}
                       <span className="text-[10px] sm:text-xs truncate max-w-full">
                         {day.date ? formatDateShort(day.date) : `Day ${day.dayNumber}`}
                       </span>
@@ -1118,10 +1138,10 @@ export function JourneyDetailV2({
                   </button>
                 )}
 
-                {/* When on Day 0, always show Day 1 from Week 1 as preview */}
+                {/* When on Day 0, always show Day 1 from Week 0 as preview */}
                 {selectedDay === 0 && (() => {
-                  const week1 = weeks.find(w => w && w.weekNumber === 1);
-                  const day1 = week1?.days?.find(d => d && d.dayNumber === 1);
+                  const week0 = weeks.find(w => w && w.weekNumber === 0);
+                  const day1 = week0?.days?.find(d => d && d.dayNumber === 1);
                   if (!day1) return null;
                   
                   // Verify Day 1 is accessible
@@ -1132,7 +1152,7 @@ export function JourneyDetailV2({
                     <button
                         onClick={() => {
                           if (day1IsAccessible) {
-                            onWeekChange(1);
+                            onWeekChange(0);
                             onDayChange(1);
                             setIsMobileSidebarOpen(false);
                           }
@@ -1435,19 +1455,30 @@ export function JourneyDetailV2({
                           </p>
                         )}
                       </div>
-                      {canCompleteDay(currentDay.dayNumber) ? (
+                      {/* Mark Complete Button - Available for all days (1-90) in all weeks */}
+                      {currentDay && canCompleteDay(currentDay.dayNumber) ? (
                         <Button
                           onClick={() => {
+                            // Only require tasks to be completed if there are tasks
                             if (!getDayProgress(currentDay) && !allTasksCompleted && dayTasks.length > 0) {
                               // Show message that all tasks must be completed
                               alert(`Please complete all ${dayTasks.length} task(s) before marking the day as complete.`);
                               return;
                             }
                             
-                            // Check if this is the end of a week (Day 7, 14, 21, 28, etc.)
+                            // Check if this is the end of a week (Day 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 90)
+                            // Week 1: Days 1-7 (Day 7 is end), Week 2: Days 8-14 (Day 14 is end), etc.
                             // Day 7 % 7 = 0, Day 14 % 7 = 0, Day 21 % 7 = 0, etc.
                             const isWeekEnd = currentDay.dayNumber % 7 === 0;
                             const isCurrentlyComplete = getDayProgress(currentDay);
+                            
+                            // IMPORTANT: No automatic XP/streak awards here!
+                            // Gamification scores are ONLY earned through:
+                            // 1. Completing individual tasks (via toggleTask)
+                            // 2. Completing daily quizzes (via quiz submission)
+                            // 3. Submitting reflections (via reflection form)
+                            // 4. Completing projects (via project completion)
+                            // Marking a day complete is just a status indicator, not an action that earns points
                             
                             if (isWeekEnd && !isCurrentlyComplete) {
                               // Mark entire week as complete (only when marking as complete, not when unmarking)
@@ -1460,18 +1491,10 @@ export function JourneyDetailV2({
                               for (let dayNum = weekStart; dayNum <= weekEndDay && dayNum <= journey.totalDays; dayNum++) {
                                 updateProgress(journeyId, dayNum, true);
                               }
-                              // Award XP for completing a week (bonus)
-                              if (addXP) {
-                                addXP(100, journeyId); // 100 XP bonus for completing a week
-                              }
                             } else {
                               // Mark/unmark only this specific day
                               const wasComplete = isCurrentlyComplete;
                               updateProgress(journeyId, currentDay.dayNumber, !wasComplete);
-                              // Award XP when marking as complete (not when unmarking)
-                              if (!wasComplete && addXP) {
-                                addXP(50, journeyId); // 50 XP for completing a day
-                              }
                             }
                           }}
                           className={cn(
@@ -1489,7 +1512,9 @@ export function JourneyDetailV2({
                               color: '#ffffff'
                             } : {})
                           }}
-                          disabled={!getDayProgress(currentDay) && !allTasksCompleted && dayTasks.length > 0}
+                          // Only disable if: day is not completed AND there are tasks AND not all tasks are completed
+                          // If there are no tasks, the button should always be enabled
+                          disabled={!getDayProgress(currentDay) && dayTasks.length > 0 && !allTasksCompleted}
                         >
                           {getDayProgress(currentDay) ? (
                             <>
@@ -1500,18 +1525,18 @@ export function JourneyDetailV2({
                             <>
                               <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                               <span className="text-sm sm:text-base">
-                                {currentDay.dayNumber % 7 === 0 || currentDay.dayNumber === 7 
+                                {currentDay.dayNumber % 7 === 0 
                                   ? 'Mark Week Complete' 
                                   : 'Mark Complete'}
                               </span>
                             </>
                           )}
                         </Button>
-                      ) : (
+                      ) : currentDay && currentDay.dayNumber === 0 ? (
                         <div className="text-sm sm:text-base text-muted-foreground flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-md bg-muted/50 border border-border/50">
                           <span>Day 0 - Cannot Complete</span>
                         </div>
-                      )}
+                      ) : null}
                     </div>
 
                     {/* Day Theme */}
@@ -2563,30 +2588,66 @@ export function JourneyDetailV2({
                             <BookOpen className="w-5 h-5 text-primary" />
                             <h3 className="text-lg font-semibold">{activeDiscipline} Resources</h3>
                           </div>
-                          {/* Get resources from schedule sessions */}
+                          {/* Get resources from schedule sessions, with fallback to day-specific resources */}
                           {(() => {
                             const allResources = [];
+                            const seenResources = new Set(); // Track seen resources to prevent duplicates
+                            
+                            // Collect resources from scheduled sessions
                             disciplineContent.deepLearning.forEach(session => {
                               if (session.content?.resources && Array.isArray(session.content.resources)) {
-                                allResources.push(...session.content.resources);
+                                session.content.resources.forEach(resource => {
+                                  // Create unique key from title and URL to detect duplicates
+                                  const resourceKey = `${resource.title || ''}_${resource.url || ''}`;
+                                  if (!seenResources.has(resourceKey)) {
+                                    seenResources.add(resourceKey);
+                                    allResources.push(resource);
+                                  }
+                                });
                               }
                             });
                             disciplineContent.implementation.forEach(session => {
                               if (session.content?.resources && Array.isArray(session.content.resources)) {
-                                allResources.push(...session.content.resources);
+                                session.content.resources.forEach(resource => {
+                                  // Create unique key from title and URL to detect duplicates
+                                  const resourceKey = `${resource.title || ''}_${resource.url || ''}`;
+                                  if (!seenResources.has(resourceKey)) {
+                                    seenResources.add(resourceKey);
+                                    allResources.push(resource);
+                                  }
+                                });
                               }
                             });
                             
-                            // Also include general resources if available
-                            if (Array.isArray(currentDay.resources)) {
-                              allResources.push(...currentDay.resources);
+                            // Fallback: If no resources from sessions (e.g., WordPress not scheduled today), get day-specific resources
+                            if (allResources.length === 0 && currentDay?.dayNumber) {
+                              const dayIndex = (currentDay.dayNumber - 1) % 7;
+                              const weekNum = Math.ceil(currentDay.dayNumber / 7);
+                              // Map discipline name to match getDisciplineResources format
+                              const disciplineName = activeDiscipline === 'WordPress' ? 'Systems Engineering' : activeDiscipline;
+                              const fallbackResources = getDisciplineResources(
+                                disciplineName,
+                                weekNum,
+                                null,
+                                currentDay.dayNumber,
+                                dayIndex
+                              );
+                              if (fallbackResources && Array.isArray(fallbackResources) && fallbackResources.length > 0) {
+                                fallbackResources.forEach(resource => {
+                                  const resourceKey = `${resource.title || ''}_${resource.url || ''}`;
+                                  if (!seenResources.has(resourceKey)) {
+                                    seenResources.add(resourceKey);
+                                    allResources.push(resource);
+                                  }
+                                });
+                              }
                             }
                             
                             return allResources.length > 0 ? (
                               <ul className="space-y-3">
                                 {allResources.map((resource, idx) => (
-                                  <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                                    <div>
+                                  <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                                    <div className="flex-1">
                                       <a
                                         href={resource.url || '#'}
                                         target="_blank"
@@ -2595,8 +2656,16 @@ export function JourneyDetailV2({
                                       >
                                         {resource.title || resource}
                                       </a>
-                                      {resource.time && (
-                                        <span className="text-xs text-muted-foreground ml-2">({resource.time})</span>
+                                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                        {resource.time && (
+                                          <span className="text-xs text-muted-foreground">({resource.time})</span>
+                                        )}
+                                        {resource.category && (
+                                          <span className="text-xs text-muted-foreground">• {resource.category}</span>
+                                        )}
+                                      </div>
+                                      {resource.description && (
+                                        <p className="text-xs text-muted-foreground mt-1">{resource.description}</p>
                                       )}
                                     </div>
                                   </li>
@@ -2706,7 +2775,8 @@ export function JourneyDetailV2({
                           onComplete={(results) => {
                             console.log("Daily quiz completed:", results);
                             // Award XP based on quiz performance
-                            if (addXP) {
+                            // IMPORTANT: Day 0 (testing week) does NOT earn any gamification scores
+                            if (addXP && currentDay?.dayNumber !== 0) {
                               const baseXP = 30; // Base XP for completing quiz
                               const performanceBonus = Math.round((results.percentage / 100) * 20); // Up to 20 bonus XP
                               const totalXP = baseXP + performanceBonus;

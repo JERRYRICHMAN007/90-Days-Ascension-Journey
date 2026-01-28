@@ -2,19 +2,21 @@
  * Date utilities for the 90 Days Ascension Journey
  * 
  * Timeline:
- * - Day 0 = January 18, 2026 (Sunday) - Preparation/Setup Day
- * - Day 1 = January 19, 2026 (Monday) - Testing & Trials Week Begins
- * - Week 1 (Days 1-7): January 19-25, 2026 - Testing & Trials (No iterations)
- * - Ascension Phase: Jan 18 - Apr 18, 2026 (Day 0 + 90 days)
- * - Day 0 = January 18, 2026 (Sunday)
- * - Day 1 = January 19, 2026 (Monday)
+ * - Week 0 (Jan 18-24): All days are Day 0 - Testing & Trials Week (No actual content)
+ * - Day 1 = January 25, 2026 (Sunday) - First day of actual content
+ * - Day 2 = January 26, 2026 (Monday) - Second day of actual content
+ * - Week 1 (Days 1-7): January 25-31, 2026 - First week of actual content
+ * - Week 2 (Days 8-14): February 1-7, 2026 - Second week of actual content
+ * - Ascension Phase: Jan 18 - Apr 18, 2026 (90 days total)
  */
 
 export const JOURNEY_CONSTANTS = {
   DAY_0_START: new Date('2026-01-18'), // Day 0 - Sunday, January 18, 2026
   ASCENSION_START: new Date('2026-01-19'), // Day 1 - Monday, January 19, 2026
   ASCENSION_END: new Date('2026-04-18'), // Day 90 - April 18, 2026
-  TESTING_WEEK_END: new Date('2026-01-25'), // End of testing week - Saturday, January 25, 2026
+  TESTING_WEEK_START: new Date('2026-01-19'), // Start of testing week - Monday, January 19, 2026
+  TESTING_WEEK_END: new Date('2026-01-24'), // End of testing week - Saturday, January 24, 2026
+  ACTUAL_CONTENT_START: new Date('2026-01-25'), // Actual content starts - Sunday, January 25, 2026 (Day 1)
   TOTAL_DAYS: 90,
 };
 
@@ -75,16 +77,22 @@ export function getCurrentDayNumber() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Day 1 starts on January 19, 2026 (Monday)
-  const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  ascensionStart.setHours(0, 0, 0, 0);
+  // Week 0 (Jan 18-24): All days are Day 0 (testing week)
+  // Day 1 starts on January 25, 2026 (Sunday - first day of actual content)
+  const actualContentStart = new Date(JOURNEY_CONSTANTS.ACTUAL_CONTENT_START);
+  actualContentStart.setHours(0, 0, 0, 0);
   
-  const diffTime = today - ascensionStart;
+  // If before actual content start (Jan 25), return 0 (testing week)
+  if (today < actualContentStart) {
+    return 0;
+  }
+  
+  // Day 1 = Jan 25, 2026 (actualContentStart)
+  const diffTime = today - actualContentStart;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
-  // Day 1 = Jan 19, 2026 (ascensionStart)
-  // If today is Jan 19, diffDays = 0, so return 1
-  // If today is Jan 20, diffDays = 1, so return 2
+  // If today is Jan 25, diffDays = 0, so return 1
+  // If today is Jan 26, diffDays = 1, so return 2
   return diffDays + 1;
 }
 
@@ -114,12 +122,23 @@ export function getDateForDay(dayNumber) {
 }
 
 /**
- * Check if a day is in the testing/trials week (Days 1-7, Jan 19-25, 2026)
+ * Check if a day is in the testing/trials week (Days 1-6, Jan 19-24, 2026)
+ * Week 1 is for testing only - no actual content
+ * Actual content starts from Day 7 (Jan 25, 2026) onwards
  * @param {number} dayNumber - Day number (0-90)
  * @returns {boolean}
  */
 export function isTestingWeek(dayNumber) {
-  return dayNumber >= 1 && dayNumber <= 7;
+  return dayNumber >= 1 && dayNumber <= 6;
+}
+
+/**
+ * Check if actual content should be shown (Day 7+, Jan 25, 2026 onwards)
+ * @param {number} dayNumber - Day number (0-90)
+ * @returns {boolean}
+ */
+export function isActualContentDay(dayNumber) {
+  return dayNumber >= 7;
 }
 
 /**
@@ -199,18 +218,18 @@ export function getWeekNumber(dayNumber) {
 
 /**
  * Check if a day is accessible (all days are now unlocked)
- * Day 0 is always accessible
+ * Day 0 (Week 0 testing) is always accessible
  * @param {number} dayNumber - Day number to check (0-90)
  * @returns {boolean}
  */
 export function isDayAccessible(dayNumber) {
   // All days are now unlocked and accessible
-  // Day 0 (preparation) is always accessible
+  // Day 0 (Week 0 testing week) is always accessible
   if (dayNumber === 0) {
     return true;
   }
   
-  // All days from 1-90 are accessible
+  // All days from 1-90 are accessible (Day 1 starts from Jan 25)
   if (dayNumber >= 1 && dayNumber <= 90) {
     return true;
   }
@@ -219,18 +238,19 @@ export function isDayAccessible(dayNumber) {
 }
 
 /**
- * Check if a day can be marked as complete (all days can now be completed)
- * Day 0 cannot be completed
+ * Check if a day can be marked as complete
+ * Day 0 (Week 0 testing) cannot be completed
+ * Day 1+ (starting Jan 25) can be completed
  * @param {number} dayNumber - Day number to check (0-90)
  * @returns {boolean}
  */
 export function canCompleteDay(dayNumber) {
-  // Day 0 cannot be completed
+  // Day 0 (Week 0 testing week) cannot be completed
   if (dayNumber === 0) {
     return false;
   }
   
-  // All days from 1-90 can be completed
+  // All days from 1-90 can be completed (Day 1 starts from Jan 25)
   if (dayNumber >= 1 && dayNumber <= 90) {
     return true;
   }

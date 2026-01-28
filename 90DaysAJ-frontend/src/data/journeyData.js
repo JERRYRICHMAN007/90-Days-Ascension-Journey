@@ -16,7 +16,7 @@ export const journeys = [
     title: "Dual Brand",
     icon: "🎨",
     timeBlock: "Time: 4:45-5:30 AM (Mon-Fri), 5:00-6:00 AM (Saturday)",
-    description: "Ryxen + HavenX Brand Building",
+    description: "_richman.oo7 (Personal) + _ryxen.oo7 (Company) Brand Building",
     totalDays: 90,
     color: "#f093fb",
   },
@@ -52,8 +52,10 @@ export const journeys = [
 // OFFICIAL START DATE: January 18, 2026 (Day 0 - Sunday - Preparation)
 // Day 0 = January 18, 2026 (Sunday) - Preparation/Setup Day
 // Day 1 = January 19, 2026 (Monday) - Testing & Trials Week Begins
-// Week 1 (Days 1-7): January 19-25, 2026 - Testing & Trials (No iterations)
+// Week 0 (Days 1-6): January 19-24, 2026 - Testing & Trials (No actual content/resources)
+// Week 1 (Day 7+): January 25, 2026 onwards - Actual content execution starts
 // All journeys start January 19, 2026 - Official Ascension Phase begins!
+// Content shift: All content that was in Week 1 (Jan 18-24) is now in Week 1 (Jan 25+)
 
 // Helper function to generate all weeks
 function generateWeeks(startDate, numWeeks) {
@@ -67,10 +69,10 @@ function generateWeeks(startDate, numWeeks) {
     weekEnd.setDate(weekStart.getDate() + 6);
 
     weeks.push({
-      weekNumber: i + 1,
+      weekNumber: i, // Week 0 = Testing, Week 1 = First week of actual content, etc.
       startDate: weekStart.toISOString().split("T")[0],
       endDate: weekEnd.toISOString().split("T")[0],
-      theme: getWeekTheme(i + 1),
+      theme: getWeekTheme(i), // Use i instead of i+1 to match new week numbering
     });
   }
 
@@ -79,19 +81,19 @@ function generateWeeks(startDate, numWeeks) {
 
 function getWeekTheme(weekNum) {
   const themes = {
-    1: "Testing & Trials Week - System familiarization and experimentation (No iterations)",
-    2: "Building Momentum - Consistency and habit formation",
-    3: "Deepening Practice - Advanced techniques and refinement",
-    4: "Integration Phase - Combining all elements",
-    5: "Acceleration - Pushing boundaries and growth",
-    6: "Mastery Development - Refining skills and systems",
-    7: "Peak Performance - Maximum output and optimization",
-    8: "Scaling Phase - Expanding reach and impact",
-    9: "Innovation - New approaches and strategies",
-    10: "Excellence - Pursuing perfection in execution",
-    11: "Leadership - Guiding and inspiring others",
-    12: "Transformation - Complete evolution and change",
-    13: "Celebration - Reflecting on achievements and next steps",
+    0: "Testing & Trials Week - System familiarization and experimentation (No iterations)",
+    1: "Building Momentum - Consistency and habit formation",
+    2: "Deepening Practice - Advanced techniques and refinement",
+    3: "Integration Phase - Combining all elements",
+    4: "Acceleration - Pushing boundaries and growth",
+    5: "Mastery Development - Refining skills and systems",
+    6: "Peak Performance - Maximum output and optimization",
+    7: "Scaling Phase - Expanding reach and impact",
+    8: "Innovation - New approaches and strategies",
+    9: "Excellence - Pursuing perfection in execution",
+    10: "Leadership - Guiding and inspiring others",
+    11: "Transformation - Complete evolution and change",
+    12: "Celebration - Reflecting on achievements and next steps",
   };
   return themes[weekNum] || "Week Theme";
 }
@@ -371,8 +373,8 @@ function getDualBrandReflection(weekNum, dayIndex) {
     prompt: `Reflect on today's ${focus} work for both Personal Brand and Company Brand`,
     questions: [
       `What progress did I make on ${focus}?`,
-      `Personal Brand (_jerryrichman007): How did today's tasks go? ${personalTasksText}`,
-      `Company Brand (_ryxen007): How did today's tasks go? ${companyTasksText}`,
+      `Personal Brand (_richman.oo7): How did today's tasks go? ${personalTasksText}`,
+      `Company Brand (_ryxen.oo7): How did today's tasks go? ${companyTasksText}`,
       `Did I achieve the expected outcome: ${outcome}?`,
       "What challenges did I face?",
       "What will I focus on improving tomorrow?",
@@ -400,7 +402,9 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
       dayDate.setDate(new Date(week.startDate).getDate() + i);
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      const dayNumber = idx * 7 + i + 1;
+      // Week 0: All days are Day 0 (testing week)
+      // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
+      const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
 
       // Get actual day name from the date
       const dayNames = [
@@ -413,15 +417,28 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
         "Saturday",
       ];
       const actualDayName = dayNames[dayDate.getDay()];
+      
+      // Convert JavaScript getDay() (0=Sunday, 1=Monday, ..., 6=Saturday) 
+      // to dayIndex format used by getTimeBlocks (0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday)
+      const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+      const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 1 (Days 1-7) is for testing and trials - no iterations
-      // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
-      const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
-      const isTestRun = idx === 0 && dayNumber <= 7;
+      // Week 0 (Jan 18-24): All days are Day 0 (testing week) - no actual content
+      // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
+      // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+      const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
+      // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
+      const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
 
-      // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
+      // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
       const workoutData = isTestRun ? { name: "System Testing - No Workout", link: null } : getWorkoutForDay(contentWeekNum, i);
       const workoutResources = isTestRun ? [] : getWorkoutResources(contentWeekNum, i);
+      
+      // Get time blocks and organize schedule (same format as software engineering)
+      const timeBlocks = getBodyTransformationTimeBlocks(dayIndex);
+      const learningData = isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getBodyTransformationLearning(contentWeekNum, i);
+      const projectData = isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getBodyTransformationProject(contentWeekNum, i);
+      const scheduledContent = isTestRun ? null : organizeBodyTransformationSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
 
       days.push({
         dayNumber: dayNumber,
@@ -434,8 +451,8 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
         mindset: getMindsetAffirmation(i),
         resources: workoutResources,
         // Add missing fields for Learning, Project, Reflection tabs
-        dailyLearning: isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getBodyTransformationLearning(contentWeekNum, i),
-        project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getBodyTransformationProject(contentWeekNum, i),
+        dailyLearning: learningData,
+        project: projectData,
         reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getBodyTransformationReflection(contentWeekNum, i),
         dailyQuiz: isTestRun ? null : getBodyTransformationQuiz(contentWeekNum, i, dayNumber),
         isTestRun: isTestRun,
@@ -445,12 +462,17 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
           "Test all features and functionality",
           "Get familiar with the journey structure",
           "Identify any issues or improvements",
-          "Prepare mentally for Day 8 onwards"
+          "Prepare mentally for Day 1 onwards (Jan 25)"
         ] : null,
+        // Schedule format (same as software engineering)
+        schedule: {
+          timeBlocks: timeBlocks,
+          scheduledContent: scheduledContent,
+        },
       });
     }
 
-    // Override theme for week 1 to reflect testing & trials week
+    // Override theme for week 0 to reflect testing & trials week
     const weekTheme =
       idx === 0
         ? "Testing & Trials Week - System familiarization and experimentation (No iterations)"
@@ -649,7 +671,9 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
     dayDate.setDate(new Date(week.startDate).getDate() + i);
 
     const dayDateString = dayDate.toISOString().split("T")[0];
-    const dayNumber = idx * 7 + i + 1;
+    // Week 0: All days are Day 0 (testing week)
+    // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
+    const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
 
     // Get actual day name from the date
     const dayNames = [
@@ -663,29 +687,41 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
     ];
     const actualDayName = dayNames[dayDate.getDay()];
     const dayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    
+    // Convert JavaScript getDay() (0=Sunday, 1=Monday, ..., 6=Saturday) 
+    // to dayIndex format used by getTimeBlocks (0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday)
+    const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
     
-    // Week 1 (Days 1-7) is for testing and trials - no iterations
-    // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
-    const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
-    const isTestRun = idx === 0 && dayNumber <= 7;
+    // Week 0 (Jan 18-24): All days are Day 0 (Testing & Trials Week) - no actual content
+    // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
+    // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+    const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
+    // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
+    const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
 
-    // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
-    const readingResources = isTestRun ? [] : getReadingResources(contentWeekNum, i);
+    // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
+    // Pass dayOfWeek to getReadingResources so it can determine what resources to show
+    const readingResources = isTestRun ? [] : getReadingResources(contentWeekNum, dayOfWeek);
 
     // Map dayOfWeek to the correct index for reading functions
     // For weekdays: Monday(1)->0, Tuesday(2)->1, Wednesday(3)->2, Thursday(4)->3, Friday(5)->4
     // For weekends: Saturday(6)->5, Sunday(0)->0
     const readingDayIndex = isWeekend ? dayOfWeek : dayOfWeek - 1;
+    
+    // Get time blocks and organize schedule (same format as software engineering)
+    const timeBlocks = getReadingTimeBlocks(dayIndex);
+    const readingSessionsData = isTestRun 
+      ? [] 
+      : (isWeekend ? getWeekendReading(contentWeekNum, readingDayIndex) : getWeekdayReading(contentWeekNum, readingDayIndex));
+    const scheduledContent = isTestRun ? null : organizeReadingSchedule(readingSessionsData, dayIndex, timeBlocks, dayNumber);
 
     days.push({
       dayNumber: dayNumber,
       date: dayDateString,
       dayName: actualDayName,
-      readingSessions: isTestRun 
-        ? [] 
-        : (isWeekend ? getWeekendReading(contentWeekNum, readingDayIndex) : getWeekdayReading(contentWeekNum, readingDayIndex)),
+      readingSessions: readingSessionsData,
       theme: isTestRun ? "Testing & Trials Week" : getReadingTheme(contentWeekNum),
       resources: readingResources,
       // Add missing fields for Learning, Project, Reflection tabs
@@ -700,8 +736,13 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
         "Test all features and functionality",
         "Get familiar with the journey structure",
         "Identify any issues or improvements",
-        "Prepare mentally for Day 8 onwards"
+        "Prepare mentally for Day 1 onwards (Jan 25)"
       ] : null,
+      // Schedule format (same as software engineering)
+      schedule: {
+        timeBlocks: timeBlocks,
+        scheduledContent: scheduledContent,
+      },
     });
   }
 
@@ -899,71 +940,115 @@ function getReadingTheme(weekNum) {
   return themes[weekNum - 1] || "Reading Theme";
 }
 
-function getReadingResources(weekNum, dayIndex) {
-  // Get Bible reading information
-  const bibleData = getBibleReading(weekNum, dayIndex);
-  const bibleChapterCount = 1; // Each day reads 1 chapter (15 minutes allocated)
+function getReadingResources(weekNum, dayOfWeek) {
+  // dayOfWeek: 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
+  const resources = [];
   
-  const resources = [
-    {
-      title: "Atomic Habits - James Clear",
-      url: "https://jamesclear.com/atomic-habits",
-      time: "Book",
-    },
-    {
-      title: "Be Obsessed or Be Average - Grant Cardone",
-      url: "https://grantcardone.com/books/be-obsessed-or-be-average/",
-      time: "Book",
-    },
-    {
-      title: "Meditations - Marcus Aurelius",
-      url: "https://www.gutenberg.org/files/2680/2680-h/2680-h.htm",
-      time: "Free E-book",
-    },
-    {
-      title: "Bible Reading Plan",
-      url: "https://www.bible.com/reading-plans",
-      time: "Daily",
-    },
+  // Determine what reading sessions are scheduled for this day
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
+  const isMondayToWednesday = dayOfWeek >= 1 && dayOfWeek <= 3; // Mon-Wed
+  const isThursdayToFriday = dayOfWeek >= 4 && dayOfWeek <= 5; // Thu-Fri
+  const isSaturday = dayOfWeek === 6;
+  const isSunday = dayOfWeek === 0;
+  
+  // Map dayOfWeek to dayIndex for Bible reading (weekdays: 0-4, Sunday: 0)
+  const bibleDayIndex = isWeekend ? (isSunday ? 0 : 6) : dayOfWeek - 1;
+  
+  // Bible Reading: Weekdays (Mon-Fri) AND Sunday
+  if (!isSaturday) {
+    const bibleData = getBibleReading(weekNum, bibleDayIndex);
+    const bibleChapterCount = 1; // Each day reads 1 chapter (15 minutes allocated)
+    
+    resources.push({
+      title: `Bible Reading: ${bibleData.text}`,
+      url: bibleData.link,
+      time: "15 min",
+      category: "Bible",
+      description: `${bibleChapterCount} chapter${bibleChapterCount > 1 ? 's' : ''} (${bibleData.book} ${bibleData.chapter})`,
+      chapterCount: bibleChapterCount,
+      type: "Bible Reading"
+    });
+  }
+  
+  // E-Book Reading: Monday-Wednesday only
+  if (isMondayToWednesday) {
+    const ebook = getEBookForWeek(weekNum);
+    let ebookTitle = ebook;
+    let ebookUrl = "";
+    
+    // Map E-books to their resources
+    if (ebook === "Atomic Habits" || ebook === "Atomic Habits (Advanced)") {
+      ebookTitle = "Atomic Habits - James Clear";
+      ebookUrl = "https://jamesclear.com/atomic-habits";
+    } else if (ebook === "Be Obsessed or Be Average" || ebook === "Be Obsessed or Be Average (Advanced)") {
+      ebookTitle = "Be Obsessed or Be Average - Grant Cardone";
+      ebookUrl = "https://grantcardone.com/books/be-obsessed-or-be-average/";
+    } else if (ebook === "Meditations" || ebook === "Meditations (Deep Dive)") {
+      ebookTitle = "Meditations - Marcus Aurelius";
+      ebookUrl = "https://www.gutenberg.org/files/2680/2680-h/2680-h.htm";
+    } else {
+      ebookTitle = ebook;
+      ebookUrl = "https://www.gutenberg.org/";
+    }
+    
+    resources.push({
+      title: ebookTitle,
+      url: ebookUrl,
+      time: "30 min",
+      category: "E-Book",
+      type: "E-Reading"
+    });
+  }
+  
+  // Physical Book Reading: Thursday-Friday AND Saturday
+  if (isThursdayToFriday || isSaturday) {
+    const physicalBook = getPhysicalBookForWeek(weekNum);
+    let physicalBookTitle = physicalBook;
+    let physicalBookUrl = "";
+    
+    // Map physical books to their resources
+    if (physicalBook.includes("System Building")) {
+      physicalBookTitle = "System Building";
+      physicalBookUrl = "https://www.amazon.com/s?k=system+building+books";
+    } else if (physicalBook.includes("Successful Habits")) {
+      physicalBookTitle = "Successful Habits";
+      physicalBookUrl = "https://www.amazon.com/s?k=successful+habits+books";
+    } else if (physicalBook.includes("Mistakes That Made Me a Millionaire")) {
+      physicalBookTitle = "Mistakes That Made Me a Millionaire";
+      physicalBookUrl = "https://www.amazon.com/s?k=mistakes+that+made+me+a+millionaire";
+    } else {
+      physicalBookTitle = physicalBook;
+      physicalBookUrl = "https://www.amazon.com/s?k=" + encodeURIComponent(physicalBook);
+    }
+    
+    resources.push({
+      title: physicalBookTitle,
+      url: physicalBookUrl,
+      time: isSaturday ? "30 min" : "30 min",
+      category: "Physical Book",
+      type: "Physical Book"
+    });
+  }
+  
+  // Always include reading guides
+  resources.push(
     {
       title: "Reading Comprehension Tips",
       url: "https://www.oxfordlearning.com/improve-reading-comprehension/",
       time: "Guide",
       category: "Reading Guide",
+      type: "Guide"
     },
     {
       title: "Note-Taking Strategies",
       url: "https://www.cornell.edu/academics/study-skills/note-taking.cfm",
       time: "Guide",
       category: "Study Guide",
-    },
-  ];
-
-  // Always include reading comprehension and note-taking guides
-  const baseGuides = [resources[4], resources[5]];
+      type: "Guide"
+    }
+  );
   
-  // Add Bible chapter link with chapter count
-  const bibleResource = {
-    title: `Bible Reading: ${bibleData.text}`,
-    url: bibleData.link,
-    time: "15 min",
-    category: "Bible",
-    description: `${bibleChapterCount} chapter${bibleChapterCount > 1 ? 's' : ''} (${bibleData.book} ${bibleData.chapter})`,
-    chapterCount: bibleChapterCount
-  };
-
-  let readingResources = [];
-  if (weekNum <= 2) {
-    readingResources = [resources[0], bibleResource, ...baseGuides];
-  } else if (weekNum <= 4) {
-    readingResources = [resources[1], bibleResource, ...baseGuides];
-  } else if (weekNum <= 6) {
-    readingResources = [resources[2], bibleResource, ...baseGuides];
-  } else {
-    readingResources = [bibleResource, ...baseGuides];
-  }
-  
-  return readingResources;
+  return resources;
 }
 
 // Dual Brand Journey - Complete 13 weeks
@@ -976,7 +1061,9 @@ export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
       dayDate.setDate(new Date(week.startDate).getDate() + i);
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      const dayNumber = idx * 7 + i + 1;
+      // Week 0: All days are Day 0 (testing week)
+      // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
+      const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
 
       // Get actual day name from the date
       const dayNames = [
@@ -989,14 +1076,30 @@ export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
         "Saturday",
       ];
       const actualDayName = dayNames[dayDate.getDay()];
+      
+      // Convert JavaScript getDay() (0=Sunday, 1=Monday, ..., 6=Saturday) 
+      // to dayIndex format used by getTimeBlocks (0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday)
+      const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+      const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 1 (Days 1-7) is for testing and trials - no iterations
-      // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
-      const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
-      const isTestRun = idx === 0 && dayNumber <= 7;
+      // Week 0 (Jan 18-24): All days are Day 0 (Testing & Trials Week) - no actual content
+      // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
+      // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+      const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
+      // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
+      const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
 
-      // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
+      // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
       const focus = isTestRun ? "System Testing" : getDualBrandFocus(contentWeekNum, i);
+      
+      // Get time blocks and organize schedule (same format as software engineering)
+      const timeBlocks = getDualBrandTimeBlocks(dayIndex);
+      const learningData = {
+        title: focus,
+        description: isTestRun ? "Explore and test the app features" : `Today's focus: ${focus}`,
+      };
+      const projectData = isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getDualBrandProject(contentWeekNum, i);
+      const scheduledContent = isTestRun ? null : organizeDualBrandSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
 
       days.push({
         dayNumber: dayNumber,
@@ -1016,10 +1119,7 @@ export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
         // Project content for dual brand
         project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getDualBrandProject(contentWeekNum, i),
         // Add missing fields for Learning, Reflection tabs
-        dailyLearning: {
-          title: focus,
-          description: isTestRun ? "Explore and test the app features" : `Today's focus: ${focus}`,
-        },
+        dailyLearning: learningData,
         reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getDualBrandReflection(contentWeekNum, i),
         dailyQuiz: isTestRun ? null : getDualBrandQuiz(contentWeekNum, i, dayNumber),
         isTestRun: isTestRun,
@@ -1029,8 +1129,13 @@ export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
           "Test all features and functionality",
           "Get familiar with the journey structure",
           "Identify any issues or improvements",
-          "Prepare mentally for Day 8 onwards"
+          "Prepare mentally for Day 1 onwards (Jan 25)"
         ] : null,
+        // Schedule format (same as software engineering)
+        schedule: {
+          timeBlocks: timeBlocks,
+          scheduledContent: scheduledContent,
+        },
       });
     }
 
@@ -1278,15 +1383,15 @@ function getDualBrandLearningResources(weekNum, dayIndex) {
         },
         {
           title:
-            "HavenX Content Pillars: Automation, Business Systems, Efficiency",
+            "_ryxen.oo7 Content Pillars: Automation, Business Systems, Efficiency",
           category: "Strategy",
-          platform: "HavenX",
+          platform: "_ryxen.oo7",
         },
         {
           title:
-            "Ryxen Content Pillars: Wealth Mindset, Financial Freedom, Personal Growth",
+            "_richman.oo7 Content Pillars: Wealth Mindset, Financial Freedom, Personal Growth",
           category: "Strategy",
-          platform: "Ryxen",
+          platform: "_richman.oo7",
         },
       ],
       [
@@ -1790,9 +1895,9 @@ function getPersonalBrandTasks(weekNum, dayIndex) {
   try {
     if (weekNum >= 2) {
       const { getExecutionTasks } = require('./dualBrandExecutionPlan.js');
-      const executionTasks = getExecutionTasks(weekNum, dayIndex, 'ryxen');
-      if (executionTasks && executionTasks.ryxen && executionTasks.ryxen.length > 0) {
-        return executionTasks.ryxen;
+      const executionTasks = getExecutionTasks(weekNum, dayIndex, 'personal');
+      if (executionTasks && executionTasks.personal && executionTasks.personal.length > 0) {
+        return executionTasks.personal;
       }
     }
   } catch (e) {
@@ -1802,7 +1907,7 @@ function getPersonalBrandTasks(weekNum, dayIndex) {
   // Fallback for Week 1 or if execution plan not available
   const tasks = [
     [
-      "Define Personal Brand (_jerryrichman007) mission, values, target persona",
+      "Define Personal Brand (_richman.oo7) mission, values, target persona",
       "Design Personal Brand logo concept, color palette",
       "Create/optimize Personal Brand Instagram, X, TikTok profiles",
       "Create Personal Brand YouTube channel",
@@ -1820,102 +1925,102 @@ function getPersonalBrandTasks(weekNum, dayIndex) {
       "Analyze what content resonated",
     ],
     [
-      "Define Ryxen engagement tactics",
-      "Set up Ryxen analytics tracking",
-      "Design Ryxen growth loop",
-      "Create Ryxen Discord server",
-      "Identify 5 Ryxen collaboration targets",
+      "Define _richman.oo7 engagement tactics",
+      "Set up _richman.oo7 analytics tracking",
+      "Design _richman.oo7 growth loop",
+      "Create _richman.oo7 Discord server",
+      "Identify 5 _richman.oo7 collaboration targets",
       "Engage with 20 target accounts",
       "Review growth metrics",
     ],
     [
-      "Refine Ryxen unique value proposition",
-      "Plan Ryxen thought leadership content",
-      "Create Ryxen freebie (wealth mindset PDF)",
-      "Set up Ryxen email list",
-      "Research Ryxen monetization paths",
-      "Plan Ryxen landing page structure",
+      "Refine _richman.oo7 unique value proposition",
+      "Plan _richman.oo7 thought leadership content",
+      "Create _richman.oo7 freebie (wealth mindset PDF)",
+      "Set up _richman.oo7 email list",
+      "Research _richman.oo7 monetization paths",
+      "Plan _richman.oo7 landing page structure",
       "Review monetization foundation",
     ],
     [
-      "Analyze top-performing Ryxen content",
+      "Analyze top-performing _richman.oo7 content",
       "Create improved versions of top formats",
-      "Deep dive into Ryxen audience insights",
-      "Build detailed Ryxen content calendar",
-      "Optimize Ryxen profiles for search",
-      "Research and test Ryxen hashtag sets",
+      "Deep dive into _richman.oo7 audience insights",
+      "Build detailed _richman.oo7 content calendar",
+      "Optimize _richman.oo7 profiles for search",
+      "Research and test _richman.oo7 hashtag sets",
       "Review optimization results",
     ],
     [
-      "Brainstorm Ryxen digital product ideas",
-      "Validate Ryxen product with audience survey",
-      "Create Ryxen product outline/curriculum",
-      "Start building Ryxen MVP",
-      "Research Ryxen product pricing models",
-      "Plan Ryxen product launch sequence",
+      "Brainstorm _richman.oo7 digital product ideas",
+      "Validate _richman.oo7 product with audience survey",
+      "Create _richman.oo7 product outline/curriculum",
+      "Start building _richman.oo7 MVP",
+      "Research _richman.oo7 product pricing models",
+      "Plan _richman.oo7 product launch sequence",
       "Review product development progress",
     ],
     [
-      "Design Ryxen service packages",
-      "Set Ryxen service pricing",
-      "Create Ryxen service sales deck",
-      "Design Ryxen client onboarding process",
-      "Outline Ryxen service delivery framework",
-      "Collect/request Ryxen testimonials",
+      "Design _richman.oo7 service packages",
+      "Set _richman.oo7 service pricing",
+      "Create _richman.oo7 service sales deck",
+      "Design _richman.oo7 client onboarding process",
+      "Outline _richman.oo7 service delivery framework",
+      "Collect/request _richman.oo7 testimonials",
       "Review service offerings",
     ],
     [
-      "Research Ryxen digital product options",
-      "Begin creating Ryxen first digital product",
-      "Set up Ryxen product sales page/shop",
-      "Create Ryxen product launch marketing plan",
-      "Identify Ryxen product distribution channels",
-      "Finalize Ryxen digital product",
+      "Research _richman.oo7 digital product options",
+      "Begin creating _richman.oo7 first digital product",
+      "Set up _richman.oo7 product sales page/shop",
+      "Create _richman.oo7 product launch marketing plan",
+      "Identify _richman.oo7 product distribution channels",
+      "Finalize _richman.oo7 digital product",
       "Review all monetization pathways",
     ],
     [
-      "Identify Ryxen automation needs",
-      "Set up Ryxen automated workflows",
-      "Automate Ryxen content posting schedule",
-      "Set up Ryxen lead capture automation",
-      "Document Ryxen brand systems & processes",
-      "Plan Ryxen team expansion",
+      "Identify _richman.oo7 automation needs",
+      "Set up _richman.oo7 automated workflows",
+      "Automate _richman.oo7 content posting schedule",
+      "Set up _richman.oo7 lead capture automation",
+      "Document _richman.oo7 brand systems & processes",
+      "Plan _richman.oo7 team expansion",
       "Review automation & scaling progress",
     ],
     [
-      "Expand Ryxen to additional platforms",
-      "Reach out to 5 Ryxen collaboration targets",
-      "Plan Ryxen cross-promotion campaigns",
-      "Create Ryxen guest content for partners",
-      "Develop Ryxen strategic partnerships",
-      "Build Ryxen professional network",
+      "Expand _richman.oo7 to additional platforms",
+      "Reach out to 5 _richman.oo7 collaboration targets",
+      "Plan _richman.oo7 cross-promotion campaigns",
+      "Create _richman.oo7 guest content for partners",
+      "Develop _richman.oo7 strategic partnerships",
+      "Build _richman.oo7 professional network",
       "Review growth & collaboration results",
     ],
     [
-      "Diversify Ryxen revenue streams",
-      "Create Ryxen high-authority content piece",
-      "Pitch Ryxen for speaking/media opportunities",
-      "Develop Ryxen premium tier offerings",
-      "Create Ryxen upsell/cross-sell systems",
-      "Design Ryxen client retention strategy",
+      "Diversify _richman.oo7 revenue streams",
+      "Create _richman.oo7 high-authority content piece",
+      "Pitch _richman.oo7 for speaking/media opportunities",
+      "Develop _richman.oo7 premium tier offerings",
+      "Create _richman.oo7 upsell/cross-sell systems",
+      "Design _richman.oo7 client retention strategy",
       "Review revenue expansion progress",
     ],
     [
-      "Launch Ryxen advanced product/service",
-      "Scale Ryxen revenue-generating activities",
-      "Evolve Ryxen brand positioning",
-      "Strengthen Ryxen market position",
-      "Plan Ryxen next 90 days",
-      "Optimize Ryxen all systems",
+      "Launch _richman.oo7 advanced product/service",
+      "Scale _richman.oo7 revenue-generating activities",
+      "Evolve _richman.oo7 brand positioning",
+      "Strengthen _richman.oo7 market position",
+      "Plan _richman.oo7 next 90 days",
+      "Optimize _richman.oo7 all systems",
       "Review brand evolution & monetization",
     ],
     [
-      "Comprehensive Ryxen 90-day review",
-      "Analyze all Ryxen key metrics",
-      "Create Ryxen optimization action plan",
-      "Develop Ryxen next 90-day strategy",
-      "Refine Ryxen all operational systems",
-      "Celebrate Ryxen achievements",
+      "Comprehensive _richman.oo7 90-day review",
+      "Analyze all _richman.oo7 key metrics",
+      "Create _richman.oo7 optimization action plan",
+      "Develop _richman.oo7 next 90-day strategy",
+      "Refine _richman.oo7 all operational systems",
+      "Celebrate _richman.oo7 achievements",
       "DUAL BRAND ASCENSION COMPLETE",
     ],
   ];
@@ -1926,9 +2031,9 @@ function getCompanyBrandTasks(weekNum, dayIndex) {
   // Use execution plan for Week 2+ (Week 1 is testing)
   try {
     if (weekNum >= 2) {
-      const executionTasks = getExecutionTasks(weekNum, dayIndex, 'havenx');
-      if (executionTasks && executionTasks.havenx && executionTasks.havenx.length > 0) {
-        return executionTasks.havenx;
+      const executionTasks = getExecutionTasks(weekNum, dayIndex, 'company');
+      if (executionTasks && executionTasks.company && executionTasks.company.length > 0) {
+        return executionTasks.company;
       }
     }
   } catch (e) {
@@ -1938,7 +2043,7 @@ function getCompanyBrandTasks(weekNum, dayIndex) {
   // Fallback for Week 1 or if execution plan not available
   const tasks = [
     [
-      "Define Company Brand (_ryxen007) mission, positioning, ideal client",
+      "Define Company Brand (_ryxen.oo7) mission, positioning, ideal client",
       "Design Company Brand logo concept, brand guidelines",
       "Create/optimize Company Brand LinkedIn, X, Instagram profiles",
       "Create Company Brand YouTube channel",
@@ -1947,111 +2052,111 @@ function getCompanyBrandTasks(weekNum, dayIndex) {
       "Review week foundation work",
     ],
     [
-      "Create 3 HavenX LinkedIn posts",
-      "Create 5 HavenX X/Twitter threads",
-      "Script 2 HavenX YouTube Shorts",
-      "Create 3 HavenX TikTok videos",
+      "Create 3 _ryxen.oo7 LinkedIn posts",
+      "Create 5 _ryxen.oo7 X/Twitter threads",
+      "Script 2 _ryxen.oo7 YouTube Shorts",
+      "Create 3 _ryxen.oo7 TikTok videos",
       "Schedule Week 3 content",
       "Review all created content",
       "Analyze what content resonated",
     ],
     [
-      "Define HavenX engagement tactics",
-      "Set up HavenX analytics tracking",
-      "Design HavenX growth loop",
-      "Create HavenX Telegram group",
-      "Identify 5 HavenX collaboration targets",
+      "Define _ryxen.oo7 engagement tactics",
+      "Set up _ryxen.oo7 analytics tracking",
+      "Design _ryxen.oo7 growth loop",
+      "Create _ryxen.oo7 Telegram group",
+      "Identify 5 _ryxen.oo7 collaboration targets",
       "Engage with 20 target accounts",
       "Review growth metrics",
     ],
     [
-      "Refine HavenX service packages",
-      "Plan HavenX case study content series",
-      "Create HavenX freebie (automation checklist)",
-      "Set up HavenX email list",
-      "Research HavenX monetization paths",
-      "Plan HavenX service page structure",
+      "Refine _ryxen.oo7 service packages",
+      "Plan _ryxen.oo7 case study content series",
+      "Create _ryxen.oo7 freebie (automation checklist)",
+      "Set up _ryxen.oo7 email list",
+      "Research _ryxen.oo7 monetization paths",
+      "Plan _ryxen.oo7 service page structure",
       "Review monetization foundation",
     ],
     [
-      "Analyze top-performing HavenX content",
+      "Analyze top-performing _ryxen.oo7 content",
       "Create improved versions of top formats",
-      "Deep dive into HavenX audience insights",
-      "Build detailed HavenX content calendar",
-      "Optimize HavenX profiles for search",
-      "Research and test HavenX hashtag sets",
+      "Deep dive into _ryxen.oo7 audience insights",
+      "Build detailed _ryxen.oo7 content calendar",
+      "Optimize _ryxen.oo7 profiles for search",
+      "Research and test _ryxen.oo7 hashtag sets",
       "Review optimization results",
     ],
     [
-      "Brainstorm HavenX SaaS/software product ideas",
-      "Validate HavenX product with potential clients",
-      "Create HavenX product feature roadmap",
-      "Start building HavenX MVP",
-      "Research HavenX product pricing models",
-      "Plan HavenX product launch sequence",
+      "Brainstorm _ryxen.oo7 SaaS/software product ideas",
+      "Validate _ryxen.oo7 product with potential clients",
+      "Create _ryxen.oo7 product feature roadmap",
+      "Start building _ryxen.oo7 MVP",
+      "Research _ryxen.oo7 product pricing models",
+      "Plan _ryxen.oo7 product launch sequence",
       "Review product development progress",
     ],
     [
-      "Design HavenX service packages",
-      "Set HavenX service pricing",
-      "Create HavenX service proposal template",
-      "Design HavenX client onboarding process",
-      "Outline HavenX service delivery framework",
-      "Collect/request HavenX testimonials",
+      "Design _ryxen.oo7 service packages",
+      "Set _ryxen.oo7 service pricing",
+      "Create _ryxen.oo7 service proposal template",
+      "Design _ryxen.oo7 client onboarding process",
+      "Outline _ryxen.oo7 service delivery framework",
+      "Collect/request _ryxen.oo7 testimonials",
       "Review service offerings",
     ],
     [
-      "Research HavenX digital product options",
-      "Begin creating HavenX first digital product",
-      "Set up HavenX product sales page/shop",
-      "Create HavenX product launch marketing plan",
-      "Identify HavenX product distribution channels",
-      "Finalize HavenX digital product",
+      "Research _ryxen.oo7 digital product options",
+      "Begin creating _ryxen.oo7 first digital product",
+      "Set up _ryxen.oo7 product sales page/shop",
+      "Create _ryxen.oo7 product launch marketing plan",
+      "Identify _ryxen.oo7 product distribution channels",
+      "Finalize _ryxen.oo7 digital product",
       "Review all monetization pathways",
     ],
     [
-      "Identify HavenX automation needs",
-      "Set up HavenX automated workflows",
-      "Automate HavenX content posting schedule",
-      "Set up HavenX lead capture automation",
-      "Document HavenX brand systems & processes",
-      "Plan HavenX team expansion",
+      "Identify _ryxen.oo7 automation needs",
+      "Set up _ryxen.oo7 automated workflows",
+      "Automate _ryxen.oo7 content posting schedule",
+      "Set up _ryxen.oo7 lead capture automation",
+      "Document _ryxen.oo7 brand systems & processes",
+      "Plan _ryxen.oo7 team expansion",
       "Review automation & scaling progress",
     ],
     [
-      "Expand HavenX to additional platforms",
-      "Reach out to 5 HavenX collaboration targets",
-      "Plan HavenX cross-promotion campaigns",
-      "Create HavenX guest content for partners",
-      "Develop HavenX strategic partnerships",
-      "Build HavenX professional network",
+      "Expand _ryxen.oo7 to additional platforms",
+      "Reach out to 5 _ryxen.oo7 collaboration targets",
+      "Plan _ryxen.oo7 cross-promotion campaigns",
+      "Create _ryxen.oo7 guest content for partners",
+      "Develop _ryxen.oo7 strategic partnerships",
+      "Build _ryxen.oo7 professional network",
       "Review growth & collaboration results",
     ],
     [
-      "Diversify HavenX revenue streams",
-      "Create HavenX high-authority content piece",
-      "Pitch HavenX for speaking/media opportunities",
-      "Develop HavenX premium tier offerings",
-      "Create HavenX upsell/cross-sell systems",
-      "Design HavenX client retention strategy",
+      "Diversify _ryxen.oo7 revenue streams",
+      "Create _ryxen.oo7 high-authority content piece",
+      "Pitch _ryxen.oo7 for speaking/media opportunities",
+      "Develop _ryxen.oo7 premium tier offerings",
+      "Create _ryxen.oo7 upsell/cross-sell systems",
+      "Design _ryxen.oo7 client retention strategy",
       "Review revenue expansion progress",
     ],
     [
-      "Launch HavenX advanced product/service",
-      "Scale HavenX revenue-generating activities",
-      "Evolve HavenX brand positioning",
-      "Strengthen HavenX market position",
-      "Plan HavenX next 90 days",
-      "Optimize HavenX all systems",
+      "Launch _ryxen.oo7 advanced product/service",
+      "Scale _ryxen.oo7 revenue-generating activities",
+      "Evolve _ryxen.oo7 brand positioning",
+      "Strengthen _ryxen.oo7 market position",
+      "Plan _ryxen.oo7 next 90 days",
+      "Optimize _ryxen.oo7 all systems",
       "Review brand evolution & monetization",
     ],
     [
-      "Comprehensive HavenX 90-day review",
-      "Analyze all HavenX key metrics",
-      "Create HavenX optimization action plan",
-      "Develop HavenX next 90-day strategy",
-      "Refine HavenX all operational systems",
-      "Celebrate HavenX achievements",
+      "Comprehensive _ryxen.oo7 90-day review",
+      "Analyze all _ryxen.oo7 key metrics",
+      "Create _ryxen.oo7 optimization action plan",
+      "Develop _ryxen.oo7 next 90-day strategy",
+      "Refine _ryxen.oo7 all operational systems",
+      "Celebrate _ryxen.oo7 achievements",
       "DUAL BRAND ASCENSION COMPLETE",
     ],
   ];
@@ -2207,10 +2312,10 @@ function getDualBrandProject(weekNum, dayIndex) {
       {
         title: "Brand Identity Project",
         description:
-          "Create mission statements, values, and target personas for both Ryxen and HavenX brands",
+          "Create mission statements, values, and target personas for both _richman.oo7 and _ryxen.oo7 brands",
         requirements: [
-          "Define Ryxen mission & values",
-          "Define HavenX mission & positioning",
+          "Define _richman.oo7 mission & values",
+          "Define _ryxen.oo7 mission & positioning",
           "Create target persona documents",
           "Document brand voice guidelines",
         ],
@@ -2220,8 +2325,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         description:
           "Design logo concepts and brand guidelines for both brands",
         requirements: [
-          "Create Ryxen logo concepts",
-          "Create HavenX logo concepts",
+          "Create _richman.oo7 logo concepts",
+          "Create _ryxen.oo7 logo concepts",
           "Develop color palettes",
           "Create brand guideline documents",
         ],
@@ -2241,8 +2346,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Video Platform Setup Project",
         description: "Create and optimize YouTube channels for both brands",
         requirements: [
-          "Create Ryxen YouTube channel",
-          "Create HavenX YouTube channel",
+          "Create _richman.oo7 YouTube channel",
+          "Create _ryxen.oo7 YouTube channel",
           "Optimize channel descriptions",
           "Design channel art",
         ],
@@ -2251,8 +2356,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Content Pillars Project",
         description: "Define content pillars and strategy for both brands",
         requirements: [
-          "Define 5 Ryxen content pillars",
-          "Define 5 HavenX content pillars",
+          "Define 5 _richman.oo7 content pillars",
+          "Define 5 _ryxen.oo7 content pillars",
           "Create content strategy documents",
           "Plan content calendar structure",
         ],
@@ -2261,8 +2366,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Bio Writing Project",
         description: "Write compelling bios for all platforms for both brands",
         requirements: [
-          "Write Ryxen bios for all platforms",
-          "Write HavenX bios for all platforms",
+          "Write _richman.oo7 bios for all platforms",
+          "Write _ryxen.oo7 bios for all platforms",
           "Optimize for each platform",
           "Ensure brand consistency",
         ],
@@ -2284,8 +2389,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Content Batch Creation Project",
         description: "Create Instagram posts for both brands",
         requirements: [
-          "Create 3 Ryxen Instagram posts",
-          "Create 3 HavenX Instagram posts",
+          "Create 3 _richman.oo7 Instagram posts",
+          "Create 3 _ryxen.oo7 Instagram posts",
           "Design graphics/captions",
           "Schedule posts",
         ],
@@ -2294,8 +2399,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Thread Writing Project",
         description: "Create X/Twitter threads for both brands",
         requirements: [
-          "Write 5 Ryxen threads",
-          "Write 5 HavenX threads",
+          "Write 5 _richman.oo7 threads",
+          "Write 5 _ryxen.oo7 threads",
           "Optimize for engagement",
           "Schedule threads",
         ],
@@ -2304,8 +2409,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Video Script Project",
         description: "Script YouTube Shorts for both brands",
         requirements: [
-          "Script 2 Ryxen YouTube Shorts",
-          "Script 2 HavenX YouTube Shorts",
+          "Script 2 _richman.oo7 YouTube Shorts",
+          "Script 2 _ryxen.oo7 YouTube Shorts",
           "Plan visuals",
           "Prepare shooting schedule",
         ],
@@ -2314,8 +2419,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "TikTok Content Project",
         description: "Create TikTok videos for both brands",
         requirements: [
-          "Create 3 Ryxen TikTok videos",
-          "Create 3 HavenX TikTok videos",
+          "Create 3 _richman.oo7 TikTok videos",
+          "Create 3 _ryxen.oo7 TikTok videos",
           "Edit and optimize",
           "Schedule uploads",
         ],
@@ -2334,8 +2439,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Content Audit Project",
         description: "Review all created content for quality and consistency",
         requirements: [
-          "Review all Ryxen content",
-          "Review all HavenX content",
+          "Review all _richman.oo7 content",
+          "Review all _ryxen.oo7 content",
           "Check brand voice consistency",
           "Identify improvements",
         ],
@@ -2357,8 +2462,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Engagement Strategy Project",
         description: "Define engagement tactics for both brands",
         requirements: [
-          "Define Ryxen engagement tactics",
-          "Define HavenX engagement tactics",
+          "Define _richman.oo7 engagement tactics",
+          "Define _ryxen.oo7 engagement tactics",
           "Create engagement schedule",
           "Set engagement goals",
         ],
@@ -2367,8 +2472,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Analytics Setup Project",
         description: "Set up analytics tracking for both brands",
         requirements: [
-          "Set up Ryxen analytics dashboards",
-          "Set up HavenX analytics dashboards",
+          "Set up _richman.oo7 analytics dashboards",
+          "Set up _ryxen.oo7 analytics dashboards",
           "Configure tracking tools",
           "Create reporting system",
         ],
@@ -2377,8 +2482,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Growth Loop Design Project",
         description: "Design growth loop systems for both brands",
         requirements: [
-          "Design Ryxen growth loop",
-          "Design HavenX growth loop",
+          "Design _richman.oo7 growth loop",
+          "Design _ryxen.oo7 growth loop",
           "Map user journey",
           "Plan automation",
         ],
@@ -2387,8 +2492,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Community Building Project",
         description: "Launch community spaces for both brands",
         requirements: [
-          "Create Ryxen Discord server",
-          "Create HavenX Telegram group",
+          "Create _richman.oo7 Discord server",
+          "Create _ryxen.oo7 Telegram group",
           "Set up community guidelines",
           "Plan engagement activities",
         ],
@@ -2397,8 +2502,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Collaboration Prep Project",
         description: "Identify and prepare collaboration targets",
         requirements: [
-          "Identify 5 Ryxen collaboration targets",
-          "Identify 5 HavenX collaboration targets",
+          "Identify 5 _richman.oo7 collaboration targets",
+          "Identify 5 _ryxen.oo7 collaboration targets",
           "Research potential partners",
           "Prepare outreach templates",
         ],
@@ -2407,8 +2512,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Engagement Execution Project",
         description: "Execute daily engagement with target accounts",
         requirements: [
-          "Engage with 20 Ryxen target accounts",
-          "Engage with 20 HavenX target accounts",
+          "Engage with 20 _richman.oo7 target accounts",
+          "Engage with 20 _ryxen.oo7 target accounts",
           "Build relationships",
           "Track engagement",
         ],
@@ -2430,8 +2535,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Value Proposition Project",
         description: "Refine unique value propositions for both brands",
         requirements: [
-          "Refine Ryxen value proposition",
-          "Refine HavenX value proposition",
+          "Refine _richman.oo7 value proposition",
+          "Refine _ryxen.oo7 value proposition",
           "Create value prop statements",
           "Test messaging",
         ],
@@ -2440,8 +2545,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Authority Content Planning Project",
         description: "Plan thought leadership content for both brands",
         requirements: [
-          "Plan Ryxen thought leadership content",
-          "Plan HavenX case study series",
+          "Plan _richman.oo7 thought leadership content",
+          "Plan _ryxen.oo7 case study series",
           "Create content calendar",
           "Set publishing schedule",
         ],
@@ -2450,8 +2555,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Lead Magnet Creation Project",
         description: "Create lead magnets for both brands",
         requirements: [
-          "Create Ryxen freebie (wealth mindset PDF)",
-          "Create HavenX freebie (automation checklist)",
+          "Create _richman.oo7 freebie (wealth mindset PDF)",
+          "Create _ryxen.oo7 freebie (automation checklist)",
           "Design landing pages",
           "Set up email capture",
         ],
@@ -2460,8 +2565,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Email List Setup Project",
         description: "Set up email marketing systems for both brands",
         requirements: [
-          "Set up Ryxen email list",
-          "Set up HavenX email list",
+          "Set up _richman.oo7 email list",
+          "Set up _ryxen.oo7 email list",
           "Configure email platform",
           "Create welcome sequences",
         ],
@@ -2470,8 +2575,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Monetization Research Project",
         description: "Research monetization paths for both brands",
         requirements: [
-          "Research Ryxen monetization paths",
-          "Research HavenX monetization paths",
+          "Research _richman.oo7 monetization paths",
+          "Research _ryxen.oo7 monetization paths",
           "Analyze competitors",
           "Create monetization roadmap",
         ],
@@ -2480,8 +2585,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Website Planning Project",
         description: "Plan website structure for both brands",
         requirements: [
-          "Plan Ryxen landing page structure",
-          "Plan HavenX service page structure",
+          "Plan _richman.oo7 landing page structure",
+          "Plan _ryxen.oo7 service page structure",
           "Create site maps",
           "Plan content strategy",
         ],
@@ -2503,8 +2608,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Content Performance Analysis Project",
         description: "Analyze top-performing content for both brands",
         requirements: [
-          "Analyze top Ryxen content",
-          "Analyze top HavenX content",
+          "Analyze top _richman.oo7 content",
+          "Analyze top _ryxen.oo7 content",
           "Identify patterns",
           "Document insights",
         ],
@@ -2513,8 +2618,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Content Iteration Project",
         description: "Create improved versions of top content formats",
         requirements: [
-          "Create improved Ryxen content",
-          "Create improved HavenX content",
+          "Create improved _richman.oo7 content",
+          "Create improved _ryxen.oo7 content",
           "Test new formats",
           "Schedule content",
         ],
@@ -2523,8 +2628,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Audience Research Project",
         description: "Deep dive into audience insights for both brands",
         requirements: [
-          "Research Ryxen audience insights",
-          "Research HavenX audience insights",
+          "Research _richman.oo7 audience insights",
+          "Research _ryxen.oo7 audience insights",
           "Create audience personas",
           "Refine targeting",
         ],
@@ -2533,8 +2638,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Content Calendar Project",
         description: "Build detailed content calendars for both brands",
         requirements: [
-          "Build 30-day Ryxen calendar",
-          "Build 30-day HavenX calendar",
+          "Build 30-day _richman.oo7 calendar",
+          "Build 30-day _ryxen.oo7 calendar",
           "Plan content themes",
           "Schedule posts",
         ],
@@ -2543,8 +2648,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Profile Optimization Project",
         description: "Optimize all profiles for search and discovery",
         requirements: [
-          "Optimize Ryxen profiles",
-          "Optimize HavenX profiles",
+          "Optimize _richman.oo7 profiles",
+          "Optimize _ryxen.oo7 profiles",
           "Improve SEO",
           "Update keywords",
         ],
@@ -2553,8 +2658,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Hashtag Strategy Project",
         description: "Research and test hashtag sets for both brands",
         requirements: [
-          "Research Ryxen hashtag sets",
-          "Research HavenX hashtag sets",
+          "Research _richman.oo7 hashtag sets",
+          "Research _ryxen.oo7 hashtag sets",
           "Test hashtags",
           "Document results",
         ],
@@ -2576,8 +2681,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Product Ideation Project",
         description: "Brainstorm digital product ideas for both brands",
         requirements: [
-          "Brainstorm Ryxen product ideas",
-          "Brainstorm HavenX product ideas",
+          "Brainstorm _richman.oo7 product ideas",
+          "Brainstorm _ryxen.oo7 product ideas",
           "Research market demand",
           "Create idea list",
         ],
@@ -2586,8 +2691,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Product Validation Project",
         description: "Validate products with audience surveys",
         requirements: [
-          "Validate Ryxen product with survey",
-          "Validate HavenX product with clients",
+          "Validate _richman.oo7 product with survey",
+          "Validate _ryxen.oo7 product with clients",
           "Analyze feedback",
           "Refine ideas",
         ],
@@ -2596,8 +2701,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Product Planning Project",
         description: "Create detailed product plans for both brands",
         requirements: [
-          "Create Ryxen product outline",
-          "Create HavenX product roadmap",
+          "Create _richman.oo7 product outline",
+          "Create _ryxen.oo7 product roadmap",
           "Plan features",
           "Set timelines",
         ],
@@ -2606,8 +2711,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "MVP Development Project",
         description: "Start building MVPs for both brands",
         requirements: [
-          "Start building Ryxen MVP",
-          "Start building HavenX MVP",
+          "Start building _richman.oo7 MVP",
+          "Start building _ryxen.oo7 MVP",
           "Set up development environment",
           "Create prototypes",
         ],
@@ -2616,8 +2721,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Pricing Strategy Project",
         description: "Research and set pricing models for both brands",
         requirements: [
-          "Research Ryxen pricing models",
-          "Research HavenX pricing models",
+          "Research _richman.oo7 pricing models",
+          "Research _ryxen.oo7 pricing models",
           "Set pricing structure",
           "Test pricing",
         ],
@@ -2626,8 +2731,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Launch Planning Project",
         description: "Plan product launch sequences for both brands",
         requirements: [
-          "Plan Ryxen launch sequence",
-          "Plan HavenX launch sequence",
+          "Plan _richman.oo7 launch sequence",
+          "Plan _ryxen.oo7 launch sequence",
           "Create launch calendar",
           "Prepare marketing",
         ],
@@ -2649,8 +2754,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Service Package Design Project",
         description: "Design service packages for both brands",
         requirements: [
-          "Design Ryxen service packages",
-          "Design HavenX service packages",
+          "Design _richman.oo7 service packages",
+          "Design _ryxen.oo7 service packages",
           "Define deliverables",
           "Create packages",
         ],
@@ -2659,8 +2764,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Service Pricing Project",
         description: "Set service pricing for both brands",
         requirements: [
-          "Set Ryxen service pricing",
-          "Set HavenX service pricing",
+          "Set _richman.oo7 service pricing",
+          "Set _ryxen.oo7 service pricing",
           "Create pricing tiers",
           "Document pricing",
         ],
@@ -2669,8 +2774,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Sales Materials Project",
         description: "Create sales materials for both brands",
         requirements: [
-          "Create Ryxen sales deck",
-          "Create HavenX proposal template",
+          "Create _richman.oo7 sales deck",
+          "Create _ryxen.oo7 proposal template",
           "Design materials",
           "Prepare presentations",
         ],
@@ -2679,8 +2784,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Client Onboarding Project",
         description: "Design client onboarding processes for both brands",
         requirements: [
-          "Design Ryxen onboarding process",
-          "Design HavenX onboarding process",
+          "Design _richman.oo7 onboarding process",
+          "Design _ryxen.oo7 onboarding process",
           "Create workflows",
           "Document processes",
         ],
@@ -2689,8 +2794,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Service Delivery Project",
         description: "Outline service delivery frameworks for both brands",
         requirements: [
-          "Outline Ryxen delivery framework",
-          "Outline HavenX delivery framework",
+          "Outline _richman.oo7 delivery framework",
+          "Outline _ryxen.oo7 delivery framework",
           "Create templates",
           "Set standards",
         ],
@@ -2699,8 +2804,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Testimonial Strategy Project",
         description: "Create testimonial collection strategy for both brands",
         requirements: [
-          "Create Ryxen testimonial strategy",
-          "Create HavenX testimonial strategy",
+          "Create _richman.oo7 testimonial strategy",
+          "Create _ryxen.oo7 testimonial strategy",
           "Design collection process",
           "Plan showcase",
         ],
@@ -2722,8 +2827,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Digital Product Research Project",
         description: "Research digital product options for both brands",
         requirements: [
-          "Research Ryxen product options",
-          "Research HavenX product options",
+          "Research _richman.oo7 product options",
+          "Research _ryxen.oo7 product options",
           "Analyze market",
           "Select products",
         ],
@@ -2732,8 +2837,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Digital Product Creation Project",
         description: "Begin creating first digital products for both brands",
         requirements: [
-          "Begin Ryxen product creation",
-          "Begin HavenX product creation",
+          "Begin _richman.oo7 product creation",
+          "Begin _ryxen.oo7 product creation",
           "Set up workspace",
           "Start development",
         ],
@@ -2742,8 +2847,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "E-commerce Setup Project",
         description: "Set up product sales pages and shops for both brands",
         requirements: [
-          "Set up Ryxen sales page",
-          "Set up HavenX product shop",
+          "Set up _richman.oo7 sales page",
+          "Set up _ryxen.oo7 product shop",
           "Configure payment",
           "Design pages",
         ],
@@ -2752,8 +2857,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Product Marketing Project",
         description: "Create product launch marketing plans for both brands",
         requirements: [
-          "Create Ryxen marketing plan",
-          "Create HavenX marketing plan",
+          "Create _richman.oo7 marketing plan",
+          "Create _ryxen.oo7 marketing plan",
           "Plan campaigns",
           "Schedule launches",
         ],
@@ -2762,8 +2867,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Distribution Strategy Project",
         description: "Identify product distribution channels for both brands",
         requirements: [
-          "Identify Ryxen distribution channels",
-          "Identify HavenX distribution channels",
+          "Identify _richman.oo7 distribution channels",
+          "Identify _ryxen.oo7 distribution channels",
           "Plan distribution",
           "Set up channels",
         ],
@@ -2772,8 +2877,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Product Completion Project",
         description: "Finalize digital products for both brands",
         requirements: [
-          "Finalize Ryxen product",
-          "Finalize HavenX product",
+          "Finalize _richman.oo7 product",
+          "Finalize _ryxen.oo7 product",
           "Quality check",
           "Prepare launch",
         ],
@@ -2796,8 +2901,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         description:
           "Identify automation needs and select tools for both brands",
         requirements: [
-          "Identify Ryxen automation needs",
-          "Identify HavenX automation needs",
+          "Identify _richman.oo7 automation needs",
+          "Identify _ryxen.oo7 automation needs",
           "Research tools",
           "Select solutions",
         ],
@@ -2806,8 +2911,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Workflow Automation Project",
         description: "Set up automated workflows for both brands",
         requirements: [
-          "Set up Ryxen workflows",
-          "Set up HavenX workflows",
+          "Set up _richman.oo7 workflows",
+          "Set up _ryxen.oo7 workflows",
           "Configure automation",
           "Test systems",
         ],
@@ -2816,8 +2921,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Content Automation Project",
         description: "Automate content posting schedules for both brands",
         requirements: [
-          "Automate Ryxen posting",
-          "Automate HavenX posting",
+          "Automate _richman.oo7 posting",
+          "Automate _ryxen.oo7 posting",
           "Set schedules",
           "Monitor automation",
         ],
@@ -2826,8 +2931,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Lead Automation Project",
         description: "Set up lead capture automation for both brands",
         requirements: [
-          "Set up Ryxen lead automation",
-          "Set up HavenX lead automation",
+          "Set up _richman.oo7 lead automation",
+          "Set up _ryxen.oo7 lead automation",
           "Configure funnels",
           "Test systems",
         ],
@@ -2836,8 +2941,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "System Documentation Project",
         description: "Document brand systems and processes for both brands",
         requirements: [
-          "Document Ryxen systems",
-          "Document HavenX systems",
+          "Document _richman.oo7 systems",
+          "Document _ryxen.oo7 systems",
           "Create manuals",
           "Organize documentation",
         ],
@@ -2846,8 +2951,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Team Planning Project",
         description: "Plan team expansion for both brands",
         requirements: [
-          "Plan Ryxen team expansion",
-          "Plan HavenX team expansion",
+          "Plan _richman.oo7 team expansion",
+          "Plan _ryxen.oo7 team expansion",
           "Define roles",
           "Create job descriptions",
         ],
@@ -2869,8 +2974,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Platform Expansion Project",
         description: "Expand to additional platforms for both brands",
         requirements: [
-          "Expand Ryxen to new platforms",
-          "Expand HavenX to new platforms",
+          "Expand _richman.oo7 to new platforms",
+          "Expand _ryxen.oo7 to new platforms",
           "Set up accounts",
           "Optimize profiles",
         ],
@@ -2879,8 +2984,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Collaboration Outreach Project",
         description: "Reach out to collaboration targets for both brands",
         requirements: [
-          "Reach out to 5 Ryxen targets",
-          "Reach out to 5 HavenX targets",
+          "Reach out to 5 _richman.oo7 targets",
+          "Reach out to 5 _ryxen.oo7 targets",
           "Send pitches",
           "Follow up",
         ],
@@ -2889,8 +2994,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Cross-Promotion Project",
         description: "Plan cross-promotion campaigns for both brands",
         requirements: [
-          "Plan Ryxen cross-promo",
-          "Plan HavenX cross-promo",
+          "Plan _richman.oo7 cross-promo",
+          "Plan _ryxen.oo7 cross-promo",
           "Create campaigns",
           "Schedule promotions",
         ],
@@ -2899,8 +3004,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Guest Content Project",
         description: "Create guest content for partners for both brands",
         requirements: [
-          "Create Ryxen guest content",
-          "Create HavenX guest content",
+          "Create _richman.oo7 guest content",
+          "Create _ryxen.oo7 guest content",
           "Prepare submissions",
           "Pitch partners",
         ],
@@ -2909,8 +3014,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Partnership Development Project",
         description: "Develop strategic partnerships for both brands",
         requirements: [
-          "Develop Ryxen partnerships",
-          "Develop HavenX partnerships",
+          "Develop _richman.oo7 partnerships",
+          "Develop _ryxen.oo7 partnerships",
           "Negotiate terms",
           "Formalize agreements",
         ],
@@ -2919,8 +3024,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Network Building Project",
         description: "Build professional networks for both brands",
         requirements: [
-          "Build Ryxen network",
-          "Build HavenX network",
+          "Build _richman.oo7 network",
+          "Build _ryxen.oo7 network",
           "Attend events",
           "Connect with industry",
         ],
@@ -2942,8 +3047,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Revenue Diversification Project",
         description: "Map revenue streams for both brands",
         requirements: [
-          "Map Ryxen revenue streams",
-          "Map HavenX revenue streams",
+          "Map _richman.oo7 revenue streams",
+          "Map _ryxen.oo7 revenue streams",
           "Analyze opportunities",
           "Plan diversification",
         ],
@@ -2952,8 +3057,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Authority Content Project",
         description: "Create high-authority content pieces for both brands",
         requirements: [
-          "Create Ryxen authority piece",
-          "Create HavenX authority piece",
+          "Create _richman.oo7 authority piece",
+          "Create _ryxen.oo7 authority piece",
           "Publish content",
           "Promote pieces",
         ],
@@ -2963,8 +3068,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         description:
           "Pitch for speaking and media opportunities for both brands",
         requirements: [
-          "Pitch Ryxen for speaking",
-          "Pitch HavenX for media",
+          "Pitch _richman.oo7 for speaking",
+          "Pitch _ryxen.oo7 for media",
           "Prepare pitches",
           "Follow up",
         ],
@@ -2973,8 +3078,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Premium Offerings Project",
         description: "Develop premium tier offerings for both brands",
         requirements: [
-          "Develop Ryxen premium tiers",
-          "Develop HavenX premium tiers",
+          "Develop _richman.oo7 premium tiers",
+          "Develop _ryxen.oo7 premium tiers",
           "Design offerings",
           "Set pricing",
         ],
@@ -2983,8 +3088,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Upsell Systems Project",
         description: "Create upsell and cross-sell systems for both brands",
         requirements: [
-          "Create Ryxen upsell systems",
-          "Create HavenX upsell systems",
+          "Create _richman.oo7 upsell systems",
+          "Create _ryxen.oo7 upsell systems",
           "Design funnels",
           "Test systems",
         ],
@@ -2993,8 +3098,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Retention Strategy Project",
         description: "Design client retention strategies for both brands",
         requirements: [
-          "Design Ryxen retention strategy",
-          "Design HavenX retention strategy",
+          "Design _richman.oo7 retention strategy",
+          "Design _ryxen.oo7 retention strategy",
           "Create programs",
           "Implement systems",
         ],
@@ -3016,8 +3121,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Advanced Offerings Project",
         description: "Launch advanced products/services for both brands",
         requirements: [
-          "Launch Ryxen advanced offering",
-          "Launch HavenX advanced offering",
+          "Launch _richman.oo7 advanced offering",
+          "Launch _ryxen.oo7 advanced offering",
           "Market launches",
           "Monitor performance",
         ],
@@ -3026,8 +3131,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Revenue Scaling Project",
         description: "Scale revenue-generating activities for both brands",
         requirements: [
-          "Scale Ryxen revenue activities",
-          "Scale HavenX revenue activities",
+          "Scale _richman.oo7 revenue activities",
+          "Scale _ryxen.oo7 revenue activities",
           "Optimize processes",
           "Increase output",
         ],
@@ -3036,8 +3141,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Brand Evolution Project",
         description: "Evolve brand positioning for both brands",
         requirements: [
-          "Evolve Ryxen positioning",
-          "Evolve HavenX positioning",
+          "Evolve _richman.oo7 positioning",
+          "Evolve _ryxen.oo7 positioning",
           "Update messaging",
           "Refresh brand",
         ],
@@ -3046,8 +3151,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Market Positioning Project",
         description: "Strengthen market positions for both brands",
         requirements: [
-          "Strengthen Ryxen position",
-          "Strengthen HavenX position",
+          "Strengthen _richman.oo7 position",
+          "Strengthen _ryxen.oo7 position",
           "Analyze competition",
           "Differentiate brands",
         ],
@@ -3056,8 +3161,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Strategic Planning Project",
         description: "Plan next 90 days for both brands",
         requirements: [
-          "Plan Ryxen next 90 days",
-          "Plan HavenX next 90 days",
+          "Plan _richman.oo7 next 90 days",
+          "Plan _ryxen.oo7 next 90 days",
           "Set goals",
           "Create roadmap",
         ],
@@ -3066,8 +3171,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "System Optimization Project",
         description: "Optimize all systems for both brands",
         requirements: [
-          "Optimize Ryxen systems",
-          "Optimize HavenX systems",
+          "Optimize _richman.oo7 systems",
+          "Optimize _ryxen.oo7 systems",
           "Improve efficiency",
           "Document improvements",
         ],
@@ -3089,8 +3194,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Performance Review Project",
         description: "Complete comprehensive 90-day review for both brands",
         requirements: [
-          "Review Ryxen 90-day performance",
-          "Review HavenX 90-day performance",
+          "Review _richman.oo7 90-day performance",
+          "Review _ryxen.oo7 90-day performance",
           "Analyze metrics",
           "Document results",
         ],
@@ -3099,8 +3204,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Metrics Analysis Project",
         description: "Analyze all key metrics for both brands",
         requirements: [
-          "Analyze Ryxen metrics",
-          "Analyze HavenX metrics",
+          "Analyze _richman.oo7 metrics",
+          "Analyze _ryxen.oo7 metrics",
           "Create reports",
           "Identify insights",
         ],
@@ -3109,8 +3214,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Optimization Planning Project",
         description: "Create optimization action plans for both brands",
         requirements: [
-          "Create Ryxen optimization plan",
-          "Create HavenX optimization plan",
+          "Create _richman.oo7 optimization plan",
+          "Create _ryxen.oo7 optimization plan",
           "Set priorities",
           "Plan implementation",
         ],
@@ -3119,8 +3224,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Next Phase Strategy Project",
         description: "Develop next 90-day strategies for both brands",
         requirements: [
-          "Develop Ryxen next strategy",
-          "Develop HavenX next strategy",
+          "Develop _richman.oo7 next strategy",
+          "Develop _ryxen.oo7 next strategy",
           "Set goals",
           "Create roadmap",
         ],
@@ -3129,8 +3234,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "System Refinement Project",
         description: "Refine all operational systems for both brands",
         requirements: [
-          "Refine Ryxen systems",
-          "Refine HavenX systems",
+          "Refine _richman.oo7 systems",
+          "Refine _ryxen.oo7 systems",
           "Improve processes",
           "Update documentation",
         ],
@@ -3139,8 +3244,8 @@ function getDualBrandProject(weekNum, dayIndex) {
         title: "Journey Completion Project",
         description: "Celebrate achievements and complete dual brand ascension",
         requirements: [
-          "Celebrate Ryxen achievements",
-          "Celebrate HavenX achievements",
+          "Celebrate _richman.oo7 achievements",
+          "Celebrate _ryxen.oo7 achievements",
           "Document success",
           "Plan next phase",
         ],
@@ -3162,10 +3267,10 @@ function getDualBrandProject(weekNum, dayIndex) {
   return (
     projects[weekNum - 1]?.[dayIndex] || {
       title: "Dual Brand Project",
-      description: "Continue building both Ryxen and HavenX brands",
+      description: "Continue building both _richman.oo7 and _ryxen.oo7 brands",
       requirements: [
-        "Work on Ryxen tasks",
-        "Work on HavenX tasks",
+        "Work on _richman.oo7 tasks",
+        "Work on _ryxen.oo7 tasks",
         "Track progress",
         "Document results",
       ],
@@ -3182,7 +3287,9 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
     dayDate.setDate(new Date(week.startDate).getDate() + i);
 
     const dayDateString = dayDate.toISOString().split("T")[0];
-    const dayNumber = idx * 7 + i + 1;
+    // Week 0: All days are Day 0 (testing week)
+    // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
+    const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
 
     // Get actual day name from the date
     const dayNames = [
@@ -3195,21 +3302,42 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
       "Saturday",
     ];
     const actualDayName = dayNames[dayDate.getDay()];
-    const isWeekend = i >= 5; // Saturday (5) and Sunday (6)
+    const dayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    
+    // Convert JavaScript getDay() (0=Sunday, 1=Monday, ..., 6=Saturday) 
+    // to dayIndex format used by getTimeBlocks (0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday)
+    const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
+    
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
 
-    // Week 1 (Days 1-7) is for testing and trials - no iterations
-    // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
-    const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
-    const isTestRun = idx === 0 && dayNumber <= 7;
+    // Week 0 (Jan 18-24): All days are Day 0 (Testing & Trials Week) - no actual content
+    // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
+    // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+    const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
+    // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
+    const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
 
     // For weekends (Saturday/Sunday), no content - rest days
-    // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
+    // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
     const isRestDay = isWeekend && !isTestRun;
     // Only get content for weekdays (Monday-Friday, i < 5)
     const weekdayIndex = i < 5 ? i : null;
     const writerResources = isTestRun ? [] : (isRestDay ? [] : (weekdayIndex !== null ? getWriterResources(contentWeekNum, weekdayIndex) : []));
     const learning = isTestRun ? "System Testing" : (isRestDay ? "Rest Day" : (weekdayIndex !== null ? getWriterLearning(contentWeekNum, weekdayIndex) : "Rest Day"));
     const execution = isTestRun ? "Test app features" : (isRestDay ? "No writing tasks - Rest day" : (weekdayIndex !== null ? getWriterExecution(contentWeekNum, weekdayIndex) : "No writing tasks - Rest day"));
+    
+    // Get time blocks and organize schedule (same format as software engineering)
+    const timeBlocks = getWritersTimeBlocks(dayIndex);
+    const learningData = {
+      title: learning,
+      description: isTestRun ? "Explore and test the app features" : (isRestDay ? "Take a break and rest. Writing happens on weekdays." : `Learn about ${learning}`),
+    };
+    const projectData = {
+      title: execution,
+      description: isTestRun ? "Test all features" : (isRestDay ? "No writing tasks today - enjoy your rest!" : `Execute: ${execution}`),
+      requirements: isTestRun ? [] : (isRestDay ? [] : [execution]),
+    };
+    const scheduledContent = isTestRun ? null : organizeWritersSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
 
     days.push({
       dayNumber: dayNumber,
@@ -3221,15 +3349,8 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
       theme: isTestRun ? "Testing & Trials Week" : (isRestDay ? "Rest Day" : (weekdayIndex !== null ? getWriterTheme(contentWeekNum) : "Rest Day")),
       resources: writerResources,
       // Add missing fields for Learning, Project tabs (map from existing fields)
-      dailyLearning: {
-        title: learning,
-        description: isTestRun ? "Explore and test the app features" : (isRestDay ? "Take a break and rest. Writing happens on weekdays." : `Learn about ${learning}`),
-      },
-      project: {
-        title: execution,
-        description: isTestRun ? "Test all features" : (isRestDay ? "No writing tasks today - enjoy your rest!" : `Execute: ${execution}`),
-        requirements: isTestRun ? [] : (isRestDay ? [] : [execution]),
-      },
+      dailyLearning: learningData,
+      project: projectData,
       dailyQuiz: isTestRun ? null : (isRestDay ? null : getWriterQuiz(contentWeekNum, weekdayIndex !== null ? weekdayIndex : 0, dayNumber)),
       isTestRun: isTestRun,
       isRestDay: isRestDay,
@@ -3239,8 +3360,13 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
         "Test all features and functionality",
         "Get familiar with the journey structure",
         "Identify any issues or improvements",
-        "Prepare mentally for Day 8 onwards"
+        "Prepare mentally for Day 1 onwards (Jan 25)"
       ] : null,
+      // Schedule format (same as software engineering)
+      schedule: {
+        timeBlocks: timeBlocks,
+        scheduledContent: scheduledContent,
+      },
     });
   }
 
@@ -3315,7 +3441,7 @@ function getWriterLearning(weekNum, dayIndex) {
     [
       "Brand content strategy",
       "Newsletter writing",
-      "HavenX content strategy",
+      "_ryxen.oo7 content strategy",
       "Social media content",
       "Content calendar",
     ],
@@ -3405,7 +3531,7 @@ function getWriterExecution(weekNum, dayIndex) {
     [
       "Write R•ICH brand content",
       "Write R•ICH newsletter",
-      "Write HavenX brand content",
+      "Write _ryxen.oo7 brand content",
       "Create social content for both brands",
       "Create content calendar for brands",
     ],
@@ -3495,7 +3621,7 @@ function getWriterReflection(weekNum, dayIndex) {
     [
       "How does this serve the R•ICH brand?",
       "What value does this newsletter provide?",
-      "How does this serve the HavenX brand?",
+      "How does this serve the _ryxen.oo7 brand?",
       "How does this content engage audiences?",
       "Week 10 complete: Is my brand content strategy clear?",
     ],
@@ -3528,7 +3654,7 @@ function getWriterTheme(weekNum) {
     "Ghostwriting",
     "Personal Platforms",
     "Pitching & Client Acquisition Systems",
-    "Writing for R•ICH & HavenX",
+    "Writing for R•ICH & _ryxen.oo7",
     "Writing Digital Products",
     "Revenue Expansion & Scaling Systems",
   ];
@@ -4987,7 +5113,9 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
       dayDate.setDate(new Date(week.startDate).getDate() + i);
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      const dayNumber = idx * 7 + i + 1;
+      // Week 0: All days are Day 0 (testing week)
+      // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
+      const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
 
       // Get actual day name from the date
       const dayNames = [
@@ -5000,18 +5128,26 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
         "Saturday",
       ];
       const actualDayName = dayNames[dayDate.getDay()];
+      
+      // Convert JavaScript getDay() (0=Sunday, 1=Monday, ..., 6=Saturday) 
+      // to dayIndex format used by getTimeBlocks (0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday)
+      const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+      const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 1 (Days 1-7) is for testing and trials - no iterations
-      // Shift content: Week 1 gets minimal content, Week 2+ gets previous week's content
-      const contentWeekNum = idx === 0 ? 0 : idx; // Week 1 uses 0 (minimal), Week 2 uses 1, Week 3 uses 2, etc.
-      const isTestRun = idx === 0 && dayNumber <= 7;
+      // Week 0 (Jan 18-24): All days are Day 0 (Testing & Trials Week) - no actual content
+      // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
+      // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+      const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
+      // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
+      const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
 
-      // For Week 1, use minimal placeholder content; for Week 2+, use shifted content
-      const learningData = isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getSoftwareEngineeringLearning(contentWeekNum, i);
+      // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
+      // Pass dayNumber to ensure content is unique per day (1-90) and progressive
+      const learningData = isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getSoftwareEngineeringLearning(contentWeekNum, i, dayNumber);
       const workflowData = isTestRun ? null : getSoftwareEngineeringCursorWorkflow(contentWeekNum, i);
-      let projectData = isTestRun ? { title: "System Testing", description: "Test all features" } : getSoftwareEngineeringProject(contentWeekNum, i);
-      const disciplineRotation = isTestRun ? { primary: "Frontend" } : getDisciplineRotation(contentWeekNum, i);
-      const timeBlocks = getTimeBlocks(i); // dayIndex only
+      let projectData = isTestRun ? { title: "System Testing", description: "Test all features" } : getSoftwareEngineeringProject(contentWeekNum, i, dayNumber);
+      const disciplineRotation = isTestRun ? { primary: "Frontend" } : getDisciplineRotation(contentWeekNum, dayIndex);
+      const timeBlocks = getTimeBlocks(dayIndex); // Use actual day of week
 
       // Enrich project data with project-driven information for each discipline
       if (projectData && typeof projectData === "object") {
@@ -5053,7 +5189,7 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
         projectData,
         workflowData,
         contentWeekNum,
-        i,
+        dayIndex,
         disciplineRotation,
         timeBlocks,
         dayNumber
@@ -5110,11 +5246,13 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
         dailyLearning: learningData,
         cursorWorkflow: workflowData,
         miniProject: projectData,
-        resources: isTestRun ? [] : getSoftwareEngineeringResources(contentWeekNum, i),
+        // Resources are discipline-specific and come from schedule sessions, not day-level
+        // Each discipline (Mobile, Frontend, Backend, WordPress) has its own resources in their schedule sessions
+        resources: [], // Empty - resources come from discipline-specific schedule sessions
         monetization: isTestRun ? null : getSoftwareEngineeringMonetization(contentWeekNum, i),
         quiz: isTestRun ? null : getSoftwareEngineeringQuizzes(contentWeekNum, i),
         socialPosting: isTestRun ? null : getSoftwareEngineeringSocialPosting(contentWeekNum, i),
-        reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getSoftwareEngineeringReflection(contentWeekNum, i),
+        reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getSoftwareEngineeringReflection(contentWeekNum, i, dayNumber),
         dailyQuiz: isTestRun ? null : getDailyCumulativeQuiz(contentWeekNum, i, dayNumber),
         practicalAssessment: isTestRun ? null : getDailyPracticalAssessment(contentWeekNum, i, dayNumber),
         isTestRun: isTestRun,
@@ -5124,7 +5262,7 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
           "Test all features and functionality",
           "Get familiar with the journey structure",
           "Identify any issues or improvements",
-          "Prepare mentally for Day 8 onwards"
+          "Prepare mentally for Day 1 onwards (Jan 25)"
         ] : null,
         schedule: {
           timeBlocks: timeBlocks,
@@ -5142,7 +5280,7 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
           "Test all features and functionality",
           "Get familiar with the journey structure",
           "Identify any issues or improvements",
-          "Prepare mentally for Day 8 onwards"
+          "Prepare mentally for Day 1 onwards (Jan 25)"
         ] : null,
       });
     }
@@ -6239,321 +6377,1018 @@ function getSkillQuiz(skillName) {
 
 // Discipline-specific resource mapping (enhanced with skill-based resources)
 // Get day-specific, discipline-specific resources that connect to the day's project
+// Progressive daily resources that build on each other
+function getProgressiveDailyResources(dayNumber, discipline, weekNum, dayIndex) {
+  // Calculate which phase we're in (1-90 days, grouped by learning phases)
+  const phase = Math.ceil(dayNumber / 15); // 15-day phases: 1-15, 16-30, 31-45, 46-60, 61-75, 76-90
+  const dayInPhase = ((dayNumber - 1) % 15) + 1; // Day within current phase (1-15)
+  
+  // Helper function to enhance resource with day-specific context
+  const enhanceResource = (resource, dayNum) => {
+    return {
+      ...resource,
+      title: `Day ${dayNum}: ${resource.title}`,
+      description: resource.description || `Essential resource for Day ${dayNum} - ${resource.category}. Building on Day ${Math.max(1, dayNum - 1)}'s foundation.`,
+      dayNumber: dayNum,
+      phase: phase,
+      dayInPhase: dayInPhase,
+    };
+  };
+  
+  // Frontend progressive resources
+  if (discipline === "Frontend") {
+    const resources = [];
+    
+    // Phase 1 (Days 1-15): Fundamentals - Each day is unique
+    if (phase === 1) {
+      if (dayInPhase === 1) {
+        resources.push(
+          enhanceResource({ title: "React Official Docs - Getting Started", url: "https://react.dev/learn", time: "20 min", category: "Fundamentals" }, dayNumber),
+          enhanceResource({ title: "Modern JavaScript ES6+ Guide", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide", time: "25 min", category: "Fundamentals" }, dayNumber)
+        );
+      } else if (dayInPhase === 2) {
+        resources.push(
+          enhanceResource({ title: "React Components and Props", url: "https://react.dev/learn/passing-props-to-a-component", time: "20 min", category: "Components" }, dayNumber),
+          enhanceResource({ title: "Component Composition", url: "https://react.dev/learn/passing-props-to-a-component#passing-props", time: "25 min", category: "Components" }, dayNumber)
+        );
+        if (dayNumber > 1) {
+          resources.push(
+            enhanceResource({ title: "Review: Day 1 Concepts", url: "https://react.dev/learn", time: "10 min", category: "Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 3) {
+        resources.push(
+          enhanceResource({ title: "React State Management", url: "https://react.dev/learn/managing-state", time: "25 min", category: "State" }, dayNumber),
+          enhanceResource({ title: "useState Hook", url: "https://react.dev/reference/react/useState", time: "20 min", category: "State" }, dayNumber)
+        );
+      } else if (dayInPhase === 4) {
+        resources.push(
+          enhanceResource({ title: "CSS Layout Patterns", url: "https://css-tricks.com/guides/layout/", time: "20 min", category: "Layout" }, dayNumber),
+          enhanceResource({ title: "Flexbox Guide", url: "https://css-tricks.com/snippets/css/a-guide-to-flexbox/", time: "25 min", category: "Layout" }, dayNumber)
+        );
+      } else if (dayInPhase === 5) {
+        resources.push(
+          enhanceResource({ title: "React Hooks Deep Dive", url: "https://react.dev/reference/react", time: "30 min", category: "Hooks" }, dayNumber),
+          enhanceResource({ title: "Built-in Hooks", url: "https://react.dev/reference/react#hooks", time: "25 min", category: "Hooks" }, dayNumber)
+        );
+      } else if (dayInPhase === 6) {
+        resources.push(
+          enhanceResource({ title: "React Effects and Side Effects", url: "https://react.dev/learn/synchronizing-with-effects", time: "25 min", category: "Effects" }, dayNumber),
+          enhanceResource({ title: "useEffect Hook", url: "https://react.dev/reference/react/useEffect", time: "30 min", category: "Effects" }, dayNumber)
+        );
+      } else if (dayInPhase === 7) {
+        resources.push(
+          enhanceResource({ title: "Data Fetching in React", url: "https://react.dev/learn/synchronizing-with-effects#fetching-data", time: "20 min", category: "Data Fetching" }, dayNumber),
+          enhanceResource({ title: "Fetch API", url: "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API", time: "25 min", category: "Data Fetching" }, dayNumber)
+        );
+        if (dayNumber > 7) {
+          resources.push(
+            enhanceResource({ title: "Week 1 Review", url: "https://react.dev/learn", time: "20 min", category: "Week Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 8) {
+        resources.push(
+          enhanceResource({ title: "React Form Handling", url: "https://react.dev/reference/react-dom/components/form", time: "20 min", category: "Forms" }, dayNumber),
+          enhanceResource({ title: "Controlled Components", url: "https://react.dev/reference/react-dom/components/input#controlled-input", time: "25 min", category: "Forms" }, dayNumber)
+        );
+      } else if (dayInPhase === 9) {
+        resources.push(
+          enhanceResource({ title: "React Router Guide", url: "https://reactrouter.com/en/main/start/overview", time: "25 min", category: "Routing" }, dayNumber),
+          enhanceResource({ title: "React Router Setup", url: "https://reactrouter.com/en/main/start/installation", time: "20 min", category: "Routing" }, dayNumber)
+        );
+      } else if (dayInPhase === 10) {
+        resources.push(
+          enhanceResource({ title: "Context API for State", url: "https://react.dev/learn/passing-data-deeply-with-context", time: "20 min", category: "State Management" }, dayNumber),
+          enhanceResource({ title: "useContext Hook", url: "https://react.dev/reference/react/useContext", time: "25 min", category: "State Management" }, dayNumber)
+        );
+      } else if (dayInPhase === 11) {
+        resources.push(
+          enhanceResource({ title: "React Performance Optimization", url: "https://react.dev/learn/render-and-commit", time: "25 min", category: "Performance" }, dayNumber),
+          enhanceResource({ title: "React.memo", url: "https://react.dev/reference/react/memo", time: "20 min", category: "Performance" }, dayNumber)
+        );
+      } else if (dayInPhase === 12) {
+        resources.push(
+          enhanceResource({ title: "React Testing Library", url: "https://testing-library.com/docs/react-testing-library/intro/", time: "30 min", category: "Testing" }, dayNumber),
+          enhanceResource({ title: "Testing Components", url: "https://react.dev/learn/testing", time: "25 min", category: "Testing" }, dayNumber)
+        );
+      } else if (dayInPhase === 13) {
+        resources.push(
+          enhanceResource({ title: "TypeScript with React", url: "https://react-typescript-cheatsheet.netlify.app/", time: "30 min", category: "TypeScript" }, dayNumber),
+          enhanceResource({ title: "TypeScript Setup", url: "https://react-typescript-cheatsheet.netlify.app/docs/basic/setup", time: "25 min", category: "TypeScript" }, dayNumber)
+        );
+      } else if (dayInPhase === 14) {
+        resources.push(
+          enhanceResource({ title: "Advanced React Patterns", url: "https://react.dev/learn/escape-hatches", time: "30 min", category: "Patterns" }, dayNumber),
+          enhanceResource({ title: "Custom Hooks", url: "https://react.dev/learn/reusing-logic-with-custom-hooks", time: "25 min", category: "Patterns" }, dayNumber)
+        );
+      } else if (dayInPhase === 15) {
+        resources.push(
+          enhanceResource({ title: "Phase 1 Complete - Review All Fundamentals", url: "https://react.dev/learn", time: "30 min", category: "Phase Review" }, dayNumber),
+          enhanceResource({ title: "Comprehensive Review", url: "https://react.dev/learn/thinking-in-react", time: "30 min", category: "Phase Review" }, dayNumber)
+        );
+      }
+    }
+    // Phase 2 (Days 16-30): Intermediate - Each day is unique
+    else if (phase === 2) {
+      if (dayInPhase === 1) {
+        resources.push(
+          enhanceResource({ title: "Next.js Fundamentals", url: "https://nextjs.org/docs", time: "30 min", category: "Framework" }, dayNumber),
+          enhanceResource({ title: "Next.js Getting Started", url: "https://nextjs.org/docs/getting-started", time: "25 min", category: "Framework" }, dayNumber)
+        );
+        if (dayNumber > 16) {
+          resources.push(
+            enhanceResource({ title: "Building on Phase 1 (Days 1-15)", url: "https://nextjs.org/docs", time: "15 min", category: "Progressive Learning" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 2) {
+        resources.push(
+          enhanceResource({ title: "Server Components in Next.js", url: "https://nextjs.org/docs/app/building-your-application/rendering/server-components", time: "25 min", category: "Server Components" }, dayNumber),
+          enhanceResource({ title: "Client Components", url: "https://nextjs.org/docs/app/building-your-application/rendering/client-components", time: "25 min", category: "Server Components" }, dayNumber)
+        );
+      } else if (dayInPhase === 3) {
+        resources.push(
+          enhanceResource({ title: "Next.js Routing", url: "https://nextjs.org/docs/app/building-your-application/routing", time: "25 min", category: "Routing" }, dayNumber),
+          enhanceResource({ title: "App Router", url: "https://nextjs.org/docs/app", time: "30 min", category: "Routing" }, dayNumber)
+        );
+      } else if (dayInPhase === 4) {
+        resources.push(
+          enhanceResource({ title: "Data Fetching in Next.js", url: "https://nextjs.org/docs/app/building-your-application/data-fetching", time: "30 min", category: "Data Fetching" }, dayNumber),
+          enhanceResource({ title: "Server Actions", url: "https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions", time: "25 min", category: "Data Fetching" }, dayNumber)
+        );
+      } else if (dayInPhase === 5) {
+        resources.push(
+          enhanceResource({ title: "Next.js API Routes", url: "https://nextjs.org/docs/app/building-your-application/routing/route-handlers", time: "25 min", category: "API" }, dayNumber),
+          enhanceResource({ title: "Route Handlers", url: "https://nextjs.org/docs/app/building-your-application/routing/route-handlers#route-handlers", time: "30 min", category: "API" }, dayNumber)
+        );
+      } else if (dayInPhase === 6) {
+        resources.push(
+          enhanceResource({ title: "State Management Libraries", url: "https://zustand-demo.pmnd.rs/", time: "25 min", category: "State Management" }, dayNumber),
+          enhanceResource({ title: "Zustand Guide", url: "https://github.com/pmndrs/zustand", time: "30 min", category: "State Management" }, dayNumber)
+        );
+      } else if (dayInPhase === 7) {
+        resources.push(
+          enhanceResource({ title: "React Query/TanStack Query", url: "https://tanstack.com/query/latest", time: "30 min", category: "Data Fetching" }, dayNumber),
+          enhanceResource({ title: "TanStack Query Setup", url: "https://tanstack.com/query/latest/docs/react/overview", time: "25 min", category: "Data Fetching" }, dayNumber)
+        );
+        if (dayNumber > 22) {
+          resources.push(
+            enhanceResource({ title: "Week 3 Review", url: "https://react.dev/learn", time: "20 min", category: "Week Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 8) {
+        resources.push(
+          enhanceResource({ title: "Form Libraries - React Hook Form", url: "https://react-hook-form.com/", time: "25 min", category: "Forms" }, dayNumber),
+          enhanceResource({ title: "React Hook Form Guide", url: "https://react-hook-form.com/get-started", time: "30 min", category: "Forms" }, dayNumber)
+        );
+      } else if (dayInPhase === 9) {
+        resources.push(
+          enhanceResource({ title: "CSS-in-JS Solutions", url: "https://styled-components.com/", time: "25 min", category: "Styling" }, dayNumber),
+          enhanceResource({ title: "Styled Components", url: "https://styled-components.com/docs", time: "30 min", category: "Styling" }, dayNumber)
+        );
+      } else if (dayInPhase === 10) {
+        resources.push(
+          enhanceResource({ title: "Tailwind CSS Advanced", url: "https://tailwindcss.com/docs", time: "20 min", category: "Styling" }, dayNumber),
+          enhanceResource({ title: "Tailwind Configuration", url: "https://tailwindcss.com/docs/configuration", time: "25 min", category: "Styling" }, dayNumber)
+        );
+      } else if (dayInPhase === 11) {
+        resources.push(
+          enhanceResource({ title: "Component Libraries", url: "https://ui.shadcn.com/", time: "30 min", category: "UI Components" }, dayNumber),
+          enhanceResource({ title: "shadcn/ui Setup", url: "https://ui.shadcn.com/docs/installation", time: "25 min", category: "UI Components" }, dayNumber)
+        );
+      } else if (dayInPhase === 12) {
+        resources.push(
+          enhanceResource({ title: "Advanced React Patterns", url: "https://react.dev/learn/escape-hatches", time: "30 min", category: "Patterns" }, dayNumber),
+          enhanceResource({ title: "Render Props Pattern", url: "https://react.dev/learn/passing-props-to-a-component#render-props", time: "25 min", category: "Patterns" }, dayNumber)
+        );
+      } else if (dayInPhase === 13) {
+        resources.push(
+          enhanceResource({ title: "React Performance Best Practices", url: "https://react.dev/learn/render-and-commit", time: "25 min", category: "Performance" }, dayNumber),
+          enhanceResource({ title: "useMemo and useCallback", url: "https://react.dev/reference/react/useMemo", time: "30 min", category: "Performance" }, dayNumber)
+        );
+      } else if (dayInPhase === 14) {
+        resources.push(
+          enhanceResource({ title: "Accessibility in React", url: "https://react.dev/learn/accessibility", time: "25 min", category: "Accessibility" }, dayNumber),
+          enhanceResource({ title: "ARIA Attributes", url: "https://react.dev/learn/accessibility#aria-attributes", time: "30 min", category: "Accessibility" }, dayNumber)
+        );
+      } else if (dayInPhase === 15) {
+        resources.push(
+          enhanceResource({ title: "Phase 2 Complete - Review Intermediate Concepts", url: "https://react.dev/learn", time: "30 min", category: "Phase Review" }, dayNumber),
+          enhanceResource({ title: "Comprehensive Review", url: "https://nextjs.org/docs", time: "30 min", category: "Phase Review" }, dayNumber)
+        );
+      }
+    }
+    // Phase 3+ (Days 31+): Advanced
+    else {
+      const advancedTopics = [
+        { title: "Advanced React Patterns", url: "https://react.dev/learn/escape-hatches", time: "30 min", category: "Advanced Patterns" },
+        { title: "Micro-frontends Architecture", url: "https://micro-frontends.org/", time: "35 min", category: "Architecture" },
+        { title: "Web Performance Optimization", url: "https://web.dev/performance/", time: "30 min", category: "Performance" },
+        { title: "Progressive Web Apps", url: "https://web.dev/progressive-web-apps/", time: "30 min", category: "PWA" },
+        { title: "Advanced State Management", url: "https://redux.js.org/", time: "35 min", category: "State Management" },
+        { title: "React Server Components Deep Dive", url: "https://nextjs.org/docs/app/building-your-application/rendering/server-components", time: "30 min", category: "Server Components" }
+      ];
+      // Cycle through advanced topics based on day, but make each day unique
+      const topicIndex = (dayNumber - 31) % advancedTopics.length;
+      resources.push(enhanceResource(advancedTopics[topicIndex], dayNumber));
+      if (dayInPhase > 6) {
+        resources.push(enhanceResource(advancedTopics[(topicIndex + 1) % advancedTopics.length], dayNumber));
+      }
+      // Add day-specific progressive learning note
+      if (dayNumber > 31) {
+        resources.push(
+          enhanceResource({ title: `Building on Days 1-${dayNumber - 1}`, url: "https://react.dev/learn", time: "15 min", category: "Progressive Learning" }, dayNumber)
+        );
+      }
+      // Add milestone reviews
+      if (dayNumber % 15 === 0) {
+        resources.push(
+          enhanceResource({ title: `Milestone: Day ${dayNumber} Review`, url: "https://react.dev/learn", time: "30 min", category: "Milestone Review" }, dayNumber)
+        );
+      }
+    }
+    
+    return resources;
+  }
+  
+  // Mobile progressive resources
+  if (discipline === "Mobile") {
+    const resources = [];
+    
+    // Phase 1 (Days 1-15): Fundamentals - Each day is unique
+    if (phase === 1) {
+      if (dayInPhase === 1) {
+        resources.push(
+          enhanceResource({ title: "React Native Getting Started", url: "https://reactnative.dev/docs/getting-started", time: "25 min", category: "Fundamentals" }, dayNumber),
+          enhanceResource({ title: "Expo Quick Start", url: "https://docs.expo.dev/get-started/installation/", time: "20 min", category: "Setup" }, dayNumber)
+        );
+      } else if (dayInPhase === 2) {
+        resources.push(
+          enhanceResource({ title: "React Native Components", url: "https://reactnative.dev/docs/components-and-apis", time: "25 min", category: "Components" }, dayNumber),
+          enhanceResource({ title: "React Native Core Components", url: "https://reactnative.dev/docs/components-and-apis/core-components", time: "20 min", category: "Components" }, dayNumber)
+        );
+        if (dayNumber > 1) {
+          resources.push(
+            enhanceResource({ title: "Review: Day 1 Concepts", url: "https://reactnative.dev/docs/getting-started", time: "10 min", category: "Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 3) {
+        resources.push(
+          enhanceResource({ title: "React Navigation Basics", url: "https://reactnavigation.org/docs/getting-started", time: "30 min", category: "Navigation" }, dayNumber),
+          enhanceResource({ title: "Navigation Setup", url: "https://reactnavigation.org/docs/navigation-container", time: "25 min", category: "Navigation" }, dayNumber)
+        );
+        if (dayNumber > 2) {
+          resources.push(
+            enhanceResource({ title: "Building on Days 1-2", url: "https://reactnative.dev/docs", time: "15 min", category: "Progressive Learning" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 4) {
+        resources.push(
+          enhanceResource({ title: "Styling in React Native", url: "https://reactnative.dev/docs/style", time: "20 min", category: "Styling" }, dayNumber),
+          enhanceResource({ title: "Flexbox in React Native", url: "https://reactnative.dev/docs/flexbox", time: "25 min", category: "Styling" }, dayNumber)
+        );
+      } else if (dayInPhase === 5) {
+        resources.push(
+          enhanceResource({ title: "State Management in React Native", url: "https://zustand-demo.pmnd.rs/", time: "25 min", category: "State Management" }, dayNumber),
+          enhanceResource({ title: "React Native Hooks", url: "https://reactnative.dev/docs/hooks", time: "20 min", category: "Hooks" }, dayNumber)
+        );
+      } else if (dayInPhase === 6) {
+        resources.push(
+          enhanceResource({ title: "AsyncStorage Guide", url: "https://react-native-async-storage.github.io/async-storage/", time: "20 min", category: "Storage" }, dayNumber),
+          enhanceResource({ title: "Local Data Persistence", url: "https://reactnative.dev/docs/asyncstorage", time: "25 min", category: "Storage" }, dayNumber)
+        );
+      } else if (dayInPhase === 7) {
+        resources.push(
+          enhanceResource({ title: "API Integration in React Native", url: "https://reactnative.dev/docs/network", time: "25 min", category: "Networking" }, dayNumber),
+          enhanceResource({ title: "Fetch API in React Native", url: "https://reactnative.dev/docs/network#using-fetch", time: "20 min", category: "Networking" }, dayNumber)
+        );
+        if (dayNumber > 7) {
+          resources.push(
+            enhanceResource({ title: "Week 1 Review", url: "https://reactnative.dev/docs", time: "20 min", category: "Week Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 8) {
+        resources.push(
+          enhanceResource({ title: "React Native Forms", url: "https://reactnative.dev/docs/textinput", time: "20 min", category: "Forms" }, dayNumber),
+          enhanceResource({ title: "Form Handling", url: "https://reactnative.dev/docs/textinput#handling-text-input", time: "25 min", category: "Forms" }, dayNumber)
+        );
+      } else if (dayInPhase === 9) {
+        resources.push(
+          enhanceResource({ title: "Error Handling", url: "https://reactnative.dev/docs/error-handling", time: "20 min", category: "Error Handling" }, dayNumber),
+          enhanceResource({ title: "Error Boundaries", url: "https://reactnative.dev/docs/error-boundaries", time: "25 min", category: "Error Handling" }, dayNumber)
+        );
+      } else if (dayInPhase === 10) {
+        resources.push(
+          enhanceResource({ title: "React Native Performance", url: "https://reactnative.dev/docs/performance", time: "25 min", category: "Performance" }, dayNumber),
+          enhanceResource({ title: "Performance Optimization", url: "https://reactnative.dev/docs/performance#performance-tips", time: "20 min", category: "Performance" }, dayNumber)
+        );
+      } else if (dayInPhase === 11) {
+        resources.push(
+          enhanceResource({ title: "Testing React Native Apps", url: "https://reactnative.dev/docs/testing-overview", time: "30 min", category: "Testing" }, dayNumber),
+          enhanceResource({ title: "Jest Testing", url: "https://reactnative.dev/docs/testing#jest", time: "25 min", category: "Testing" }, dayNumber)
+        );
+      } else if (dayInPhase === 12) {
+        resources.push(
+          enhanceResource({ title: "TypeScript with React Native", url: "https://reactnative.dev/docs/typescript", time: "25 min", category: "TypeScript" }, dayNumber),
+          enhanceResource({ title: "TypeScript Setup", url: "https://reactnative.dev/docs/typescript#getting-started", time: "20 min", category: "TypeScript" }, dayNumber)
+        );
+      } else if (dayInPhase === 13) {
+        resources.push(
+          enhanceResource({ title: "Advanced Components", url: "https://reactnative.dev/docs/components-and-apis", time: "30 min", category: "Advanced" }, dayNumber),
+          enhanceResource({ title: "Custom Components", url: "https://reactnative.dev/docs/components-and-apis#custom-components", time: "25 min", category: "Advanced" }, dayNumber)
+        );
+      } else if (dayInPhase === 14) {
+        resources.push(
+          enhanceResource({ title: "React Native Best Practices", url: "https://reactnative.dev/docs/performance", time: "30 min", category: "Best Practices" }, dayNumber),
+          enhanceResource({ title: "Code Organization", url: "https://reactnative.dev/docs/performance#code-organization", time: "25 min", category: "Best Practices" }, dayNumber)
+        );
+      } else if (dayInPhase === 15) {
+        resources.push(
+          enhanceResource({ title: "Phase 1 Complete - Review Fundamentals", url: "https://reactnative.dev/docs", time: "30 min", category: "Phase Review" }, dayNumber),
+          enhanceResource({ title: "Comprehensive Review", url: "https://reactnative.dev/docs/getting-started", time: "30 min", category: "Phase Review" }, dayNumber)
+        );
+      }
+    }
+    // Phase 2 (Days 16-30): Intermediate - Each day is unique
+    else if (phase === 2) {
+      if (dayInPhase === 1) {
+        resources.push(
+          enhanceResource({ title: "Advanced Navigation Patterns", url: "https://reactnavigation.org/docs/navigation-container", time: "30 min", category: "Navigation" }, dayNumber),
+          enhanceResource({ title: "Navigation Stacks", url: "https://reactnavigation.org/docs/stack-navigator", time: "25 min", category: "Navigation" }, dayNumber)
+        );
+        if (dayNumber > 16) {
+          resources.push(
+            enhanceResource({ title: "Building on Phase 1 (Days 1-15)", url: "https://reactnative.dev/docs", time: "15 min", category: "Progressive Learning" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 2) {
+        resources.push(
+          enhanceResource({ title: "Deep Linking", url: "https://reactnavigation.org/docs/deep-linking", time: "25 min", category: "Deep Linking" }, dayNumber),
+          enhanceResource({ title: "Universal Links", url: "https://reactnavigation.org/docs/deep-linking#universal-links", time: "30 min", category: "Deep Linking" }, dayNumber)
+        );
+      } else if (dayInPhase === 3) {
+        resources.push(
+          enhanceResource({ title: "Offline-First Architecture", url: "https://reactnative.dev/docs/network", time: "30 min", category: "Architecture" }, dayNumber),
+          enhanceResource({ title: "Network State Detection", url: "https://github.com/react-native-netinfo/react-native-netinfo", time: "25 min", category: "Architecture" }, dayNumber)
+        );
+      } else if (dayInPhase === 4) {
+        resources.push(
+          enhanceResource({ title: "Caching Strategies", url: "https://react-native-async-storage.github.io/async-storage/", time: "25 min", category: "Caching" }, dayNumber),
+          enhanceResource({ title: "Data Caching Patterns", url: "https://reactnative.dev/docs/network#caching", time: "30 min", category: "Caching" }, dayNumber)
+        );
+      } else if (dayInPhase === 5) {
+        resources.push(
+          enhanceResource({ title: "Background Tasks", url: "https://github.com/jamesisaac/react-native-background-job", time: "25 min", category: "Background Tasks" }, dayNumber),
+          enhanceResource({ title: "Background Fetch", url: "https://github.com/transistorsoft/react-native-background-fetch", time: "30 min", category: "Background Tasks" }, dayNumber)
+        );
+      } else if (dayInPhase === 6) {
+        resources.push(
+          enhanceResource({ title: "Push Notifications Setup", url: "https://github.com/zo0r/react-native-push-notification", time: "30 min", category: "Notifications" }, dayNumber),
+          enhanceResource({ title: "Notification Configuration", url: "https://reactnative.dev/docs/pushnotificationios", time: "25 min", category: "Notifications" }, dayNumber)
+        );
+      } else if (dayInPhase === 7) {
+        resources.push(
+          enhanceResource({ title: "Push Notification Handling", url: "https://github.com/zo0r/react-native-push-notification#handling-notifications", time: "30 min", category: "Notifications" }, dayNumber),
+          enhanceResource({ title: "Local Notifications", url: "https://reactnative.dev/docs/pushnotificationios#local-notifications", time: "25 min", category: "Notifications" }, dayNumber)
+        );
+        if (dayNumber > 22) {
+          resources.push(
+            enhanceResource({ title: "Week 3 Review", url: "https://reactnative.dev/docs", time: "20 min", category: "Week Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 8) {
+        resources.push(
+          enhanceResource({ title: "Biometric Authentication", url: "https://github.com/oblador/react-native-keychain", time: "25 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "Touch ID & Face ID", url: "https://github.com/oblador/react-native-keychain#touch-id--face-id", time: "30 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 9) {
+        resources.push(
+          enhanceResource({ title: "Image Optimization", url: "https://reactnative.dev/docs/image", time: "20 min", category: "Performance" }, dayNumber),
+          enhanceResource({ title: "Image Caching", url: "https://github.com/DylanVann/react-native-fast-image", time: "25 min", category: "Performance" }, dayNumber)
+        );
+      } else if (dayInPhase === 10) {
+        resources.push(
+          enhanceResource({ title: "Animations in React Native", url: "https://reactnative.dev/docs/animated", time: "30 min", category: "Animations" }, dayNumber),
+          enhanceResource({ title: "Animated API", url: "https://reactnative.dev/docs/animated#animated-api", time: "25 min", category: "Animations" }, dayNumber)
+        );
+      } else if (dayInPhase === 11) {
+        resources.push(
+          enhanceResource({ title: "Gesture Handling", url: "https://docs.swmansion.com/react-native-gesture-handler/", time: "25 min", category: "Gestures" }, dayNumber),
+          enhanceResource({ title: "Gesture Responder System", url: "https://reactnative.dev/docs/gesture-responder-system", time: "30 min", category: "Gestures" }, dayNumber)
+        );
+      } else if (dayInPhase === 12) {
+        resources.push(
+          enhanceResource({ title: "Native Modules Intro", url: "https://reactnative.dev/docs/native-modules-intro", time: "30 min", category: "Native Modules" }, dayNumber),
+          enhanceResource({ title: "Native Modules Android", url: "https://reactnative.dev/docs/native-modules-android", time: "30 min", category: "Native Modules" }, dayNumber)
+        );
+      } else if (dayInPhase === 13) {
+        resources.push(
+          enhanceResource({ title: "Advanced State Management", url: "https://redux.js.org/", time: "30 min", category: "State Management" }, dayNumber),
+          enhanceResource({ title: "Redux Toolkit", url: "https://redux-toolkit.js.org/", time: "25 min", category: "State Management" }, dayNumber)
+        );
+      } else if (dayInPhase === 14) {
+        resources.push(
+          enhanceResource({ title: "Testing Strategies", url: "https://reactnative.dev/docs/testing-overview", time: "30 min", category: "Testing" }, dayNumber),
+          enhanceResource({ title: "E2E Testing", url: "https://github.com/wix/Detox", time: "30 min", category: "Testing" }, dayNumber)
+        );
+      } else if (dayInPhase === 15) {
+        resources.push(
+          enhanceResource({ title: "Code Splitting", url: "https://reactnative.dev/docs/performance#code-splitting", time: "25 min", category: "Performance" }, dayNumber),
+          enhanceResource({ title: "Phase 2 Complete - Review Intermediate", url: "https://reactnative.dev/docs", time: "30 min", category: "Phase Review" }, dayNumber)
+        );
+      }
+    }
+    // Phase 3+ (Days 31+): Advanced
+    else {
+      const advancedTopics = [
+        { title: "Advanced React Native Patterns", url: "https://reactnative.dev/docs/performance", time: "30 min", category: "Advanced Patterns" },
+        { title: "E2E Testing with Detox", url: "https://github.com/wix/Detox", time: "35 min", category: "Testing" },
+        { title: "Performance Optimization", url: "https://reactnative.dev/docs/performance", time: "30 min", category: "Performance" },
+        { title: "Native Module Development", url: "https://reactnative.dev/docs/native-modules-android", time: "35 min", category: "Native Development" },
+        { title: "App Store Optimization", url: "https://developer.apple.com/app-store/optimization/", time: "25 min", category: "Deployment" },
+        { title: "CI/CD for Mobile Apps", url: "https://docs.expo.dev/build/introduction/", time: "30 min", category: "CI/CD" }
+      ];
+      const topicIndex = (dayNumber - 31) % advancedTopics.length;
+      resources.push(enhanceResource(advancedTopics[topicIndex], dayNumber));
+      if (dayInPhase > 6) {
+        resources.push(enhanceResource(advancedTopics[(topicIndex + 1) % advancedTopics.length], dayNumber));
+      }
+      if (dayNumber > 31) {
+        resources.push(
+          enhanceResource({ title: `Building on Days 1-${dayNumber - 1} Mobile`, url: "https://reactnative.dev/docs", time: "15 min", category: "Progressive Learning" }, dayNumber)
+        );
+      }
+      if (dayNumber % 15 === 0) {
+        resources.push(
+          enhanceResource({ title: `Milestone: Day ${dayNumber} Mobile Review`, url: "https://reactnative.dev/docs", time: "30 min", category: "Milestone Review" }, dayNumber)
+        );
+      }
+    }
+    
+    return resources;
+  }
+  
+  // Backend progressive resources
+  if (discipline === "Backend") {
+    const resources = [];
+    
+    // Phase 1 (Days 1-15): Fundamentals - Each day is unique
+    if (phase === 1) {
+      if (dayInPhase === 1) {
+        resources.push(
+          enhanceResource({ title: "Node.js Getting Started", url: "https://nodejs.org/en/docs/guides/getting-started-guide", time: "25 min", category: "Fundamentals" }, dayNumber),
+          enhanceResource({ title: "Node.js Basics", url: "https://nodejs.org/en/docs/guides/getting-started-guide#nodejs-basics", time: "20 min", category: "Fundamentals" }, dayNumber)
+        );
+      } else if (dayInPhase === 2) {
+        resources.push(
+          enhanceResource({ title: "Express.js Hello World", url: "https://expressjs.com/en/starter/hello-world.html", time: "20 min", category: "Framework" }, dayNumber),
+          enhanceResource({ title: "Express Installation", url: "https://expressjs.com/en/starter/installing.html", time: "25 min", category: "Framework" }, dayNumber)
+        );
+        if (dayNumber > 1) {
+          resources.push(
+            enhanceResource({ title: "Review: Day 1 Concepts", url: "https://nodejs.org/en/docs", time: "10 min", category: "Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 3) {
+        resources.push(
+          enhanceResource({ title: "Express Routing", url: "https://expressjs.com/en/guide/routing.html", time: "25 min", category: "Routing" }, dayNumber),
+          enhanceResource({ title: "Route Methods", url: "https://expressjs.com/en/guide/routing.html#route-methods", time: "25 min", category: "Routing" }, dayNumber)
+        );
+      } else if (dayInPhase === 4) {
+        resources.push(
+          enhanceResource({ title: "Express Middleware", url: "https://expressjs.com/en/guide/using-middleware.html", time: "25 min", category: "Middleware" }, dayNumber),
+          enhanceResource({ title: "Writing Middleware", url: "https://expressjs.com/en/guide/writing-middleware.html", time: "30 min", category: "Middleware" }, dayNumber)
+        );
+      } else if (dayInPhase === 5) {
+        resources.push(
+          enhanceResource({ title: "REST API Design", url: "https://restfulapi.net/", time: "30 min", category: "API Design" }, dayNumber),
+          enhanceResource({ title: "REST Principles", url: "https://restfulapi.net/rest-architectural-constraints/", time: "25 min", category: "API Design" }, dayNumber)
+        );
+      } else if (dayInPhase === 6) {
+        resources.push(
+          enhanceResource({ title: "MongoDB CRUD Operations", url: "https://www.mongodb.com/docs/manual/crud/", time: "30 min", category: "Database" }, dayNumber),
+          enhanceResource({ title: "MongoDB Basics", url: "https://www.mongodb.com/docs/manual/core/databases-and-collections/", time: "25 min", category: "Database" }, dayNumber)
+        );
+      } else if (dayInPhase === 7) {
+        resources.push(
+          enhanceResource({ title: "Mongoose Guide", url: "https://mongoosejs.com/docs/guide.html", time: "25 min", category: "ORM" }, dayNumber),
+          enhanceResource({ title: "Mongoose Schemas", url: "https://mongoosejs.com/docs/guide.html#schemas", time: "30 min", category: "ORM" }, dayNumber)
+        );
+        if (dayNumber > 7) {
+          resources.push(
+            enhanceResource({ title: "Week 1 Review", url: "https://nodejs.org/en/docs", time: "20 min", category: "Week Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 8) {
+        resources.push(
+          enhanceResource({ title: "Database Schema Design", url: "https://www.mongodb.com/docs/manual/core/data-modeling-introduction/", time: "25 min", category: "Database Design" }, dayNumber),
+          enhanceResource({ title: "Data Modeling", url: "https://www.mongodb.com/docs/manual/core/data-models/", time: "30 min", category: "Database Design" }, dayNumber)
+        );
+      } else if (dayInPhase === 9) {
+        resources.push(
+          enhanceResource({ title: "JWT Authentication Guide", url: "https://jwt.io/introduction", time: "25 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "JWT Implementation", url: "https://jwt.io/introduction#how-it-works", time: "30 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 10) {
+        resources.push(
+          enhanceResource({ title: "Password Hashing", url: "https://www.npmjs.com/package/bcrypt", time: "20 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "bcrypt Guide", url: "https://github.com/kelektiv/node.bcrypt.js", time: "25 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 11) {
+        resources.push(
+          enhanceResource({ title: "Express Error Handling", url: "https://expressjs.com/en/guide/error-handling.html", time: "20 min", category: "Error Handling" }, dayNumber),
+          enhanceResource({ title: "Error Middleware", url: "https://expressjs.com/en/guide/error-handling.html#error-handling-middleware", time: "25 min", category: "Error Handling" }, dayNumber)
+        );
+      } else if (dayInPhase === 12) {
+        resources.push(
+          enhanceResource({ title: "API Security Best Practices", url: "https://owasp.org/www-project-api-security/", time: "30 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "OWASP Top 10", url: "https://owasp.org/www-project-top-ten/", time: "25 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 13) {
+        resources.push(
+          enhanceResource({ title: "Input Validation", url: "https://express-validator.github.io/docs/", time: "25 min", category: "Validation" }, dayNumber),
+          enhanceResource({ title: "express-validator Guide", url: "https://express-validator.github.io/docs/guides/getting-started", time: "30 min", category: "Validation" }, dayNumber)
+        );
+      } else if (dayInPhase === 14) {
+        resources.push(
+          enhanceResource({ title: "Testing Node.js Applications", url: "https://jestjs.io/docs/getting-started", time: "30 min", category: "Testing" }, dayNumber),
+          enhanceResource({ title: "Jest Testing", url: "https://jestjs.io/docs/getting-started#using-matchers", time: "25 min", category: "Testing" }, dayNumber)
+        );
+      } else if (dayInPhase === 15) {
+        resources.push(
+          enhanceResource({ title: "Phase 1 Complete - Review Fundamentals", url: "https://nodejs.org/en/docs", time: "30 min", category: "Phase Review" }, dayNumber),
+          enhanceResource({ title: "Comprehensive Review", url: "https://expressjs.com/en/guide", time: "30 min", category: "Phase Review" }, dayNumber)
+        );
+      }
+    }
+    // Phase 2 (Days 16-30): Intermediate - Each day is unique
+    else if (phase === 2) {
+      if (dayInPhase === 1) {
+        resources.push(
+          enhanceResource({ title: "Advanced Express Patterns", url: "https://expressjs.com/en/advanced/best-practice-performance.html", time: "30 min", category: "Best Practices" }, dayNumber),
+          enhanceResource({ title: "Express Best Practices", url: "https://expressjs.com/en/advanced/best-practice-performance.html#best-practices", time: "25 min", category: "Best Practices" }, dayNumber)
+        );
+        if (dayNumber > 16) {
+          resources.push(
+            enhanceResource({ title: "Building on Phase 1 (Days 1-15)", url: "https://expressjs.com/en/guide", time: "15 min", category: "Progressive Learning" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 2) {
+        resources.push(
+          enhanceResource({ title: "API Versioning", url: "https://restfulapi.net/versioning/", time: "25 min", category: "API Design" }, dayNumber),
+          enhanceResource({ title: "Versioning Strategies", url: "https://restfulapi.net/versioning/#versioning-strategies", time: "30 min", category: "API Design" }, dayNumber)
+        );
+      } else if (dayInPhase === 3) {
+        resources.push(
+          enhanceResource({ title: "Database Indexing", url: "https://www.mongodb.com/docs/manual/indexes/", time: "25 min", category: "Database" }, dayNumber),
+          enhanceResource({ title: "Index Types", url: "https://www.mongodb.com/docs/manual/indexes/#index-types", time: "30 min", category: "Database" }, dayNumber)
+        );
+      } else if (dayInPhase === 4) {
+        resources.push(
+          enhanceResource({ title: "Query Optimization", url: "https://www.mongodb.com/docs/manual/core/query-optimization/", time: "30 min", category: "Performance" }, dayNumber),
+          enhanceResource({ title: "Explain Plans", url: "https://www.mongodb.com/docs/manual/reference/explain-results/", time: "25 min", category: "Performance" }, dayNumber)
+        );
+      } else if (dayInPhase === 5) {
+        resources.push(
+          enhanceResource({ title: "Aggregation Pipeline", url: "https://www.mongodb.com/docs/manual/core/aggregation-pipeline/", time: "30 min", category: "Database" }, dayNumber),
+          enhanceResource({ title: "Aggregation Stages", url: "https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/", time: "30 min", category: "Database" }, dayNumber)
+        );
+      } else if (dayInPhase === 6) {
+        resources.push(
+          enhanceResource({ title: "WebSocket with Socket.io", url: "https://socket.io/docs/v4/", time: "30 min", category: "Real-time" }, dayNumber),
+          enhanceResource({ title: "Socket.io Setup", url: "https://socket.io/docs/v4/server-initialization/", time: "25 min", category: "Real-time" }, dayNumber)
+        );
+      } else if (dayInPhase === 7) {
+        resources.push(
+          enhanceResource({ title: "File Upload Handling", url: "https://www.npmjs.com/package/multer", time: "25 min", category: "File Handling" }, dayNumber),
+          enhanceResource({ title: "Multer Configuration", url: "https://github.com/expressjs/multer#usage", time: "30 min", category: "File Handling" }, dayNumber)
+        );
+        if (dayNumber > 22) {
+          resources.push(
+            enhanceResource({ title: "Week 3 Review", url: "https://nodejs.org/en/docs", time: "20 min", category: "Week Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 8) {
+        resources.push(
+          enhanceResource({ title: "Caching with Redis", url: "https://redis.io/docs/", time: "30 min", category: "Caching" }, dayNumber),
+          enhanceResource({ title: "Redis Setup", url: "https://redis.io/docs/getting-started/", time: "25 min", category: "Caching" }, dayNumber)
+        );
+      } else if (dayInPhase === 9) {
+        resources.push(
+          enhanceResource({ title: "Rate Limiting", url: "https://www.npmjs.com/package/express-rate-limit", time: "25 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "Rate Limiting Strategies", url: "https://www.npmjs.com/package/express-rate-limit#configuration", time: "30 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 10) {
+        resources.push(
+          enhanceResource({ title: "API Documentation with Swagger", url: "https://swagger.io/specification/", time: "30 min", category: "Documentation" }, dayNumber),
+          enhanceResource({ title: "Swagger Setup", url: "https://swagger.io/specification/#swagger-object", time: "25 min", category: "Documentation" }, dayNumber)
+        );
+      } else if (dayInPhase === 11) {
+        resources.push(
+          enhanceResource({ title: "Microservices Architecture", url: "https://microservices.io/patterns/microservices.html", time: "35 min", category: "Architecture" }, dayNumber),
+          enhanceResource({ title: "Microservices Patterns", url: "https://microservices.io/patterns/", time: "30 min", category: "Architecture" }, dayNumber)
+        );
+      } else if (dayInPhase === 12) {
+        resources.push(
+          enhanceResource({ title: "Advanced Authentication", url: "https://oauth.net/2/", time: "30 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "OAuth 2.0", url: "https://oauth.net/2/", time: "30 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 13) {
+        resources.push(
+          enhanceResource({ title: "Background Jobs", url: "https://github.com/OptimalBits/bull", time: "30 min", category: "Background Jobs" }, dayNumber),
+          enhanceResource({ title: "Bull Queue", url: "https://github.com/OptimalBits/bull#basic-usage", time: "30 min", category: "Background Jobs" }, dayNumber)
+        );
+      } else if (dayInPhase === 14) {
+        resources.push(
+          enhanceResource({ title: "GraphQL Basics", url: "https://graphql.org/learn/", time: "35 min", category: "API" }, dayNumber),
+          enhanceResource({ title: "GraphQL Schema", url: "https://graphql.org/learn/schema/", time: "30 min", category: "API" }, dayNumber)
+        );
+      } else if (dayInPhase === 15) {
+        resources.push(
+          enhanceResource({ title: "Phase 2 Complete - Review Intermediate", url: "https://nodejs.org/en/docs", time: "30 min", category: "Phase Review" }, dayNumber),
+          enhanceResource({ title: "Comprehensive Review", url: "https://expressjs.com/en/guide", time: "30 min", category: "Phase Review" }, dayNumber)
+        );
+      }
+    }
+    // Phase 3+ (Days 31+): Advanced
+    else {
+      const advancedTopics = [
+        { title: "Advanced Database Patterns", url: "https://www.mongodb.com/docs/manual/core/data-modeling-introduction/", time: "30 min", category: "Database" },
+        { title: "Microservices Communication", url: "https://microservices.io/patterns/communication-style/messaging.html", time: "35 min", category: "Architecture" },
+        { title: "API Gateway Patterns", url: "https://microservices.io/patterns/apigateway.html", time: "30 min", category: "Architecture" },
+        { title: "Distributed Systems", url: "https://en.wikipedia.org/wiki/Distributed_computing", time: "35 min", category: "Architecture" },
+        { title: "Advanced Security", url: "https://owasp.org/www-project-top-ten/", time: "30 min", category: "Security" },
+        { title: "Performance Monitoring", url: "https://www.datadoghq.com/", time: "30 min", category: "Monitoring" }
+      ];
+      const topicIndex = (dayNumber - 31) % advancedTopics.length;
+      resources.push(enhanceResource(advancedTopics[topicIndex], dayNumber));
+      if (dayInPhase > 6) {
+        resources.push(enhanceResource(advancedTopics[(topicIndex + 1) % advancedTopics.length], dayNumber));
+      }
+      if (dayNumber > 31) {
+        resources.push(
+          enhanceResource({ title: `Building on Days 1-${dayNumber - 1} Backend`, url: "https://nodejs.org/en/docs", time: "15 min", category: "Progressive Learning" }, dayNumber)
+        );
+      }
+      if (dayNumber % 15 === 0) {
+        resources.push(
+          enhanceResource({ title: `Milestone: Day ${dayNumber} Backend Review`, url: "https://nodejs.org/en/docs", time: "30 min", category: "Milestone Review" }, dayNumber)
+        );
+      }
+    }
+    
+    return resources;
+  }
+  
+  // WordPress/Systems Engineering progressive resources
+  if (discipline === "Systems Engineering") {
+    const resources = [];
+    
+    // Phase 1 (Days 1-15): Fundamentals - Each day is unique
+    if (phase === 1) {
+      if (dayInPhase === 1) {
+        resources.push(
+          enhanceResource({ title: "WordPress Development Environment", url: "https://developer.wordpress.org/getting-started/", time: "25 min", category: "Setup" }, dayNumber),
+          enhanceResource({ title: "WordPress Installation", url: "https://wordpress.org/support/article/how-to-install-wordpress/", time: "30 min", category: "Setup" }, dayNumber)
+        );
+      } else if (dayInPhase === 2) {
+        resources.push(
+          enhanceResource({ title: "WordPress Basics", url: "https://wordpress.org/support/article/first-steps-with-wordpress/", time: "30 min", category: "Fundamentals" }, dayNumber),
+          enhanceResource({ title: "WordPress Dashboard", url: "https://wordpress.org/support/article/dashboard-screen/", time: "25 min", category: "Fundamentals" }, dayNumber)
+        );
+        if (dayNumber > 1) {
+          resources.push(
+            enhanceResource({ title: "Review: Day 1 Concepts", url: "https://developer.wordpress.org/getting-started/", time: "10 min", category: "Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 3) {
+        resources.push(
+          enhanceResource({ title: "WordPress File Structure", url: "https://developer.wordpress.org/themes/basics/template-files/", time: "25 min", category: "Structure" }, dayNumber),
+          enhanceResource({ title: "Theme File Organization", url: "https://developer.wordpress.org/themes/basics/organizing-theme-files/", time: "30 min", category: "Structure" }, dayNumber)
+        );
+      } else if (dayInPhase === 4) {
+        resources.push(
+          enhanceResource({ title: "Template Hierarchy", url: "https://developer.wordpress.org/themes/basics/template-hierarchy/", time: "30 min", category: "Themes" }, dayNumber),
+          enhanceResource({ title: "Template Files", url: "https://developer.wordpress.org/themes/basics/template-files/", time: "25 min", category: "Themes" }, dayNumber)
+        );
+      } else if (dayInPhase === 5) {
+        resources.push(
+          enhanceResource({ title: "WordPress Hooks", url: "https://developer.wordpress.org/plugins/hooks/", time: "25 min", category: "Hooks" }, dayNumber),
+          enhanceResource({ title: "Actions and Filters", url: "https://developer.wordpress.org/plugins/hooks/actions-and-filters/", time: "30 min", category: "Hooks" }, dayNumber)
+        );
+      } else if (dayInPhase === 6) {
+        resources.push(
+          enhanceResource({ title: "Theme Development", url: "https://developer.wordpress.org/themes/getting-started/", time: "30 min", category: "Themes" }, dayNumber),
+          enhanceResource({ title: "Creating a Theme", url: "https://developer.wordpress.org/themes/getting-started/creating-your-first-theme/", time: "30 min", category: "Themes" }, dayNumber)
+        );
+      } else if (dayInPhase === 7) {
+        resources.push(
+          enhanceResource({ title: "Custom Post Types", url: "https://developer.wordpress.org/reference/functions/register_post_type/", time: "30 min", category: "Development" }, dayNumber),
+          enhanceResource({ title: "Post Type Registration", url: "https://developer.wordpress.org/reference/functions/register_post_type/#parameters", time: "30 min", category: "Development" }, dayNumber)
+        );
+        if (dayNumber > 7) {
+          resources.push(
+            enhanceResource({ title: "Week 1 Review", url: "https://developer.wordpress.org/getting-started/", time: "20 min", category: "Week Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 8) {
+        resources.push(
+          enhanceResource({ title: "Custom Fields", url: "https://developer.wordpress.org/plugins/metadata/custom-meta-boxes/", time: "25 min", category: "Development" }, dayNumber),
+          enhanceResource({ title: "Meta Boxes", url: "https://developer.wordpress.org/plugins/metadata/custom-meta-boxes/#creating-custom-meta-boxes", time: "30 min", category: "Development" }, dayNumber)
+        );
+      } else if (dayInPhase === 9) {
+        resources.push(
+          enhanceResource({ title: "Plugin Development", url: "https://developer.wordpress.org/plugins/plugin-basics/", time: "30 min", category: "Plugins" }, dayNumber),
+          enhanceResource({ title: "Creating a Plugin", url: "https://developer.wordpress.org/plugins/plugin-basics/header-requirements/", time: "30 min", category: "Plugins" }, dayNumber)
+        );
+      } else if (dayInPhase === 10) {
+        resources.push(
+          enhanceResource({ title: "WordPress REST API", url: "https://developer.wordpress.org/rest-api/", time: "30 min", category: "API" }, dayNumber),
+          enhanceResource({ title: "REST API Endpoints", url: "https://developer.wordpress.org/rest-api/reference/", time: "30 min", category: "API" }, dayNumber)
+        );
+      } else if (dayInPhase === 11) {
+        resources.push(
+          enhanceResource({ title: "User Roles and Capabilities", url: "https://developer.wordpress.org/plugins/users/roles-and-capabilities/", time: "25 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "Managing Capabilities", url: "https://developer.wordpress.org/plugins/users/roles-and-capabilities/#checking-capabilities", time: "30 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 12) {
+        resources.push(
+          enhanceResource({ title: "WordPress Security", url: "https://wordpress.org/support/article/hardening-wordpress/", time: "30 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "Security Best Practices", url: "https://wordpress.org/support/article/hardening-wordpress/#keep-wordpress-updated", time: "25 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 13) {
+        resources.push(
+          enhanceResource({ title: "Database Queries", url: "https://developer.wordpress.org/reference/classes/wp_query/", time: "30 min", category: "Database" }, dayNumber),
+          enhanceResource({ title: "WP_Query Class", url: "https://developer.wordpress.org/reference/classes/wp_query/#parameters", time: "30 min", category: "Database" }, dayNumber)
+        );
+      } else if (dayInPhase === 14) {
+        resources.push(
+          enhanceResource({ title: "WordPress Best Practices", url: "https://developer.wordpress.org/coding-standards/", time: "25 min", category: "Best Practices" }, dayNumber),
+          enhanceResource({ title: "Coding Standards", url: "https://developer.wordpress.org/coding-standards/wordpress-coding-standards/", time: "30 min", category: "Best Practices" }, dayNumber)
+        );
+      } else if (dayInPhase === 15) {
+        resources.push(
+          enhanceResource({ title: "Phase 1 Complete - Review Fundamentals", url: "https://developer.wordpress.org/getting-started/", time: "30 min", category: "Phase Review" }, dayNumber),
+          enhanceResource({ title: "Comprehensive Review", url: "https://developer.wordpress.org/themes/getting-started/", time: "30 min", category: "Phase Review" }, dayNumber)
+        );
+      }
+    }
+    // Phase 2 (Days 16-30): Intermediate - Each day is unique
+    else if (phase === 2) {
+      if (dayInPhase === 1) {
+        resources.push(
+          enhanceResource({ title: "Advanced Theme Development", url: "https://developer.wordpress.org/themes/advanced-topics/", time: "35 min", category: "Themes" }, dayNumber),
+          enhanceResource({ title: "Theme Architecture", url: "https://developer.wordpress.org/themes/advanced-topics/theme-architecture/", time: "30 min", category: "Themes" }, dayNumber)
+        );
+        if (dayNumber > 16) {
+          resources.push(
+            enhanceResource({ title: "Building on Phase 1 (Days 1-15)", url: "https://developer.wordpress.org/getting-started/", time: "15 min", category: "Progressive Learning" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 2) {
+        resources.push(
+          enhanceResource({ title: "Gutenberg Block Development", url: "https://developer.wordpress.org/block-editor/getting-started/", time: "35 min", category: "Blocks" }, dayNumber),
+          enhanceResource({ title: "Creating Blocks", url: "https://developer.wordpress.org/block-editor/getting-started/create-a-block/", time: "35 min", category: "Blocks" }, dayNumber)
+        );
+      } else if (dayInPhase === 3) {
+        resources.push(
+          enhanceResource({ title: "Advanced Plugin Development", url: "https://developer.wordpress.org/plugins/plugin-basics/", time: "35 min", category: "Plugins" }, dayNumber),
+          enhanceResource({ title: "Plugin Architecture", url: "https://developer.wordpress.org/plugins/plugin-basics/plugin-file-structure/", time: "30 min", category: "Plugins" }, dayNumber)
+        );
+      } else if (dayInPhase === 4) {
+        resources.push(
+          enhanceResource({ title: "WordPress Cron Jobs", url: "https://developer.wordpress.org/plugins/cron/", time: "25 min", category: "Scheduling" }, dayNumber),
+          enhanceResource({ title: "WP-Cron System", url: "https://developer.wordpress.org/plugins/cron/scheduling-wp-cron-events/", time: "30 min", category: "Scheduling" }, dayNumber)
+        );
+      } else if (dayInPhase === 5) {
+        resources.push(
+          enhanceResource({ title: "Settings API", url: "https://developer.wordpress.org/plugins/settings/settings-api/", time: "30 min", category: "Settings" }, dayNumber),
+          enhanceResource({ title: "Creating Settings Pages", url: "https://developer.wordpress.org/plugins/settings/settings-api/#creating-settings-pages", time: "30 min", category: "Settings" }, dayNumber)
+        );
+      } else if (dayInPhase === 6) {
+        resources.push(
+          enhanceResource({ title: "WordPress Performance", url: "https://developer.wordpress.org/advanced-administration/performance/optimization/", time: "30 min", category: "Performance" }, dayNumber),
+          enhanceResource({ title: "Performance Optimization", url: "https://developer.wordpress.org/advanced-administration/performance/optimization/#optimization-techniques", time: "30 min", category: "Performance" }, dayNumber)
+        );
+      } else if (dayInPhase === 7) {
+        resources.push(
+          enhanceResource({ title: "Caching Strategies", url: "https://developer.wordpress.org/advanced-administration/performance/caching/", time: "30 min", category: "Caching" }, dayNumber),
+          enhanceResource({ title: "Object Caching", url: "https://developer.wordpress.org/advanced-administration/performance/caching/#object-caching", time: "30 min", category: "Caching" }, dayNumber)
+        );
+        if (dayNumber > 22) {
+          resources.push(
+            enhanceResource({ title: "Week 3 Review", url: "https://developer.wordpress.org/getting-started/", time: "20 min", category: "Week Review" }, dayNumber)
+          );
+        }
+      } else if (dayInPhase === 8) {
+        resources.push(
+          enhanceResource({ title: "Database Optimization", url: "https://developer.wordpress.org/advanced-administration/performance/database-optimization/", time: "30 min", category: "Database" }, dayNumber),
+          enhanceResource({ title: "Query Optimization", url: "https://developer.wordpress.org/advanced-administration/performance/database-optimization/#query-optimization", time: "30 min", category: "Database" }, dayNumber)
+        );
+      } else if (dayInPhase === 9) {
+        resources.push(
+          enhanceResource({ title: "WordPress Multisite", url: "https://developer.wordpress.org/advanced-administration/multisite/", time: "35 min", category: "Multisite" }, dayNumber),
+          enhanceResource({ title: "Multisite Setup", url: "https://developer.wordpress.org/advanced-administration/multisite/create-a-network/", time: "35 min", category: "Multisite" }, dayNumber)
+        );
+      } else if (dayInPhase === 10) {
+        resources.push(
+          enhanceResource({ title: "Custom Taxonomies", url: "https://developer.wordpress.org/reference/functions/register_taxonomy/", time: "30 min", category: "Development" }, dayNumber),
+          enhanceResource({ title: "Taxonomy Registration", url: "https://developer.wordpress.org/reference/functions/register_taxonomy/#parameters", time: "30 min", category: "Development" }, dayNumber)
+        );
+      } else if (dayInPhase === 11) {
+        resources.push(
+          enhanceResource({ title: "WordPress CLI", url: "https://wp-cli.org/", time: "30 min", category: "CLI" }, dayNumber),
+          enhanceResource({ title: "WP-CLI Commands", url: "https://wp-cli.org/commands/", time: "30 min", category: "CLI" }, dayNumber)
+        );
+      } else if (dayInPhase === 12) {
+        resources.push(
+          enhanceResource({ title: "E-commerce with WooCommerce", url: "https://woocommerce.com/documentation/", time: "35 min", category: "E-commerce" }, dayNumber),
+          enhanceResource({ title: "WooCommerce Setup", url: "https://woocommerce.com/documentation/woocommerce-getting-started/", time: "35 min", category: "E-commerce" }, dayNumber)
+        );
+      } else if (dayInPhase === 13) {
+        resources.push(
+          enhanceResource({ title: "WordPress Deployment", url: "https://developer.wordpress.org/advanced-administration/deployment/", time: "30 min", category: "Deployment" }, dayNumber),
+          enhanceResource({ title: "Deployment Best Practices", url: "https://developer.wordpress.org/advanced-administration/deployment/#deployment-best-practices", time: "30 min", category: "Deployment" }, dayNumber)
+        );
+      } else if (dayInPhase === 14) {
+        resources.push(
+          enhanceResource({ title: "WordPress Security Hardening", url: "https://wordpress.org/support/article/hardening-wordpress/", time: "30 min", category: "Security" }, dayNumber),
+          enhanceResource({ title: "Security Measures", url: "https://wordpress.org/support/article/hardening-wordpress/#security-measures", time: "30 min", category: "Security" }, dayNumber)
+        );
+      } else if (dayInPhase === 15) {
+        resources.push(
+          enhanceResource({ title: "Phase 2 Complete - Review Intermediate", url: "https://developer.wordpress.org/getting-started/", time: "30 min", category: "Phase Review" }, dayNumber),
+          enhanceResource({ title: "Comprehensive Review", url: "https://developer.wordpress.org/themes/advanced-topics/", time: "30 min", category: "Phase Review" }, dayNumber)
+        );
+      }
+    }
+    // Phase 3+ (Days 31+): Advanced
+    else {
+      const advancedTopics = [
+        { title: "Advanced WordPress Architecture", url: "https://developer.wordpress.org/advanced-administration/", time: "35 min", category: "Architecture" },
+        { title: "Headless WordPress", url: "https://developer.wordpress.org/rest-api/", time: "35 min", category: "Headless" },
+        { title: "WordPress as a CMS", url: "https://developer.wordpress.org/rest-api/", time: "30 min", category: "CMS" },
+        { title: "Custom Database Tables", url: "https://developer.wordpress.org/reference/functions/wpdb/", time: "30 min", category: "Database" },
+        { title: "WordPress Performance Optimization", url: "https://developer.wordpress.org/advanced-administration/performance/optimization/", time: "30 min", category: "Performance" },
+        { title: "WordPress Freelancing", url: "https://wordpress.org/support/article/", time: "30 min", category: "Business" }
+      ];
+      const topicIndex = (dayNumber - 31) % advancedTopics.length;
+      resources.push(enhanceResource(advancedTopics[topicIndex], dayNumber));
+      if (dayInPhase > 6) {
+        resources.push(enhanceResource(advancedTopics[(topicIndex + 1) % advancedTopics.length], dayNumber));
+      }
+      if (dayNumber > 31) {
+        resources.push(
+          enhanceResource({ title: `Building on Days 1-${dayNumber - 1} WordPress`, url: "https://developer.wordpress.org/getting-started/", time: "15 min", category: "Progressive Learning" }, dayNumber)
+        );
+      }
+      if (dayNumber % 15 === 0) {
+        resources.push(
+          enhanceResource({ title: `Milestone: Day ${dayNumber} WordPress Review`, url: "https://developer.wordpress.org/getting-started/", time: "30 min", category: "Milestone Review" }, dayNumber)
+        );
+      }
+    }
+    
+    return resources;
+  }
+  
+  return [];
+}
+
 function getDaySpecificResources(dayNumber, discipline, weekNum, dayIndex) {
+  // Use progressive daily resources that build on each other
+  const progressiveResources = getProgressiveDailyResources(dayNumber, discipline, weekNum, dayIndex);
+  
+  // Also include component-specific resources as supplementary
   const component = getProjectComponentForDay(dayNumber, discipline);
   const componentName = component.component || "";
   const partName = component.part || "";
+  const phase = Math.ceil(dayNumber / 15);
+  const dayInPhase = ((dayNumber - 1) % 15) + 1;
   
-  // Frontend resources based on component being built
+  // Helper to enhance component resources with day-specific context
+  const enhanceComponentResource = (resource) => {
+    return {
+      ...resource,
+      title: `Day ${dayNumber}: ${resource.title}`,
+      description: resource.description || `Component-specific resource for Day ${dayNumber} - ${componentName}. Part of Phase ${phase}, Day ${dayInPhase}.`,
+      dayNumber: dayNumber,
+      phase: phase,
+      dayInPhase: dayInPhase,
+      component: componentName,
+    };
+  };
+  
+  // Combine progressive resources with component-specific ones (if any)
+  let componentResources = [];
+  
+  // Frontend component-specific resources (supplementary)
   if (discipline === "Frontend") {
-    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
-      return [
-        {
-          title: "React Project Setup Guide",
-          url: "https://react.dev/learn/start-a-new-react-project",
-          time: "15 min",
-          category: "Setup"
-        },
-        {
-          title: "Modern JavaScript for React",
-          url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
-          time: "20 min",
-          category: "Fundamentals"
-        }
-      ];
-    }
     if (componentName.includes("Layout") || partName.includes("Layout")) {
-      return [
-        {
-          title: "CSS Layout Patterns",
-          url: "https://css-tricks.com/guides/layout/",
-          time: "25 min",
-          category: "Layout"
-        },
-        {
-          title: "React Component Composition",
-          url: "https://react.dev/learn/passing-props-to-a-component",
-          time: "15 min",
-          category: "Components"
-        }
-      ];
-    }
-    if (componentName.includes("Auth") || partName.includes("Auth")) {
-      return [
-        {
-          title: "React Form Handling",
-          url: "https://react.dev/reference/react-dom/components/form",
-          time: "20 min",
-          category: "Forms"
-        },
-        {
-          title: "Authentication Best Practices",
-          url: "https://developer.mozilla.org/en-US/docs/Web/Security/Authentication",
-          time: "15 min",
-          category: "Security"
-        }
-      ];
-    }
-    if (componentName.includes("Dashboard") || componentName.includes("List") || componentName.includes("Detail")) {
-      return [
-        {
-          title: "React State Management",
-          url: "https://react.dev/learn/managing-state",
-          time: "25 min",
-          category: "State"
-        },
-        {
-          title: "Data Fetching in React",
-          url: "https://react.dev/learn/synchronizing-with-effects",
-          time: "20 min",
-          category: "Data"
-        }
-      ];
+      componentResources.push(enhanceComponentResource({
+        title: "CSS Layout Patterns",
+        url: "https://css-tricks.com/guides/layout/",
+        time: "25 min",
+        category: "Layout"
+      }));
     }
     if (componentName.includes("Form") || componentName.includes("Modal")) {
-      return [
-        {
-          title: "Controlled Components",
-          url: "https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable",
-          time: "15 min",
-          category: "Forms"
-        },
-        {
-          title: "React Portal for Modals",
-          url: "https://react.dev/reference/react-dom/createPortal",
-          time: "15 min",
-          category: "UI Patterns"
-        }
-      ];
+      componentResources.push(enhanceComponentResource({
+        title: "React Portal for Modals",
+        url: "https://react.dev/reference/react-dom/createPortal",
+        time: "15 min",
+        category: "UI Patterns"
+      }));
     }
-    // Default frontend resources
-    return [
-      {
-        title: "React Official Docs",
+    if (componentName.includes("Dashboard")) {
+      componentResources.push(enhanceComponentResource({
+        title: "Dashboard Design Patterns",
         url: "https://react.dev/learn",
         time: "20 min",
-        category: "Reference"
-      },
-      {
-        title: "MDN Web Docs",
-        url: "https://developer.mozilla.org",
-        time: "15 min",
-        category: "Reference"
-      }
-    ];
+        category: "Design Patterns"
+      }));
+    }
   }
   
-  // Mobile resources based on component being built
+  // Mobile component-specific resources (supplementary)
   if (discipline === "Mobile") {
-    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
-      return [
-        {
-          title: "React Native Getting Started",
-          url: "https://reactnative.dev/docs/getting-started",
-          time: "20 min",
-          category: "Setup"
-        },
-        {
-          title: "Expo Quick Start",
-          url: "https://docs.expo.dev/get-started/installation/",
-          time: "15 min",
-          category: "Setup"
-        }
-      ];
+    if (componentName.includes("Offline")) {
+      componentResources.push(enhanceComponentResource({
+        title: "Offline-First Architecture",
+        url: "https://reactnative.dev/docs/network",
+        time: "20 min",
+        category: "Architecture"
+      }));
     }
     if (componentName.includes("Navigation")) {
-      return [
-        {
-          title: "React Navigation Basics",
-          url: "https://reactnavigation.org/docs/getting-started",
-          time: "25 min",
-          category: "Navigation"
-        }
-      ];
+      componentResources.push(enhanceComponentResource({
+        title: "React Navigation Advanced",
+        url: "https://reactnavigation.org/docs/getting-started",
+        time: "25 min",
+        category: "Navigation"
+      }));
     }
-    if (componentName.includes("Auth") || componentName.includes("Login")) {
-      return [
-        {
-          title: "React Native Forms",
-          url: "https://reactnative.dev/docs/textinput",
-          time: "15 min",
-          category: "Forms"
-        },
-        {
-          title: "AsyncStorage Guide",
-          url: "https://react-native-async-storage.github.io/async-storage/",
-          time: "15 min",
-          category: "Storage"
-        }
-      ];
-    }
-    if (componentName.includes("Offline")) {
-      return [
-        {
-          title: "Offline-First Architecture",
-          url: "https://reactnative.dev/docs/network",
-          time: "20 min",
-          category: "Architecture"
-        }
-      ];
-    }
-    // Default mobile resources
-    return [
-      {
-        title: "React Native Docs",
-        url: "https://reactnative.dev",
-        time: "20 min",
-        category: "Reference"
-      }
-    ];
   }
   
-  // Backend resources based on component being built
+  // Backend component-specific resources (supplementary)
   if (discipline === "Backend") {
-    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
-      return [
-        {
-          title: "Node.js Getting Started",
-          url: "https://nodejs.org/en/docs/guides/getting-started-guide",
-          time: "20 min",
-          category: "Setup"
-        },
-        {
-          title: "Express.js Hello World",
-          url: "https://expressjs.com/en/starter/hello-world.html",
-          time: "15 min",
-          category: "Framework"
-        }
-      ];
+    if (componentName.includes("Auth")) {
+      componentResources.push(enhanceComponentResource({
+        title: "Authentication Best Practices",
+        url: "https://jwt.io/introduction",
+        time: "25 min",
+        category: "Security"
+      }));
     }
-    if (componentName.includes("Auth") || componentName.includes("Authentication")) {
-      return [
-        {
-          title: "JWT Authentication Guide",
-          url: "https://jwt.io/introduction",
-          time: "20 min",
-          category: "Security"
-        },
-        {
-          title: "Express Middleware",
-          url: "https://expressjs.com/en/guide/using-middleware.html",
-          time: "15 min",
-          category: "Middleware"
-        }
-      ];
+    if (componentName.includes("API")) {
+      componentResources.push(enhanceComponentResource({
+        title: "REST API Design Patterns",
+        url: "https://restfulapi.net/",
+        time: "30 min",
+        category: "API Design"
+      }));
     }
-    if (componentName.includes("Database") || componentName.includes("CRUD")) {
-      return [
-        {
-          title: "MongoDB CRUD Operations",
-          url: "https://www.mongodb.com/docs/manual/crud/",
-          time: "25 min",
-          category: "Database"
-        }
-      ];
-    }
-    if (componentName.includes("API") || componentName.includes("Endpoint")) {
-      return [
-        {
-          title: "REST API Design",
-          url: "https://restfulapi.net/",
-          time: "20 min",
-          category: "API Design"
-        },
-        {
-          title: "Express Routing",
-          url: "https://expressjs.com/en/guide/routing.html",
-          time: "15 min",
-          category: "Routing"
-        }
-      ];
-    }
-    if (componentName.includes("Security") || componentName.includes("Error")) {
-      return [
-        {
-          title: "API Security Best Practices",
-          url: "https://owasp.org/www-project-api-security/",
-          time: "20 min",
-          category: "Security"
-        }
-      ];
-    }
-    // Default backend resources
-    return [
-      {
-        title: "Node.js Documentation",
-        url: "https://nodejs.org/en/docs",
-        time: "20 min",
-        category: "Reference"
-      }
-    ];
   }
   
-  // Systems Engineering (WordPress) resources
+  // Systems Engineering (WordPress) component-specific resources (supplementary)
   if (discipline === "Systems Engineering") {
-    if (componentName.includes("Setup") || componentName.includes("Foundation")) {
-      return [
-        {
-          title: "WordPress Development Environment",
-          url: "https://developer.wordpress.org/getting-started/",
-          time: "20 min",
-          category: "Setup"
-        }
-      ];
-    }
     if (componentName.includes("Post Types") || componentName.includes("Custom")) {
-      return [
-        {
-          title: "Custom Post Types",
-          url: "https://developer.wordpress.org/reference/functions/register_post_type/",
-          time: "25 min",
-          category: "Development"
-        }
-      ];
+      componentResources.push(enhanceComponentResource({
+        title: "Custom Post Types",
+        url: "https://developer.wordpress.org/reference/functions/register_post_type/",
+        time: "25 min",
+        category: "Development"
+      }));
     }
-    if (componentName.includes("Theme") || componentName.includes("Template")) {
-      return [
-        {
-          title: "Theme Development",
-          url: "https://developer.wordpress.org/themes/getting-started/",
-          time: "25 min",
-          category: "Themes"
-        }
-      ];
+    if (componentName.includes("Theme")) {
+      componentResources.push(enhanceComponentResource({
+        title: "WordPress Theme Development",
+        url: "https://developer.wordpress.org/themes/getting-started/",
+        time: "30 min",
+        category: "Themes"
+      }));
     }
-    if (componentName.includes("Plugin")) {
-      return [
-        {
-          title: "Plugin Development",
-          url: "https://developer.wordpress.org/plugins/plugin-basics/",
-          time: "25 min",
-          category: "Plugins"
-        }
-      ];
-    }
-    if (componentName.includes("User") || componentName.includes("Role")) {
-      return [
-        {
-          title: "User Roles and Capabilities",
-          url: "https://developer.wordpress.org/plugins/users/roles-and-capabilities/",
-          time: "20 min",
-          category: "Security"
-        }
-      ];
-    }
-    // Default WordPress resources
-    return [
-      {
-        title: "WordPress Developer Docs",
-        url: "https://developer.wordpress.org",
-        time: "20 min",
-        category: "Reference"
-      }
-    ];
   }
   
-  // Fallback
-  return [];
+  // Add day-specific learning milestone note (only if we have resources)
+  // Don't add milestone if no resources exist
+  if (progressiveResources.length > 0 || componentResources.length > 0) {
+    const milestoneNote = {
+      title: `Day ${dayNumber} Learning Milestone`,
+      description: `You're ${((dayNumber / 90) * 100).toFixed(1)}% through your journey. Today's focus: ${componentName || 'building skills'}.`,
+      url: "#",
+      time: "2 min",
+      category: "Milestone",
+      dayNumber: dayNumber,
+      phase: phase,
+      dayInPhase: dayInPhase,
+    };
+    return [...progressiveResources, ...componentResources, milestoneNote];
+  }
+  
+  // Return progressive resources (primary) + component-specific resources (supplementary)
+  // Progressive resources change daily and build on each other
+  // Component resources are supplementary and related to what's being built
+  return [...progressiveResources, ...componentResources];
 }
 
 function getDisciplineResources(discipline, weekNum, skillName = null, dayNumber = null, dayIndex = null) {
@@ -9098,6 +9933,239 @@ function getTimeBlocks(dayIndex) {
   };
 }
 
+// Helper functions for other journeys - Time Blocks
+function getBodyTransformationTimeBlocks(dayIndex) {
+  const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
+  const isSaturday = dayIndex === 5;
+  const isSunday = dayIndex === 6;
+  
+  if (isWeekday) {
+    // Monday-Friday: 5:30-6:30 AM
+    return {
+      deepLearning: [{
+        time: "5:30 AM - 6:30 AM",
+        type: "workout",
+        duration: "60 min",
+        isRevision: false,
+      }],
+      focusedImplementation: [],
+    };
+  }
+  
+  // Weekend: Rest/Recovery
+  return {
+    deepLearning: [],
+    focusedImplementation: [],
+  };
+}
+
+function getReadingTimeBlocks(dayIndex) {
+  const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
+  const isSaturday = dayIndex === 5;
+  const isSunday = dayIndex === 6;
+  const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2;
+  const isThursdayToFriday = dayIndex >= 3 && dayIndex <= 4;
+  
+  const blocks = {
+    deepLearning: [],
+    focusedImplementation: [],
+  };
+  
+  // Bible: 6:00-6:15 AM (Weekdays & Sunday)
+  if (isWeekday || isSunday) {
+    blocks.deepLearning.push({
+      time: "6:00 AM - 6:15 AM",
+      type: "bible",
+      duration: "15 min",
+      isRevision: false,
+    });
+  }
+  
+  // E-Book: 6:15-6:45 AM (Mon-Wed)
+  if (isMondayToWednesday) {
+    blocks.deepLearning.push({
+      time: "6:15 AM - 6:45 AM",
+      type: "ebook",
+      duration: "30 min",
+      isRevision: false,
+    });
+  }
+  
+  // Physical: 6:15-6:45 AM (Thu-Fri), 8:00-8:30 PM (Sat)
+  if (isThursdayToFriday) {
+    blocks.deepLearning.push({
+      time: "6:15 AM - 6:45 AM",
+      type: "physical",
+      duration: "30 min",
+      isRevision: false,
+    });
+  } else if (isSaturday) {
+    blocks.focusedImplementation.push({
+      time: "8:00 PM - 8:30 PM",
+      type: "physical",
+      duration: "30 min",
+      isRevision: false,
+    });
+  }
+  
+  return blocks;
+}
+
+function getDualBrandTimeBlocks(dayIndex) {
+  const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
+  const isSaturday = dayIndex === 5;
+  
+  if (isWeekday) {
+    // Mon-Fri: 4:45-5:30 AM
+    return {
+      deepLearning: [{
+        time: "4:45 AM - 5:30 AM",
+        type: "brand-building",
+        duration: "45 min",
+        isRevision: false,
+      }],
+      focusedImplementation: [],
+    };
+  } else if (isSaturday) {
+    // Saturday: 5:00-6:00 AM
+    return {
+      deepLearning: [{
+        time: "5:00 AM - 6:00 AM",
+        type: "brand-building",
+        duration: "60 min",
+        isRevision: false,
+      }],
+      focusedImplementation: [],
+    };
+  }
+  
+  // Sunday: Rest
+  return {
+    deepLearning: [],
+    focusedImplementation: [],
+  };
+}
+
+function getWritersTimeBlocks(dayIndex) {
+  const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
+  
+  if (isWeekday) {
+    // Weekdays: 12:30-1:00 PM
+    return {
+      deepLearning: [{
+        time: "12:30 PM - 1:00 PM",
+        type: "writing",
+        duration: "30 min",
+        isRevision: false,
+      }],
+      focusedImplementation: [],
+    };
+  }
+  
+  // Weekend: Rest
+  return {
+    deepLearning: [],
+    focusedImplementation: [],
+  };
+}
+
+// Helper functions to organize content by schedule for each journey
+function organizeBodyTransformationSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber) {
+  if (!timeBlocks || !timeBlocks.deepLearning || timeBlocks.deepLearning.length === 0) {
+    return null;
+  }
+  
+  return {
+    deepLearning: timeBlocks.deepLearning.map(block => ({
+      ...block,
+      content: {
+        title: learningData?.title || "Workout Session",
+        description: learningData?.description || "Complete your workout routine",
+        type: "workout",
+      },
+    })),
+    focusedImplementation: [],
+  };
+}
+
+function organizeReadingSchedule(readingSessions, dayIndex, timeBlocks, dayNumber) {
+  if (!timeBlocks || (!timeBlocks.deepLearning && !timeBlocks.focusedImplementation)) {
+    return null;
+  }
+  
+  const scheduled = {
+    deepLearning: [],
+    focusedImplementation: [],
+  };
+  
+  // Map reading sessions to time blocks
+  if (timeBlocks.deepLearning && timeBlocks.deepLearning.length > 0) {
+    timeBlocks.deepLearning.forEach((block, idx) => {
+      const session = readingSessions && readingSessions[idx] ? readingSessions[idx] : null;
+      scheduled.deepLearning.push({
+        ...block,
+        content: session ? {
+          type: session.type,
+          material: session.material,
+          duration: block.duration,
+        } : null,
+      });
+    });
+  }
+  
+  if (timeBlocks.focusedImplementation && timeBlocks.focusedImplementation.length > 0) {
+    timeBlocks.focusedImplementation.forEach((block, idx) => {
+      const session = readingSessions && readingSessions[timeBlocks.deepLearning.length + idx] ? readingSessions[timeBlocks.deepLearning.length + idx] : null;
+      scheduled.focusedImplementation.push({
+        ...block,
+        content: session ? {
+          type: session.type,
+          material: session.material,
+          duration: block.duration,
+        } : null,
+      });
+    });
+  }
+  
+  return scheduled;
+}
+
+function organizeDualBrandSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber) {
+  if (!timeBlocks || !timeBlocks.deepLearning || timeBlocks.deepLearning.length === 0) {
+    return null;
+  }
+  
+  return {
+    deepLearning: timeBlocks.deepLearning.map(block => ({
+      ...block,
+      content: {
+        title: learningData?.title || "Brand Building",
+        description: learningData?.description || "Work on brand tasks",
+        type: "brand-building",
+      },
+    })),
+    focusedImplementation: [],
+  };
+}
+
+function organizeWritersSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber) {
+  if (!timeBlocks || !timeBlocks.deepLearning || timeBlocks.deepLearning.length === 0) {
+    return null;
+  }
+  
+  return {
+    deepLearning: timeBlocks.deepLearning.map(block => ({
+      ...block,
+      content: {
+        title: learningData?.title || "Writing Session",
+        description: learningData?.description || "Complete writing tasks",
+        type: "writing",
+      },
+    })),
+    focusedImplementation: [],
+  };
+}
+
 function getDisciplineRotation(weekNum, dayIndex) {
   const isSaturday = dayIndex === 5;
   const isSunday = dayIndex === 6;
@@ -9293,7 +10361,11 @@ function getSoftwareEngineeringTheme(weekNum) {
 //
 // SYNCED STRUCTURE: Each day includes both Frontend and Backend topics
 // Frontend concepts are paired with their corresponding backend implementations
-function getSoftwareEngineeringLearning(weekNum, dayIndex) {
+// dayNumber (1-90) ensures content is unique per day and progressive
+function getSoftwareEngineeringLearning(weekNum, dayIndex, dayNumber = null) {
+  // Calculate dayNumber if not provided
+  const calculatedDayNumber = dayNumber || ((weekNum - 1) * 7 + dayIndex + 1);
+  
   const learningData = {
     1: {
       0: {
@@ -9955,6 +11027,50 @@ function getSoftwareEngineeringLearning(weekNum, dayIndex) {
       )}`,
     ],
   };
+  
+  // Enhance with day-specific content to make it unique per day (1-90)
+  const baseData = learningData[weekNum]?.[dayIndex] || fallbackData;
+  const enhancedData = enhanceLearningWithDaySpecificContent(baseData, calculatedDayNumber, weekNum, dayIndex);
+  
+  return enhancedData;
+}
+
+// Enhance learning content with day-specific details to make each day unique and meaningful
+function enhanceLearningWithDaySpecificContent(baseData, dayNumber, weekNum, dayIndex) {
+  const phase = Math.ceil(dayNumber / 15); // 15-day phases
+  const dayInPhase = ((dayNumber - 1) % 15) + 1;
+  
+  // Add day-specific context to title
+  const enhancedTitle = baseData.title 
+    ? `${baseData.title} - Day ${dayNumber} Focus`
+    : `Day ${dayNumber} Learning - ${getSoftwareEngineeringTheme(weekNum)}`;
+  
+  // Add day-specific learning objectives
+  const daySpecificObjectives = [
+    `Today (Day ${dayNumber}) you're building on ${dayNumber > 1 ? `Day ${dayNumber - 1}'s` : 'yesterday\'s'} foundation`,
+    `This is day ${dayInPhase} of Phase ${phase} - ${phase === 1 ? 'Fundamentals' : phase === 2 ? 'Intermediate' : 'Advanced'} learning`,
+    `By the end of today, you'll have completed ${((dayNumber / 90) * 100).toFixed(1)}% of your journey`,
+    `Focus on mastery: Review Day ${Math.max(1, dayNumber - 7)} to Day ${dayNumber - 1} concepts before starting`,
+  ];
+  
+  // Enhance topics with day-specific context
+  const enhancedTopics = baseData.topics ? [...baseData.topics] : [];
+  if (dayNumber > 1) {
+    enhancedTopics.unshift(`📚 Review: Connect today's learning with Day ${dayNumber - 1}'s concepts`);
+  }
+  if (dayNumber % 7 === 0) {
+    enhancedTopics.push(`🎯 Week Review: Consolidate Week ${weekNum} learnings`);
+  }
+  
+  return {
+    ...baseData,
+    title: enhancedTitle,
+    topics: enhancedTopics,
+    daySpecificObjectives,
+    dayNumber,
+    phase,
+    dayInPhase,
+  };
 }
 
 function getSoftwareEngineeringCursorWorkflow(weekNum, dayIndex) {
@@ -10024,8 +11140,9 @@ function enrichProjectWithProjectInfo(projectData, dayNumber, discipline) {
   };
 }
 
-function getSoftwareEngineeringProject(weekNum, dayIndex) {
-  const dayNumber = (weekNum - 1) * 7 + dayIndex + 1;
+function getSoftwareEngineeringProject(weekNum, dayIndex, dayNumber = null) {
+  // Calculate dayNumber if not provided
+  const calculatedDayNumber = dayNumber || ((weekNum - 1) * 7 + dayIndex + 1);
   const projects = {
     1: {
       0: {
@@ -10250,14 +11367,14 @@ function getSoftwareEngineeringProject(weekNum, dayIndex) {
 
   const project = projects[weekNum]?.[dayIndex];
   
-  // If project already has discipline-specific structure, return it
+  // If project already has discipline-specific structure, enhance and return it
   if (project && (project.frontend || project.mobile || project.backend || project['systems-engineering'])) {
-    return project;
+    return enhanceProjectWithDaySpecificContent(project, calculatedDayNumber, weekNum, dayIndex);
   }
   
-  // If project exists but is not discipline-specific, convert it to discipline-specific
+  // If project exists but is not discipline-specific, convert it to discipline-specific and enhance
   if (project) {
-    return {
+    const convertedProject = {
       frontend: {
         ...project,
         description: project.description || `Frontend: ${project.title}`,
@@ -10377,10 +11494,11 @@ function getSoftwareEngineeringProject(weekNum, dayIndex) {
         buildsOn: project.buildsOn || [],
       },
     };
+    return enhanceProjectWithDaySpecificContent(convertedProject, calculatedDayNumber, weekNum, dayIndex);
   }
 
-  // Default fallback - return discipline-specific structure
-  return {
+  // Default fallback - return discipline-specific structure with day-specific enhancements
+  const fallbackProject = {
     frontend: {
       title: `Frontend Project: ${getSoftwareEngineeringTheme(weekNum)}`,
       description: `Frontend project for Week ${weekNum}, Day ${dayIndex + 1}`,
@@ -10402,6 +11520,55 @@ function getSoftwareEngineeringProject(weekNum, dayIndex) {
       requirements: ["Complete systems engineering project requirements"],
     },
   };
+  return enhanceProjectWithDaySpecificContent(fallbackProject, calculatedDayNumber, weekNum, dayIndex);
+}
+
+// Enhance project content with day-specific details to make each day unique and meaningful
+function enhanceProjectWithDaySpecificContent(project, dayNumber, weekNum, dayIndex) {
+  const phase = Math.ceil(dayNumber / 15); // 15-day phases
+  const dayInPhase = ((dayNumber - 1) % 15) + 1;
+  const progressPercent = ((dayNumber / 90) * 100).toFixed(1);
+  
+  // Enhance each discipline's project with day-specific context
+  const disciplines = ['frontend', 'mobile', 'backend', 'systems-engineering'];
+  const enhancedProject = { ...project };
+  
+  disciplines.forEach(discipline => {
+    if (enhancedProject[discipline]) {
+      const discProject = enhancedProject[discipline];
+      
+      // Add day-specific context to description
+      const dayContext = `\n\n📅 Day ${dayNumber} Focus: This project builds on your journey progress (${progressPercent}% complete). `;
+      const phaseContext = `You're on Day ${dayInPhase} of Phase ${phase} (${phase === 1 ? 'Fundamentals' : phase === 2 ? 'Intermediate' : 'Advanced'} level).`;
+      const reviewContext = dayNumber > 1 ? ` Review Day ${Math.max(1, dayNumber - 7)} to Day ${dayNumber - 1} before starting.` : '';
+      
+      enhancedProject[discipline] = {
+        ...discProject,
+        description: (discProject.description || '') + dayContext + phaseContext + reviewContext,
+        dayNumber,
+        phase,
+        dayInPhase,
+        progressPercent: parseFloat(progressPercent),
+        // Add day-specific objectives
+        daySpecificObjectives: [
+          `Complete Day ${dayNumber} project requirements`,
+          `Build on concepts from Day ${Math.max(1, dayNumber - 1)}`,
+          `Apply ${phase === 1 ? 'fundamental' : phase === 2 ? 'intermediate' : 'advanced'} ${discipline} skills`,
+          `Track progress: ${progressPercent}% of journey complete`,
+        ],
+      };
+    }
+  });
+  
+  // If project is not discipline-specific, add day-specific metadata
+  if (!enhancedProject.frontend && !enhancedProject.mobile && !enhancedProject.backend && !enhancedProject['systems-engineering']) {
+    enhancedProject.dayNumber = dayNumber;
+    enhancedProject.phase = phase;
+    enhancedProject.dayInPhase = dayInPhase;
+    enhancedProject.progressPercent = parseFloat(progressPercent);
+  }
+  
+  return enhancedProject;
 }
 
 function getSoftwareEngineeringResources(weekNum, dayIndex) {
@@ -11344,10 +12511,10 @@ function getPlatformSessions(weekNum, dayIndex) {
     return {
       platforms: dayPlatforms,
       focus: weekNum <= 5 ? "Content Creation" : "Content Optimization",
-      brands: ["HavenX", "Ryxen"],
+      brands: ["_ryxen.oo7", "_richman.oo7"],
       notes: `Plan and create content for ${dayPlatforms
         .join(", ")
-        .toUpperCase()} for both HavenX and Ryxen brands.`,
+        .toUpperCase()} for both _ryxen.oo7 and _richman.oo7 brands.`,
     };
   }
 
@@ -11364,10 +12531,30 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
   const componentName = component?.component || "";
   const partName = component?.part || "";
   
+  // Calculate day-specific context
+  const phase = Math.ceil(calculatedDayNumber / 15);
+  const dayInPhase = ((calculatedDayNumber - 1) % 15) + 1;
+  const progressPercent = ((calculatedDayNumber / 90) * 100).toFixed(1);
+  
+  // Helper function to enhance reflection with day-specific context
+  const enhanceReflection = (reflection) => ({
+    ...reflection,
+    questions: [
+      ...reflection.questions,
+      calculatedDayNumber > 1 ? `How does Day ${calculatedDayNumber}'s work build on Day ${calculatedDayNumber - 1}?` : null,
+      `You're ${progressPercent}% through your journey. How does today's progress feel?`,
+      calculatedDayNumber % 7 === 0 ? `Week ${weekNum} milestone! What's your biggest win?` : null,
+    ].filter(Boolean),
+    dayNumber: calculatedDayNumber,
+    phase,
+    dayInPhase,
+    progressPercent: parseFloat(progressPercent),
+  });
+  
   // Frontend-specific reflections
   if (discipline === "Frontend") {
     if (componentName.includes("Setup") || componentName.includes("Foundation")) {
-      return {
+      return enhanceReflection({
         questions: [
           "What specific React patterns did you implement today that you'll reuse in future components?",
           "How does your project structure compare to production React applications you've seen?",
@@ -11380,10 +12567,10 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
           "Note any setup challenges and how you solved them",
           "List React patterns you want to master"
         ],
-      };
+      });
     }
     if (componentName.includes("Layout") || partName.includes("Layout")) {
-      return {
+      return enhanceReflection({
         questions: [
           "How did you decide between CSS Grid and Flexbox for different layout sections?",
           "What responsive design challenges did you face, and how did you solve them?",
@@ -11396,10 +12583,10 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
           "Note responsive breakpoints and why you chose them",
           "List layout patterns you want to explore further"
         ],
-      };
+      });
     }
     if (componentName.includes("Auth") || partName.includes("Auth")) {
-      return {
+      return enhanceReflection({
         questions: [
           "What security considerations did you implement in your authentication flow?",
           "How does your form validation approach handle edge cases users might encounter?",
@@ -11412,10 +12599,10 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
           "Note validation rules and error handling strategies",
           "List security best practices you want to implement"
         ],
-      };
+      });
     }
     if (componentName.includes("Dashboard") || componentName.includes("List") || componentName.includes("Detail")) {
-      return {
+      return enhanceReflection({
         questions: [
           "How did you manage state complexity as your component grew? What patterns helped?",
           "What data fetching strategies did you use, and why did you choose them?",
@@ -11428,10 +12615,10 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
           "Note data fetching patterns and error handling",
           "List performance optimizations to explore"
         ],
-      };
+      });
     }
     if (componentName.includes("Form") || componentName.includes("Modal")) {
-      return {
+      return enhanceReflection({
         questions: [
           "How did you ensure your form provides clear feedback to users at every step?",
           "What edge cases did you consider in your form validation?",
@@ -11444,10 +12631,10 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
           "Note accessibility features implemented",
           "List UX improvements to test with real users"
         ],
-      };
+      });
     }
     // Default Frontend reflection
-    return {
+    return enhanceReflection({
       questions: [
         "What React patterns did you use today that you want to master?",
         "How does your code structure compare to production React applications?",
@@ -11460,13 +12647,13 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
         "Note code quality improvements to make",
         "List frontend skills to develop further"
       ],
-    };
+    });
   }
   
   // Mobile-specific reflections
   if (discipline === "Mobile") {
     if (componentName.includes("Setup") || componentName.includes("Foundation")) {
-      return {
+      return enhanceReflection({
         questions: [
           "What differences did you notice between React Native and React web development?",
           "How did you handle platform-specific considerations (iOS vs Android) in your setup?",
@@ -11479,7 +12666,7 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
           "Note setup challenges and solutions",
           "List React Native concepts to master"
         ],
-      };
+      });
     }
     if (componentName.includes("Navigation")) {
       return {
@@ -11530,7 +12717,7 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
       };
     }
     // Default Mobile reflection
-    return {
+    return enhanceReflection({
       questions: [
         "What mobile-specific challenges did you encounter today?",
         "How does your mobile implementation compare to native app performance?",
@@ -11543,7 +12730,7 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
         "Note platform differences and solutions",
         "List mobile development skills to develop"
       ],
-    };
+    });
   }
   
   // Backend-specific reflections
@@ -11629,7 +12816,7 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
       };
     }
     // Default Backend reflection
-    return {
+    return enhanceReflection({
       questions: [
         "What backend patterns did you implement today that you'll reuse?",
         "How does your API design compare to production backend systems?",
@@ -11642,7 +12829,7 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
         "Note security and performance considerations",
         "List backend skills to develop further"
       ],
-    };
+    });
   }
   
   // Systems Engineering (WordPress) specific reflections
@@ -11728,7 +12915,7 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
       };
     }
     // Default Systems Engineering reflection
-    return {
+    return enhanceReflection({
       questions: [
         "What WordPress development patterns did you use today that you'll reuse?",
         "How does your WordPress implementation compare to production CMS systems?",
@@ -11741,28 +12928,40 @@ function getSoftwareEngineeringReflection(weekNum, dayIndex, dayNumber = null, d
         "Note security and maintainability considerations",
         "List WordPress development skills to develop"
       ],
-    };
+    });
   }
   
-  // Fallback for when discipline is not specified
+  // Fallback for when discipline is not specified - enhance with day-specific context
+  // Note: phase, dayInPhase, and progressPercent are already declared at the top of this function (lines 12217-12219)
+  
   return {
     questions: [
-      "What did you learn today that will make you a better developer?",
+      `Day ${calculatedDayNumber} Reflection: What did you learn today that will make you a better developer?`,
+      `You're ${progressPercent}% through your journey. How does today's progress compare to Day ${Math.max(1, calculatedDayNumber - 7)}?`,
+      `This is Day ${dayInPhase} of Phase ${phase} (${phase === 1 ? 'Fundamentals' : phase === 2 ? 'Intermediate' : 'Advanced'}). What ${phase === 1 ? 'foundational' : phase === 2 ? 'intermediate' : 'advanced'} skills did you practice?`,
       "What was the most challenging aspect, and how did you overcome it?",
       "How does your implementation compare to production code?",
+      calculatedDayNumber > 1 ? `How does today's work build on Day ${calculatedDayNumber - 1}'s foundation?` : "What foundation did you establish today?",
       "What would you improve if you had more time?",
-      "What's one skill you want to develop further based on today's work?"
-    ],
+      "What's one skill you want to develop further based on today's work?",
+      calculatedDayNumber % 7 === 0 ? `Week ${weekNum} Complete! What were your biggest wins this week?` : null,
+    ].filter(Boolean), // Remove null questions
     documentation: [
-      "Document key learnings and challenges",
-      "Note improvements to make",
-      "List skills to develop"
+      `Document Day ${calculatedDayNumber} key learnings and challenges`,
+      `Note progress: ${progressPercent}% complete, Phase ${phase}`,
+      calculatedDayNumber > 1 ? `Compare with Day ${calculatedDayNumber - 1} progress` : "Establish baseline for future comparisons",
+      "List skills to develop",
+      "Note improvements to make"
     ],
+    dayNumber: calculatedDayNumber,
+    phase,
+    dayInPhase,
+    progressPercent: parseFloat(progressPercent),
   };
 }
 
 // Export reflection and project component functions
-export { getSoftwareEngineeringReflection, getProjectComponentForDay };
+export { getSoftwareEngineeringReflection, getProjectComponentForDay, getDisciplineResources };
 
 // Export function to get journey data
 export function getJourneyData(journeyId) {

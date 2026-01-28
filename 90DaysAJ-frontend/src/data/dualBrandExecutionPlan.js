@@ -359,14 +359,21 @@ export function getExecutionTasks(weekNum, dayIndex, brand = 'both') {
   const dayName = dayNames[dayIndex];
   const dayPlan = plan[dayName];
 
-  if (!dayPlan) return { ryxen: [], havenx: [] };
+  if (!dayPlan) return { personal: [], company: [] };
 
-  if (brand === 'ryxen') {
-    return { ryxen: dayPlan.ryxen, havenx: [] };
-  } else if (brand === 'havenx') {
-    return { ryxen: [], havenx: dayPlan.havenx };
+  // Support both old keys (ryxen/havenx) and new keys (personal/company)
+  // Old: ryxen = personal brand, havenx = company brand
+  // New: personal = _richman.oo7, company = _ryxen.oo7
+  if (brand === 'ryxen' || brand === 'personal') {
+    return { personal: dayPlan.ryxen || dayPlan.personal || [], company: [] };
+  } else if (brand === 'havenx' || brand === 'company') {
+    return { personal: [], company: dayPlan.havenx || dayPlan.company || [] };
   }
 
-  return dayPlan;
+  // Return both brands
+  return { 
+    personal: dayPlan.ryxen || dayPlan.personal || [], 
+    company: dayPlan.havenx || dayPlan.company || [] 
+  };
 }
 

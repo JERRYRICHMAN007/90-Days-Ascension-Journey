@@ -58,7 +58,90 @@ export function useGamification() {
     localStorage.setItem('ascensionAchievements', JSON.stringify(achievements));
   }, [achievements]);
 
-  const addXP = (amount, domain = null) => {
+  // Load gamification data from backend on mount and when user authenticates
+  useEffect(() => {
+    const loadGamificationFromBackend = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) return; // User not logged in
+
+        const { api } = await import('../services/api');
+        
+        // Try to load XP, streaks, and achievements from backend
+        try {
+          const xpResponse = await api.getXP();
+          if (xpResponse?.data) {
+            const backendXP = xpResponse.data;
+            setXp((prev) => ({
+              global: backendXP.global || prev.global,
+              domains: { ...prev.domains, ...(backendXP.domains || {}) },
+            }));
+          }
+        } catch (error) {
+          console.warn('Failed to load XP from backend:', error);
+        }
+
+        try {
+          const streaksResponse = await api.getStreaks();
+          if (streaksResponse?.data) {
+            setStreaks((prev) => ({
+              ...prev,
+              ...streaksResponse.data,
+            }));
+          }
+        } catch (error) {
+          console.warn('Failed to load streaks from backend:', error);
+        }
+
+        try {
+          const achievementsResponse = await api.getAchievements();
+          if (achievementsResponse?.data) {
+            setAchievements((prev) => {
+              const backendAchievements = achievementsResponse.data || [];
+              // Merge backend achievements with local (avoid duplicates)
+              const merged = [...prev];
+              backendAchievements.forEach(achievement => {
+                if (!merged.includes(achievement)) {
+                  merged.push(achievement);
+                }
+              });
+              return merged;
+            });
+          }
+        } catch (error) {
+          console.warn('Failed to load achievements from backend:', error);
+        }
+      } catch (error) {
+        console.warn('Failed to load gamification from backend:', error);
+        // Continue with local data if backend fails
+      }
+    };
+
+    // Load when component mounts if user is authenticated
+    const checkAuth = () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        loadGamificationFromBackend();
+      }
+    };
+
+    checkAuth();
+
+    // Listen for authentication events
+    const handleUserAuthenticated = () => {
+      setTimeout(() => {
+        loadGamificationFromBackend();
+      }, 500);
+    };
+
+    window.addEventListener('user-authenticated', handleUserAuthenticated);
+    
+    return () => {
+      window.removeEventListener('user-authenticated', handleUserAuthenticated);
+    };
+  }, []);
+
+  const addXP = async (amount, domain = null) => {
     setXp((prev) => {
       const newXp = {
         ...prev,
@@ -69,11 +152,41 @@ export function useGamification() {
         newXp.domains[domain] = (newXp.domains[domain] || 0) + amount;
       }
       
+      // Sync to backend if authenticated
+      syncXPToBackend(newXp).catch(err => {
+        console.warn('Failed to sync XP to backend:', err);
+      });
+      
       return newXp;
     });
   };
 
-  const completeTask = (difficulty = 'medium', domain = null) => {
+  // Sync XP to backend
+  const syncXPToBackend = async (xpData) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) return; // User not logged in
+
+      const { api } = await import('../services/api');
+      // Try dedicated endpoint first, fallback to settings
+      try {
+        await api.updateXP(xpData);
+      } catch (error) {
+        // Fallback to settings if dedicated endpoint doesn't exist
+        await api.updateSettings({ xp: xpData });
+      }
+    } catch (error) {
+      // Silently fail - progress is still saved locally
+      console.warn('Failed to sync XP to backend:', error);
+    }
+  };
+
+  const completeTask = (difficulty = 'medium', domain = null, dayNumber = null) => {
+    // IMPORTANT: Day 0 (testing week) does NOT earn any gamification scores
+    if (dayNumber === 0) {
+      return 0;
+    }
+    
     const xpGained = XP_PER_TASK[difficulty] || XP_PER_TASK.medium;
     addXP(xpGained, domain);
     updateStreak();
@@ -86,29 +199,56 @@ export function useGamification() {
     const lastDate = streaks.lastDate;
 
     setStreaks((prev) => {
+      let newStreaks;
+      
       if (!lastDate) {
-        return { current: 1, longest: 1, lastDate: today };
-      }
-
-      if (lastDate === today) {
+        newStreaks = { current: 1, longest: 1, lastDate: today };
+      } else if (lastDate === today) {
         return prev; // Already logged today
-      }
-
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toDateString();
-
-      if (lastDate === yesterdayStr) {
-        const newCurrent = prev.current + 1;
-        return {
-          current: newCurrent,
-          longest: Math.max(prev.longest, newCurrent),
-          lastDate: today,
-        };
       } else {
-        return { current: 1, longest: prev.longest, lastDate: today };
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toDateString();
+
+        if (lastDate === yesterdayStr) {
+          const newCurrent = prev.current + 1;
+          newStreaks = {
+            current: newCurrent,
+            longest: Math.max(prev.longest, newCurrent),
+            lastDate: today,
+          };
+        } else {
+          newStreaks = { current: 1, longest: prev.longest, lastDate: today };
+        }
       }
+
+      // Sync to backend if authenticated
+      syncStreaksToBackend(newStreaks).catch(err => {
+        console.warn('Failed to sync streaks to backend:', err);
+      });
+
+      return newStreaks;
     });
+  };
+
+  // Sync streaks to backend
+  const syncStreaksToBackend = async (streaksData) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) return; // User not logged in
+
+      const { api } = await import('../services/api');
+      // Try dedicated endpoint first, fallback to settings
+      try {
+        await api.updateStreaks(streaksData);
+      } catch (error) {
+        // Fallback to settings if dedicated endpoint doesn't exist
+        await api.updateSettings({ streaks: streaksData });
+      }
+    } catch (error) {
+      // Silently fail - progress is still saved locally
+      console.warn('Failed to sync streaks to backend:', error);
+    }
   };
 
   const checkAchievements = () => {
@@ -131,7 +271,30 @@ export function useGamification() {
     }
 
     if (newAchievements.length > 0) {
-      setAchievements((prev) => [...prev, ...newAchievements]);
+      setAchievements((prev) => {
+        const updated = [...prev, ...newAchievements];
+        
+        // Sync to backend if authenticated
+        syncAchievementsToBackend(updated).catch(err => {
+          console.warn('Failed to sync achievements to backend:', err);
+        });
+        
+        return updated;
+      });
+    }
+  };
+
+  // Sync achievements to backend
+  const syncAchievementsToBackend = async (achievementsData) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) return; // User not logged in
+
+      const { api } = await import('../services/api');
+      await api.updateSettings({ achievements: achievementsData });
+    } catch (error) {
+      // Silently fail - progress is still saved locally
+      console.warn('Failed to sync achievements to backend:', error);
     }
   };
 

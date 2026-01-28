@@ -34,11 +34,98 @@ function App() {
     }
   });
 
+  // Save progress to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("ascensionProgress", JSON.stringify(userProgress));
   }, [userProgress]);
 
-  const updateProgress = (journeyId, dayIndex, completed) => {
+  // Load progress from backend when user logs in
+  useEffect(() => {
+    const loadProgressFromBackend = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) return; // User not logged in
+
+        const { api } = await import('./services/api');
+        
+        // Load progress for each journey
+        const journeys = [
+          'body-transformation',
+          'dual-brand',
+          'reading',
+          'writers',
+          'software-engineering',
+        ];
+
+        const backendProgress = {};
+
+        for (const journeyId of journeys) {
+          try {
+            const progress = await api.getProgress(journeyId);
+            if (progress?.data) {
+              // Convert backend format to local format
+              const completedDays = progress.data.completedDays || [];
+              backendProgress[journeyId] = {};
+              completedDays.forEach((dayNumber) => {
+                backendProgress[journeyId][dayNumber] = true;
+              });
+            }
+          } catch (error) {
+            // If backend is unavailable, continue with local progress
+            console.warn(`Failed to load progress for ${journeyId}:`, error);
+          }
+        }
+
+        // Merge backend progress with local progress (backend takes precedence)
+        if (Object.keys(backendProgress).length > 0) {
+          setUserProgress((prev) => {
+            const merged = { ...prev };
+            
+            // Apply backend progress
+            Object.keys(backendProgress).forEach(journeyId => {
+              merged[journeyId] = {
+                ...(merged[journeyId] || {}),
+                ...backendProgress[journeyId],
+              };
+            });
+            
+            return merged;
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to load progress from backend:', error);
+        // Continue with local progress if backend fails
+      }
+    };
+
+    // Check if user is authenticated and load progress
+    const checkAuthAndLoad = () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        loadProgressFromBackend();
+      }
+    };
+
+    // Load progress when component mounts
+    checkAuthAndLoad();
+
+    // Listen for auth events
+    const handleUserAuthenticated = () => {
+      // Small delay to ensure tokens are stored
+      setTimeout(() => {
+        loadProgressFromBackend();
+      }, 500);
+    };
+
+    window.addEventListener('user-authenticated', handleUserAuthenticated);
+    
+    return () => {
+      window.removeEventListener('user-authenticated', handleUserAuthenticated);
+    };
+  }, []);
+
+  const updateProgress = async (journeyId, dayIndex, completed) => {
+    // Update local state immediately for responsive UI
     setUserProgress((prev) => ({
       ...prev,
       [journeyId]: {
@@ -46,6 +133,32 @@ function App() {
         [dayIndex]: completed,
       },
     }));
+
+    // Sync to backend if user is authenticated
+    try {
+      const { api } = await import('./services/api');
+      const accessToken = localStorage.getItem('accessToken');
+      
+      if (accessToken) {
+        // Map journeyId to backend domain format
+        const domainMap = {
+          'body-transformation': 'body-transformation',
+          'dual-brand': 'dual-brand',
+          'reading': 'reading',
+          'writers': 'writers',
+          'software-engineering': 'software-engineering',
+        };
+        
+        const domain = domainMap[journeyId] || journeyId;
+        
+        // Sync task completion to backend
+        await api.completeTask(domain, dayIndex, completed);
+      }
+    } catch (error) {
+      // If backend sync fails, progress is still saved locally
+      // This allows offline functionality
+      console.warn('Failed to sync progress to backend:', error);
+    }
   };
 
   return (

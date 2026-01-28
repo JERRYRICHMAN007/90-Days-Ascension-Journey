@@ -25,15 +25,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
-  // Clear all cache and storage
+  // Clear all cache and storage (but preserve user progress and gamification)
   const clearAllCache = () => {
     try {
-      // Clear localStorage (except offline mode flag)
+      // Preserve critical user data before clearing
       const offlineMode = localStorage.getItem('ascension_offline_mode');
+      const userProgress = localStorage.getItem('ascensionProgress');
+      const ascensionXP = localStorage.getItem('ascensionXP');
+      const ascensionStreaks = localStorage.getItem('ascensionStreaks');
+      const ascensionAchievements = localStorage.getItem('ascensionAchievements');
+      const lessonProgressKeys: string[] = [];
+      
+      // Collect all lesson progress keys
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('lessonProgress_')) {
+          lessonProgressKeys.push(key);
+        }
+      }
+      
+      // Store lesson progress data
+      const lessonProgressData: Record<string, string> = {};
+      lessonProgressKeys.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value) {
+          lessonProgressData[key] = value;
+        }
+      });
+      
+      // Clear localStorage
       localStorage.clear();
+      
+      // Restore preserved data
       if (offlineMode) {
         localStorage.setItem('ascension_offline_mode', offlineMode);
       }
+      if (userProgress) {
+        localStorage.setItem('ascensionProgress', userProgress);
+      }
+      if (ascensionXP) {
+        localStorage.setItem('ascensionXP', ascensionXP);
+      }
+      if (ascensionStreaks) {
+        localStorage.setItem('ascensionStreaks', ascensionStreaks);
+      }
+      if (ascensionAchievements) {
+        localStorage.setItem('ascensionAchievements', ascensionAchievements);
+      }
+      Object.entries(lessonProgressData).forEach(([key, value]) => {
+        localStorage.setItem(key, value);
+      });
       
       // Clear sessionStorage
       sessionStorage.clear();
@@ -231,6 +272,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.setToken(tokens.accessToken);
     
     setUser(user);
+    
+    // Trigger progress reload after successful login
+    window.dispatchEvent(new CustomEvent('user-authenticated'));
   };
 
   const signUp = async (name: string, email: string, password: string) => {
@@ -254,6 +298,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       api.setToken(tokens.accessToken);
       
       setUser(user);
+      
+      // Trigger progress reload after successful signup
+      window.dispatchEvent(new CustomEvent('user-authenticated'));
     } catch (error: any) {
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/48ce46b9-d20f-4e97-80d4-1d14be26a309',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:252',message:'signUp error in AuthContext',data:{email,errorMessage:error.message,errorType:error.constructor.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch(()=>{});

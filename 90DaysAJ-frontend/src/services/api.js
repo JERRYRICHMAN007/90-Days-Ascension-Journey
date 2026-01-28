@@ -44,11 +44,13 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
-// Log API URL on initialization to help debug
-console.log('🔗 API Base URL:', API_BASE_URL);
-console.log('🌍 Environment:', import.meta.env.PROD ? 'production' : 'development');
-console.log('🌐 Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
-console.log('🔐 VITE_API_BASE_URL set:', !!import.meta.env.VITE_API_BASE_URL);
+// Log API URL on initialization to help debug (development only)
+if (import.meta.env.DEV) {
+  console.log('🔗 API Base URL:', API_BASE_URL);
+  console.log('🌍 Environment:', import.meta.env.PROD ? 'production' : 'development');
+  console.log('🌐 Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
+  console.log('🔐 VITE_API_BASE_URL set:', !!import.meta.env.VITE_API_BASE_URL);
+}
 
 // Warn if production but API URL not configured
 if ((import.meta.env.PROD || (typeof window !== 'undefined' && window.location.protocol === 'https:')) && 
@@ -116,24 +118,28 @@ class ApiClient {
       },
     };
 
-    // Log request details for debugging
-    console.log('API Request:', {
-      url,
-      method: options.method || 'GET',
-      hasToken: !!this.token,
-      endpoint,
-    });
+    // Log request details for debugging (development only)
+    if (import.meta.env.DEV) {
+      console.log('API Request:', {
+        url,
+        method: options.method || 'GET',
+        hasToken: !!this.token,
+        endpoint,
+      });
+    }
 
     try {
       const response = await fetch(url, config);
       
-      // Log response details for debugging
-      console.log('API Response:', {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-      });
+      // Log response details for debugging (development only)
+      if (import.meta.env.DEV) {
+        console.log('API Response:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+        });
+      }
       
       // Get response text first (can only read once)
       const responseText = await response.text();
@@ -395,9 +401,23 @@ class ApiClient {
     return this.request('/xp');
   }
 
+  async updateXP(xpData) {
+    return this.request('/xp', {
+      method: 'PATCH',
+      body: JSON.stringify(xpData),
+    });
+  }
+
   // Streak endpoints
   async getStreaks() {
     return this.request('/streaks');
+  }
+
+  async updateStreaks(streaksData) {
+    return this.request('/streaks', {
+      method: 'PATCH',
+      body: JSON.stringify(streaksData),
+    });
   }
 
   // Journey endpoints
