@@ -1,32 +1,29 @@
 /**
  * Date utilities for the 90 Days Ascension Journey
  * 
- * Timeline:
- * - Week 0 (Jan 18-24): All days are Day 0 - Testing & Trials Week (No actual content)
- * - Day 1 = January 25, 2026 (Sunday) - First day of actual content
- * - Day 2 = January 26, 2026 (Monday) - Second day of actual content
- * - Week 1 (Days 1-7): January 25-31, 2026 - First week of actual content
- * - Week 2 (Days 8-14): February 1-7, 2026 - Second week of actual content
- * - Ascension Phase: Jan 18 - Apr 18, 2026 (90 days total)
+ * Updated Timeline:
+ * - Day 0 = Sunday, February 1, 2026 - Preparation Day
+ * - Day 1 = Monday, February 2, 2026 - First day of journey
+ * - Phase 1 (Days 1-90): Mobile Engineering + Frontend Engineering only
+ * - Phase 2 (Days 91-180): Backend Engineering + WordPress
+ * - Total Journey: 180 days (90 days per phase)
  */
 
 export const JOURNEY_CONSTANTS = {
-  DAY_0_START: new Date('2026-01-18'), // Day 0 - Sunday, January 18, 2026
-  ASCENSION_START: new Date('2026-01-19'), // Day 1 - Monday, January 19, 2026
-  ASCENSION_END: new Date('2026-04-18'), // Day 90 - April 18, 2026
-  TESTING_WEEK_START: new Date('2026-01-19'), // Start of testing week - Monday, January 19, 2026
-  TESTING_WEEK_END: new Date('2026-01-24'), // End of testing week - Saturday, January 24, 2026
-  ACTUAL_CONTENT_START: new Date('2026-01-25'), // Actual content starts - Sunday, January 25, 2026 (Day 1)
-  TOTAL_DAYS: 90,
+  DAY_0_START: new Date('2026-02-01'), // Day 0 - Sunday, February 1, 2026
+  ASCENSION_START: new Date('2026-02-02'), // Day 1 - Monday, February 2, 2026
+  PHASE_1_END: new Date('2026-05-02'), // Day 90 - May 2, 2026
+  PHASE_2_END: new Date('2026-07-31'), // Day 180 - July 31, 2026
+  TOTAL_DAYS: 180, // 90 days per phase, 2 phases total
+  PHASE_1_DAYS: 90,
+  PHASE_2_DAYS: 90,
 };
 
 /**
- * Get the current phase of the journey
- * January 18, 2026 is Day 0 (preparation)
- * January 19, 2026 onwards is ascension phase (Day 1-90 - Monday)
- * @returns {'preparation' | 'ascension' | 'before' | 'after'}
+ * Get the current phase status of the journey
+ * @returns {'before' | 'preparation' | 'phase1' | 'phase2' | 'after'}
  */
-export function getCurrentPhase() {
+export function getCurrentPhaseStatus() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
@@ -36,71 +33,78 @@ export function getCurrentPhase() {
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
   ascensionStart.setHours(0, 0, 0, 0);
   
-  const ascensionEnd = new Date(JOURNEY_CONSTANTS.ASCENSION_END);
-  ascensionEnd.setHours(23, 59, 59, 999);
+  const phase1End = new Date(JOURNEY_CONSTANTS.PHASE_1_END);
+  phase1End.setHours(23, 59, 59, 999);
+  
+  const phase2End = new Date(JOURNEY_CONSTANTS.PHASE_2_END);
+  phase2End.setHours(23, 59, 59, 999);
   
   if (today < day0Start) {
     return 'before';
   } else if (today.getTime() === day0Start.getTime()) {
     return 'preparation'; // Day 0
-  } else if (today >= ascensionStart && today <= ascensionEnd) {
-    return 'ascension';
+  } else if (today >= ascensionStart && today <= phase1End) {
+    return 'phase1';
+  } else if (today > phase1End && today <= phase2End) {
+    return 'phase2';
   } else {
     return 'after';
   }
 }
 
 /**
- * Calculate the current day number (0-90)
- * Returns 0 for Day 0 (preparation), 1-90 for ascension phase, null if before or after
+ * Calculate the current day number (0-180)
+ * Day 0 = Sunday, February 1, 2026 (Preparation)
+ * Day 1 = Monday, February 2, 2026
+ * Days 1-90 = Phase 1, Days 91-180 = Phase 2
  * @returns {number | null}
  */
 export function getCurrentDayNumber() {
-  const phase = getCurrentPhase();
+  const phaseStatus = getCurrentPhaseStatus();
   
   // If before journey, return null
-  if (phase === 'before') {
+  if (phaseStatus === 'before') {
     return null;
   }
   
   // If on Day 0 (preparation), return 0
-  if (phase === 'preparation') {
+  if (phaseStatus === 'preparation') {
     return 0;
   }
   
-  // If after ascension phase, return null
-  if (phase === 'after') {
+  // If after journey, return null
+  if (phaseStatus === 'after') {
     return null;
   }
   
-  // In ascension phase - calculate day number
+  // Calculate day number from start date
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Week 0 (Jan 18-24): All days are Day 0 (testing week)
-  // Day 1 starts on January 25, 2026 (Sunday - first day of actual content)
-  const actualContentStart = new Date(JOURNEY_CONSTANTS.ACTUAL_CONTENT_START);
-  actualContentStart.setHours(0, 0, 0, 0);
+  const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
+  ascensionStart.setHours(0, 0, 0, 0);
   
-  // If before actual content start (Jan 25), return 0 (testing week)
-  if (today < actualContentStart) {
-    return 0;
-  }
-  
-  // Day 1 = Jan 25, 2026 (actualContentStart)
-  const diffTime = today - actualContentStart;
+  const diffTime = today - ascensionStart;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
-  // If today is Jan 25, diffDays = 0, so return 1
-  // If today is Jan 26, diffDays = 1, so return 2
-  return diffDays + 1;
+  // Day 1 = Feb 2, 2026 (ascensionStart)
+  // If today is Feb 2, diffDays = 0, so return 1
+  // If today is Feb 3, diffDays = 1, so return 2
+  const dayNumber = diffDays + 1;
+  
+  // Ensure day number is within valid range (1-180)
+  if (dayNumber < 1 || dayNumber > JOURNEY_CONSTANTS.TOTAL_DAYS) {
+    return null;
+  }
+  
+  return dayNumber;
 }
 
 /**
- * Get the date for a specific day number (0-90)
- * Day 0 = January 18, 2026 (Sunday - preparation)
- * Day 1 = January 19, 2026 (Monday - first day)
- * @param {number} dayNumber - Day number (0-90)
+ * Get the date for a specific day number (0-180)
+ * Day 0 = Sunday, February 1, 2026 (Preparation)
+ * Day 1 = Monday, February 2, 2026
+ * @param {number} dayNumber - Day number (0-180)
  * @returns {Date | null}
  */
 export function getDateForDay(dayNumber) {
@@ -112,10 +116,10 @@ export function getDateForDay(dayNumber) {
     return null;
   }
   
-  // Day 1 starts on January 19, 2026 (Monday)
+  // Day 1 starts on February 2, 2026 (Monday)
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  // Day 1 = Jan 19, 2026 (ascensionStart)
-  // Day 2 = Jan 20, 2026 (ascensionStart + 1 day)
+  // Day 1 = Feb 2, 2026 (ascensionStart)
+  // Day 2 = Feb 3, 2026 (ascensionStart + 1 day)
   ascensionStart.setDate(ascensionStart.getDate() + dayNumber - 1);
   
   return ascensionStart;
@@ -142,8 +146,8 @@ export function isActualContentDay(dayNumber) {
 }
 
 /**
- * Format day number with "Day X of 90" format
- * @param {number} dayNumber - Day number (0-90)
+ * Format day number with "Day X of 180" format
+ * @param {number} dayNumber - Day number (0-180)
  * @returns {string}
  */
 export function formatDayNumber(dayNumber) {
@@ -158,7 +162,7 @@ export function formatDayNumber(dayNumber) {
 
 /**
  * Get days remaining in the journey
- * Day 0 doesn't count towards the 90 days
+ * Day 0 doesn't count towards the 180 days
  * @returns {number | null}
  */
 export function getDaysRemaining() {
@@ -166,7 +170,7 @@ export function getDaysRemaining() {
   if (currentDay === null) {
     return null;
   }
-  // Day 0 is preparation, so if we're on Day 0, all 90 days are remaining
+  // Day 0 is preparation, so if we're on Day 0, all 180 days are remaining
   if (currentDay === 0) {
     return JOURNEY_CONSTANTS.TOTAL_DAYS;
   }
@@ -175,38 +179,39 @@ export function getDaysRemaining() {
 
 /**
  * Get progress percentage (0-100)
- * Day 0 doesn't count towards progress
+ * DEPRECATED: This function is time-based and should not be used.
+ * Use calculateSessionBasedProgress from progressTracking.js instead.
+ * 
+ * This function now always returns 0 to prevent time-based progress.
+ * Progress must be earned through session completion.
  * @returns {number}
  */
 export function getJourneyProgress() {
-  const currentDay = getCurrentDayNumber();
-  if (currentDay === null || currentDay === 0) {
-    return 0;
-  }
-  return Math.round((currentDay / JOURNEY_CONSTANTS.TOTAL_DAYS) * 100);
+  // Always return 0 - progress must be earned through completion, not time
+  return 0;
 }
 
 /**
- * Check if a specific date is in the ascension phase
+ * Check if a specific date is in the journey
  * @param {Date | string} date - Date to check
  * @returns {boolean}
  */
-export function isInAscensionPhase(date) {
+export function isInJourney(date) {
   const checkDate = typeof date === 'string' ? new Date(date) : date;
   checkDate.setHours(0, 0, 0, 0);
   
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
   ascensionStart.setHours(0, 0, 0, 0);
   
-  const ascensionEnd = new Date(JOURNEY_CONSTANTS.ASCENSION_END);
-  ascensionEnd.setHours(23, 59, 59, 999);
+  const phase2End = new Date(JOURNEY_CONSTANTS.PHASE_2_END);
+  phase2End.setHours(23, 59, 59, 999);
   
-  return checkDate >= ascensionStart && checkDate <= ascensionEnd;
+  return checkDate >= ascensionStart && checkDate <= phase2End;
 }
 
 /**
- * Get week number for a day number (1-13)
- * @param {number} dayNumber - Day number (1-90)
+ * Get week number for a day number (1-26 for 180 days)
+ * @param {number} dayNumber - Day number (1-180)
  * @returns {number}
  */
 export function getWeekNumber(dayNumber) {
@@ -217,20 +222,18 @@ export function getWeekNumber(dayNumber) {
 }
 
 /**
- * Check if a day is accessible (all days are now unlocked)
- * Day 0 (Week 0 testing) is always accessible
- * @param {number} dayNumber - Day number to check (0-90)
+ * Check if a day is accessible
+ * @param {number} dayNumber - Day number to check (0-180)
  * @returns {boolean}
  */
 export function isDayAccessible(dayNumber) {
-  // All days are now unlocked and accessible
-  // Day 0 (Week 0 testing week) is always accessible
+  // Day 0 (preparation) is always accessible
   if (dayNumber === 0) {
     return true;
   }
   
-  // All days from 1-90 are accessible (Day 1 starts from Jan 25)
-  if (dayNumber >= 1 && dayNumber <= 90) {
+  // All days from 1-180 are accessible
+  if (dayNumber >= 1 && dayNumber <= JOURNEY_CONSTANTS.TOTAL_DAYS) {
     return true;
   }
   
@@ -239,19 +242,18 @@ export function isDayAccessible(dayNumber) {
 
 /**
  * Check if a day can be marked as complete
- * Day 0 (Week 0 testing) cannot be completed
- * Day 1+ (starting Jan 25) can be completed
- * @param {number} dayNumber - Day number to check (0-90)
+ * Day 0 (preparation) cannot be completed
+ * @param {number} dayNumber - Day number to check (0-180)
  * @returns {boolean}
  */
 export function canCompleteDay(dayNumber) {
-  // Day 0 (Week 0 testing week) cannot be completed
+  // Day 0 (preparation) cannot be completed
   if (dayNumber === 0) {
     return false;
   }
   
-  // All days from 1-90 can be completed (Day 1 starts from Jan 25)
-  if (dayNumber >= 1 && dayNumber <= 90) {
+  // All days from 1-180 can be completed
+  if (dayNumber >= 1 && dayNumber <= JOURNEY_CONSTANTS.TOTAL_DAYS) {
     return true;
   }
   
@@ -260,20 +262,20 @@ export function canCompleteDay(dayNumber) {
 
 /**
  * Check if a day is tomorrow
- * @param {number} dayNumber - Day number to check (0-90)
+ * @param {number} dayNumber - Day number to check (0-180)
  * @returns {boolean}
  */
 export function isTomorrow(dayNumber) {
-  const phase = getCurrentPhase();
+  const phaseStatus = getCurrentPhaseStatus();
   const currentDayNumber = getCurrentDayNumber();
   
   // If we're before the journey, Day 0 is tomorrow
-  if (phase === 'before') {
+  if (phaseStatus === 'before') {
     return dayNumber === 0;
   }
   
   // If we're on Day 0 (preparation), Day 1 is tomorrow
-  if (phase === 'preparation') {
+  if (phaseStatus === 'preparation') {
     return dayNumber === 1;
   }
   
@@ -281,8 +283,8 @@ export function isTomorrow(dayNumber) {
     return false;
   }
   
-  // If we're in ascension phase, check if it's the next day
-  if (phase === 'ascension' && currentDayNumber) {
+  // If we're in journey, check if it's the next day
+  if ((phaseStatus === 'phase1' || phaseStatus === 'phase2') && currentDayNumber) {
     return dayNumber === currentDayNumber + 1;
   }
   

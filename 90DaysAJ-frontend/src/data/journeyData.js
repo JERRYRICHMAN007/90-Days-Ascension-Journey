@@ -15,7 +15,7 @@ export const journeys = [
     id: "dual-brand",
     title: "Dual Brand",
     icon: "🎨",
-    timeBlock: "Time: 4:45-5:30 AM (Mon-Fri), 5:00-6:00 AM (Saturday)",
+    timeBlock: "Time: 5:00-6:00 PM (Mon-Fri), 3:00-4:00 AM (Sunday)",
     description: "_richman.oo7 (Personal) + _ryxen.oo7 (Company) Brand Building",
     totalDays: 90,
     color: "#f093fb",
@@ -24,7 +24,7 @@ export const journeys = [
     id: "reading",
     title: "Reading",
     icon: "📚",
-    timeBlock: "Bible: 6:00-6:15 AM (Weekdays & Sunday) | E-Book: 6:15-6:45 AM (Mon-Wed) | Physical: 6:15-6:45 AM (Thu-Fri), 8:00-8:30 PM (Sat)",
+    timeBlock: "Bible: 6:00-6:30 AM (Mon-Fri), 7:30-8:00 AM (Sat), 6:00-6:30 AM (Sun) | E-Book: 5:00-6:00 PM (Sat) | Physical: 7:00-8:00 PM (Sun)",
     description: "Bible → E-books → Physical Books",
     totalDays: 90,
     color: "#4facfe",
@@ -49,30 +49,50 @@ export const journeys = [
   },
 ];
 
-// OFFICIAL START DATE: January 18, 2026 (Day 0 - Sunday - Preparation)
-// Day 0 = January 18, 2026 (Sunday) - Preparation/Setup Day
-// Day 1 = January 19, 2026 (Monday) - Testing & Trials Week Begins
-// Week 0 (Days 1-6): January 19-24, 2026 - Testing & Trials (No actual content/resources)
-// Week 1 (Day 7+): January 25, 2026 onwards - Actual content execution starts
-// All journeys start January 19, 2026 - Official Ascension Phase begins!
-// Content shift: All content that was in Week 1 (Jan 18-24) is now in Week 1 (Jan 25+)
+// OFFICIAL START DATE: Journey begins February 1, 2026
+// All weeks start on Sunday
+// Week 1 starts on Sunday, February 2, 2026 (the Sunday that includes/follows Feb 1)
+// Day 0 = February 1, 2026 (Saturday) - Preparation/Setup Day (before Week 1)
+// Day 1 = February 2, 2026 (Sunday) - First day of journey (Week 1, Day 0)
+// Phase 1 (Days 1-90): Mobile Engineering + Frontend Engineering only
+// Phase 2 (Days 91-180): Backend Engineering + WordPress
+// All journeys: Weeks always start on Sunday, beginning from Feb 2, 2026
 
 // Helper function to generate all weeks
+// Starts from Week 1 (no Week 0)
+// Ensures all weeks start on Sunday
+// Journey begins February 1, 2026 - Week 1 starts on the Sunday that includes or follows Feb 1
 function generateWeeks(startDate, numWeeks) {
   const weeks = [];
   const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+  
+  // Find the Sunday of the week containing the start date
+  // If startDate is not a Sunday, find the next Sunday (or current if it's already Sunday)
+  const dayOfWeek = start.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  // If it's Sunday, use it. Otherwise, go forward to the next Sunday
+  const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek; // Go forward to next Sunday
+  const weekStartDate = new Date(start);
+  weekStartDate.setDate(start.getDate() + daysToSunday);
+  weekStartDate.setHours(0, 0, 0, 0);
 
   for (let i = 0; i < numWeeks; i++) {
-    const weekStart = new Date(start);
-    weekStart.setDate(start.getDate() + i * 7);
+    const weekStart = new Date(weekStartDate);
+    weekStart.setDate(weekStartDate.getDate() + i * 7);
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    // Verify week starts on Sunday
+    if (weekStart.getDay() !== 0) {
+      console.warn(`Warning: Week ${i + 1} does not start on Sunday. Date: ${weekStart.toISOString().split("T")[0]}`);
+    }
 
     weeks.push({
-      weekNumber: i, // Week 0 = Testing, Week 1 = First week of actual content, etc.
+      weekNumber: i + 1, // Week 1, Week 2, etc. (no Week 0)
       startDate: weekStart.toISOString().split("T")[0],
       endDate: weekEnd.toISOString().split("T")[0],
-      theme: getWeekTheme(i), // Use i instead of i+1 to match new week numbering
+      theme: getWeekTheme(i + 1), // Use i+1 for week numbering (Week 1, 2, 3...)
     });
   }
 
@@ -81,19 +101,19 @@ function generateWeeks(startDate, numWeeks) {
 
 function getWeekTheme(weekNum) {
   const themes = {
-    0: "Testing & Trials Week - System familiarization and experimentation (No iterations)",
-    1: "Building Momentum - Consistency and habit formation",
-    2: "Deepening Practice - Advanced techniques and refinement",
-    3: "Integration Phase - Combining all elements",
-    4: "Acceleration - Pushing boundaries and growth",
-    5: "Mastery Development - Refining skills and systems",
-    6: "Peak Performance - Maximum output and optimization",
-    7: "Scaling Phase - Expanding reach and impact",
-    8: "Innovation - New approaches and strategies",
-    9: "Excellence - Pursuing perfection in execution",
-    10: "Leadership - Guiding and inspiring others",
-    11: "Transformation - Complete evolution and change",
-    12: "Celebration - Reflecting on achievements and next steps",
+    1: "Foundation Week - Building the foundation for your journey",
+    2: "Building Momentum - Consistency and habit formation",
+    3: "Deepening Practice - Advanced techniques and refinement",
+    4: "Integration Phase - Combining all elements",
+    5: "Acceleration - Pushing boundaries and growth",
+    6: "Mastery Development - Refining skills and systems",
+    7: "Peak Performance - Maximum output and optimization",
+    8: "Scaling Phase - Expanding reach and impact",
+    9: "Innovation - New approaches and strategies",
+    10: "Excellence - Pursuing perfection in execution",
+    11: "Leadership - Guiding and inspiring others",
+    12: "Transformation - Complete evolution and change",
+    13: "Celebration - Reflecting on achievements and next steps",
   };
   return themes[weekNum] || "Week Theme";
 }
@@ -384,7 +404,7 @@ function getDualBrandReflection(weekNum, dayIndex) {
 }
 
 // Body Transformation Journey - Complete 13 weeks
-export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
+export const bodyTransformationWeeks = generateWeeks("2026-02-01", 13).map(
   (week, idx) => {
     const days = [];
     const workoutTypes = [
@@ -402,9 +422,10 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
       dayDate.setDate(new Date(week.startDate).getDate() + i);
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      // Week 0: All days are Day 0 (testing week)
-      // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
-      const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
+      // Day 0 = Sunday, February 1, 2026 (Week 0, i=0)
+      // Day 1 = Monday, February 2, 2026 (Week 0, i=1)
+      // Calculate: idx * 7 + i (Week 0 Sunday = 0*7+0 = 0, Week 0 Monday = 0*7+1 = 1, etc.)
+      const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 180
 
       // Get actual day name from the date
       const dayNames = [
@@ -423,22 +444,20 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
       const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
       const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 0 (Jan 18-24): All days are Day 0 (testing week) - no actual content
-      // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
-      // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
-      const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
-      // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
-      const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
+      // Week 1 starts from Day 1 (Monday, February 2, 2026) - actual content execution begins
+      // Content week numbering: Day 1 = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+      // Week numbering: idx 0 = Week 1, idx 1 = Week 2, etc.
+      const contentWeekNum = idx + 1; // Week 1, 2, 3, etc.
 
-      // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
-      const workoutData = isTestRun ? { name: "System Testing - No Workout", link: null } : getWorkoutForDay(contentWeekNum, i);
-      const workoutResources = isTestRun ? [] : getWorkoutResources(contentWeekNum, i);
+      // Use actual content for all days (no test run)
+      const workoutData = getWorkoutForDay(contentWeekNum, i);
+      const workoutResources = getWorkoutResources(contentWeekNum, i);
       
       // Get time blocks and organize schedule (same format as software engineering)
       const timeBlocks = getBodyTransformationTimeBlocks(dayIndex);
-      const learningData = isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getBodyTransformationLearning(contentWeekNum, i);
-      const projectData = isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getBodyTransformationProject(contentWeekNum, i);
-      const scheduledContent = isTestRun ? null : organizeBodyTransformationSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
+      const learningData = getBodyTransformationLearning(contentWeekNum, i);
+      const projectData = getBodyTransformationProject(contentWeekNum, i);
+      const scheduledContent = organizeBodyTransformationSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
 
       days.push({
         dayNumber: dayNumber,
@@ -447,23 +466,17 @@ export const bodyTransformationWeeks = generateWeeks("2026-01-19", 13).map(
         focus: workoutTypes[i],
         workout: workoutData.name || workoutData,
         workoutLink: workoutData.link || null,
-        nutrition: isTestRun ? "Testing Week - Focus on system exploration" : getNutritionForWeek(contentWeekNum, i),
+        nutrition: getNutritionForWeek(contentWeekNum, i),
         mindset: getMindsetAffirmation(i),
         resources: workoutResources,
         // Add missing fields for Learning, Project, Reflection tabs
         dailyLearning: learningData,
         project: projectData,
-        reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getBodyTransformationReflection(contentWeekNum, i),
-        dailyQuiz: isTestRun ? null : getBodyTransformationQuiz(contentWeekNum, i, dayNumber),
-        isTestRun: isTestRun,
-        testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
-        testRunTasks: isTestRun ? [
-          "Explore the app interface and navigation",
-          "Test all features and functionality",
-          "Get familiar with the journey structure",
-          "Identify any issues or improvements",
-          "Prepare mentally for Day 1 onwards (Jan 25)"
-        ] : null,
+        reflection: getBodyTransformationReflection(contentWeekNum, i),
+        dailyQuiz: getBodyTransformationQuiz(contentWeekNum, i, dayNumber),
+        isTestRun: false,
+        testRunNote: null,
+        testRunTasks: null,
         // Schedule format (same as software engineering)
         schedule: {
           timeBlocks: timeBlocks,
@@ -663,7 +676,7 @@ function getWorkoutResources(weekNum, dayIndex) {
 }
 
 // Reading Journey - Complete 13 weeks
-export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
+export const readingWeeks = generateWeeks("2026-02-01", 13).map((week, idx) => {
   const days = [];
 
   for (let i = 0; i < 7; i++) {
@@ -671,9 +684,10 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
     dayDate.setDate(new Date(week.startDate).getDate() + i);
 
     const dayDateString = dayDate.toISOString().split("T")[0];
-    // Week 0: All days are Day 0 (testing week)
-    // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
-    const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
+    // Day 0 = Sunday, February 1, 2026 (Week 1, i=0)
+    // Day 1 = Monday, February 2, 2026 (Week 1, i=1)
+    // Calculate: idx * 7 + i (Week 1 Sunday = 0*7+0 = 0, Week 1 Monday = 0*7+1 = 1, etc.)
+    const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 90
 
     // Get actual day name from the date
     const dayNames = [
@@ -694,16 +708,14 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
 
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
     
-    // Week 0 (Jan 18-24): All days are Day 0 (Testing & Trials Week) - no actual content
-    // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
-    // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
-    const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
-    // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
-    const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
+    // Week 1 starts from Day 1 (Monday, February 2, 2026) - actual content execution begins
+    // Content week numbering: Day 1 = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+    // Week numbering: idx 0 = Week 1, idx 1 = Week 2, etc.
+    const contentWeekNum = idx + 1; // Week 1, 2, 3, etc.
 
-    // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
+    // Use actual content for all days (no test run)
     // Pass dayOfWeek to getReadingResources so it can determine what resources to show
-    const readingResources = isTestRun ? [] : getReadingResources(contentWeekNum, dayOfWeek);
+    const readingResources = getReadingResources(contentWeekNum, dayOfWeek);
 
     // Map dayOfWeek to the correct index for reading functions
     // For weekdays: Monday(1)->0, Tuesday(2)->1, Wednesday(3)->2, Thursday(4)->3, Friday(5)->4
@@ -712,32 +724,26 @@ export const readingWeeks = generateWeeks("2026-01-19", 13).map((week, idx) => {
     
     // Get time blocks and organize schedule (same format as software engineering)
     const timeBlocks = getReadingTimeBlocks(dayIndex);
-    const readingSessionsData = isTestRun 
-      ? [] 
-      : (isWeekend ? getWeekendReading(contentWeekNum, readingDayIndex) : getWeekdayReading(contentWeekNum, readingDayIndex));
-    const scheduledContent = isTestRun ? null : organizeReadingSchedule(readingSessionsData, dayIndex, timeBlocks, dayNumber);
+    const readingSessionsData = isWeekend 
+      ? getWeekendReading(contentWeekNum, readingDayIndex) 
+      : getWeekdayReading(contentWeekNum, readingDayIndex);
+    const scheduledContent = organizeReadingSchedule(readingSessionsData, dayIndex, timeBlocks, dayNumber);
 
     days.push({
       dayNumber: dayNumber,
       date: dayDateString,
       dayName: actualDayName,
       readingSessions: readingSessionsData,
-      theme: isTestRun ? "Testing & Trials Week" : getReadingTheme(contentWeekNum),
+      theme: getReadingTheme(contentWeekNum),
       resources: readingResources,
       // Add missing fields for Learning, Project, Reflection tabs
-      dailyLearning: isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getReadingLearning(contentWeekNum, i),
-      project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getReadingProject(contentWeekNum, i),
-      reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getReadingReflection(contentWeekNum, i),
-      dailyQuiz: isTestRun ? null : getReadingQuiz(contentWeekNum, i, dayNumber),
-      isTestRun: isTestRun,
-      testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
-      testRunTasks: isTestRun ? [
-        "Explore the app interface and navigation",
-        "Test all features and functionality",
-        "Get familiar with the journey structure",
-        "Identify any issues or improvements",
-        "Prepare mentally for Day 1 onwards (Jan 25)"
-      ] : null,
+      dailyLearning: getReadingLearning(contentWeekNum, i),
+      project: getReadingProject(contentWeekNum, i),
+      reflection: getReadingReflection(contentWeekNum, i),
+      dailyQuiz: getReadingQuiz(contentWeekNum, i, dayNumber),
+      isTestRun: false,
+      testRunNote: null,
+      testRunTasks: null,
       // Schedule format (same as software engineering)
       schedule: {
         timeBlocks: timeBlocks,
@@ -753,68 +759,16 @@ function getWeekdayReading(weekNum, dayIndex) {
   // dayIndex: 0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday
   const sessions = [];
   
-  // Bible Reading: ALL weekdays (Monday-Friday), 6:00-6:15 AM
+  // Bible Reading: ALL weekdays (Monday-Friday), 6:00-6:30 AM
   sessions.push({
-    time: "6:00-6:15 AM",
+    time: "6:00-6:30 AM",
     type: "Bible Reading",
     material: getBibleReading(weekNum, dayIndex),
     focus: "Spiritual, financial, wisdom grounding",
   });
 
-  // E-Book Reading: Monday-Wednesday only (dayIndex 0-2), 6:15-6:45 AM
-  if (dayIndex <= 2) {
-    const ebook = getEBookForWeek(weekNum);
-    let material = ebook;
-    let chapters = "";
-
-    // Add chapter numbers for Atomic Habits
-    if (ebook === "Atomic Habits") {
-      if (weekNum === 1) {
-        // Week 1: Chapters 1-7 (3 days: Mon-Wed)
-        const startChapter = dayIndex === 0 ? 1 : dayIndex === 1 ? 3 : 5;
-        const endChapter = dayIndex === 0 ? 2 : dayIndex === 1 ? 4 : 7;
-        chapters = startChapter === endChapter
-          ? `Chapter ${startChapter}`
-          : `Chapters ${startChapter}-${endChapter}`;
-      } else if (weekNum === 2) {
-        // Week 2: Chapters 8-14 (3 days: Mon-Wed)
-        const startChapter = dayIndex === 0 ? 8 : dayIndex === 1 ? 10 : 12;
-        const endChapter = dayIndex === 0 ? 9 : dayIndex === 1 ? 11 : 14;
-        chapters = startChapter === endChapter
-          ? `Chapter ${startChapter}`
-          : `Chapters ${startChapter}-${endChapter}`;
-      }
-      material = `Atomic Habits - James Clear (${chapters})`;
-    } else if (ebook === "Atomic Habits (Advanced)") {
-      if (weekNum === 6) {
-        // Week 6: Chapters 15-20 (3 days: Mon-Wed)
-        const startChapter = dayIndex === 0 ? 15 : dayIndex === 1 ? 17 : 19;
-        const endChapter = dayIndex === 0 ? 16 : dayIndex === 1 ? 18 : 20;
-        chapters = startChapter === endChapter
-          ? `Chapter ${startChapter}`
-          : `Chapters ${startChapter}-${endChapter}`;
-        material = `Atomic Habits - James Clear (${chapters})`;
-      }
-    }
-
-    sessions.push({
-      time: "6:15-6:45 AM",
-      type: "E-Reading",
-      material: material,
-      focus: "Mindset, success, wealth, strategy",
-      chapters: chapters || null,
-    });
-  }
-
-  // Physical Book Reading: Thursday-Friday only (dayIndex 3-4), 6:15-6:45 AM
-  if (dayIndex >= 3 && dayIndex <= 4) {
-    sessions.push({
-      time: "6:15-6:45 AM",
-      type: "Physical Book",
-      material: getPhysicalBookForWeek(weekNum),
-      focus: "Deep reading and comprehension",
-    });
-  }
+  // E-Book Reading: REMOVED from weekdays - only on Saturdays at 5:00 PM - 6:00 PM
+  // Physical Book Reading: REMOVED from weekdays - only on Sundays at 7:00 PM - 8:00 PM
 
   return sessions;
 }
@@ -824,20 +778,54 @@ function getWeekendReading(weekNum, dayIndex) {
   const sessions = [];
   
   if (dayIndex === 0) {
-    // Sunday: Bible Reading only, 6:00-6:15 AM
+    // Sunday: Bible Reading (6:00-6:30 AM) + Physical Book Reading (7:00-8:00 PM)
     sessions.push({
-      time: "6:00-6:15 AM",
+      time: "6:00-6:30 AM",
       type: "Bible Reading",
       material: getBibleReading(weekNum, 0), // Sunday is day 0
       focus: "Spiritual, financial, wisdom grounding",
     });
-  } else if (dayIndex === 6) {
-    // Saturday: Physical Book Reading, 8:00-8:30 PM
     sessions.push({
-      time: "8:00-8:30 PM",
+      time: "7:00-8:00 PM",
       type: "Physical Book",
       material: getPhysicalBookForWeek(weekNum),
-      focus: "Deep reflection and consolidation",
+      focus: "Deep reading and comprehension",
+    });
+  } else if (dayIndex === 6) {
+    // Saturday: Bible Reading (7:30-8:00 AM) + E-Reading (5:00-6:00 PM)
+    sessions.push({
+      time: "7:30-8:00 AM",
+      type: "Bible Reading",
+      material: getBibleReading(weekNum, 6), // Saturday is day 6
+      focus: "Spiritual, financial, wisdom grounding",
+    });
+    
+    // E-Book Reading: Saturday only, 5:00-6:00 PM
+    const ebook = getEBookForWeek(weekNum);
+    let material = ebook;
+    let chapters = "";
+
+    // Add chapter numbers for Atomic Habits
+    if (ebook === "Atomic Habits") {
+      if (weekNum === 1) {
+        chapters = "Chapters 1-7";
+      } else if (weekNum === 2) {
+        chapters = "Chapters 8-14";
+      }
+      material = `Atomic Habits - James Clear (${chapters})`;
+    } else if (ebook === "Atomic Habits (Advanced)") {
+      if (weekNum === 6) {
+        chapters = "Chapters 15-20";
+        material = `Atomic Habits - James Clear (${chapters})`;
+      }
+    }
+
+    sessions.push({
+      time: "5:00-6:00 PM",
+      type: "E-Reading",
+      material: material,
+      focus: "Mindset, success, wealth, strategy",
+      chapters: chapters || null,
     });
   }
   
@@ -846,8 +834,8 @@ function getWeekendReading(weekNum, dayIndex) {
 
 function getEBookForWeek(weekNum) {
   const books = [
-    "Atomic Habits",
-    "Atomic Habits",
+    "Atomic Habits - Part 1", // Week 1
+    "Atomic Habits - Part 2", // Week 2 (different from Week 1)
     "Be Obsessed or Be Average",
     "Be Obsessed or Be Average",
     "Meditations",
@@ -865,8 +853,8 @@ function getEBookForWeek(weekNum) {
 
 function getPhysicalBookForWeek(weekNum) {
   const books = [
-    "System Building",
-    "System Building",
+    "System Building - Foundations", // Week 1
+    "System Building - Implementation", // Week 2 (different from Week 1)
     "Successful Habits",
     "Successful Habits",
     "System Building (Advanced)",
@@ -884,11 +872,11 @@ function getPhysicalBookForWeek(weekNum) {
 
 function getBibleReading(weekNum, dayIndex) {
   const readings = [
-    "Proverbs",
-    "Proverbs",
-    "Proverbs",
-    "Proverbs",
-    "Proverbs",
+    "Proverbs - Chapters 1-10", // Week 1
+    "Proverbs - Chapters 11-20", // Week 2 (different from Week 1)
+    "Proverbs - Chapters 21-31",
+    "Proverbs - Review & Reflection",
+    "Proverbs - Application",
     "Ecclesiastes",
     "Ecclesiastes",
     "Isaiah",
@@ -970,8 +958,8 @@ function getReadingResources(weekNum, dayOfWeek) {
     });
   }
   
-  // E-Book Reading: Monday-Wednesday only
-  if (isMondayToWednesday) {
+  // E-Book Reading: Saturday ONLY (5:00-6:00 PM)
+  if (isSaturday) {
     const ebook = getEBookForWeek(weekNum);
     let ebookTitle = ebook;
     let ebookUrl = "";
@@ -994,14 +982,14 @@ function getReadingResources(weekNum, dayOfWeek) {
     resources.push({
       title: ebookTitle,
       url: ebookUrl,
-      time: "30 min",
+      time: "60 min",
       category: "E-Book",
       type: "E-Reading"
     });
   }
   
-  // Physical Book Reading: Thursday-Friday AND Saturday
-  if (isThursdayToFriday || isSaturday) {
+  // Physical Book Reading: Sunday ONLY (7:00-8:00 PM)
+  if (isSunday) {
     const physicalBook = getPhysicalBookForWeek(weekNum);
     let physicalBookTitle = physicalBook;
     let physicalBookUrl = "";
@@ -1024,7 +1012,7 @@ function getReadingResources(weekNum, dayOfWeek) {
     resources.push({
       title: physicalBookTitle,
       url: physicalBookUrl,
-      time: isSaturday ? "30 min" : "30 min",
+      time: "60 min",
       category: "Physical Book",
       type: "Physical Book"
     });
@@ -1052,7 +1040,7 @@ function getReadingResources(weekNum, dayOfWeek) {
 }
 
 // Dual Brand Journey - Complete 13 weeks
-export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
+export const dualBrandWeeks = generateWeeks("2026-02-01", 13).map(
   (week, idx) => {
     const days = [];
 
@@ -1061,9 +1049,10 @@ export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
       dayDate.setDate(new Date(week.startDate).getDate() + i);
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      // Week 0: All days are Day 0 (testing week)
-      // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
-      const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
+      // Day 0 = Sunday, February 1, 2026 (Week 0, i=0)
+      // Day 1 = Monday, February 2, 2026 (Week 0, i=1)
+      // Calculate: idx * 7 + i (Week 0 Sunday = 0*7+0 = 0, Week 0 Monday = 0*7+1 = 1, etc.)
+      const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 180
 
       // Get actual day name from the date
       const dayNames = [
@@ -1082,55 +1071,47 @@ export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
       const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
       const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 0 (Jan 18-24): All days are Day 0 (Testing & Trials Week) - no actual content
-      // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
-      // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
-      const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
-      // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
-      const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
+      // Week 1 starts from Day 1 (Monday, February 2, 2026) - actual content execution begins
+      // Content week numbering: Day 1 = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+      // Week numbering: idx 0 = Week 1, idx 1 = Week 2, etc.
+      const contentWeekNum = idx + 1; // Week 1, 2, 3, etc.
 
-      // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
-      const focus = isTestRun ? "System Testing" : getDualBrandFocus(contentWeekNum, i);
+      // Use actual content for all days (no test run)
+      const focus = getDualBrandFocus(contentWeekNum, i);
       
       // Get time blocks and organize schedule (same format as software engineering)
       const timeBlocks = getDualBrandTimeBlocks(dayIndex);
       const learningData = {
         title: focus,
-        description: isTestRun ? "Explore and test the app features" : `Today's focus: ${focus}`,
+        description: `Today's focus: ${focus}`,
       };
-      const projectData = isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getDualBrandProject(contentWeekNum, i);
-      const scheduledContent = isTestRun ? null : organizeDualBrandSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
+      const projectData = getDualBrandProject(contentWeekNum, i);
+      const scheduledContent = organizeDualBrandSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
 
       days.push({
         dayNumber: dayNumber,
         date: dayDateString,
         dayName: actualDayName,
         focus: focus,
-        personalBrandTasks: isTestRun ? [] : getPersonalBrandTasks(contentWeekNum, i),
-        companyBrandTasks: isTestRun ? [] : getCompanyBrandTasks(contentWeekNum, i),
+        personalBrandTasks: getPersonalBrandTasks(contentWeekNum, i),
+        companyBrandTasks: getCompanyBrandTasks(contentWeekNum, i),
         // Keep legacy fields for backward compatibility
-        ryxenTasks: isTestRun ? [] : getPersonalBrandTasks(contentWeekNum, i),
-        havenXTasks: isTestRun ? [] : getCompanyBrandTasks(contentWeekNum, i),
-        theme: isTestRun ? "Testing & Trials Week" : getDualBrandTheme(contentWeekNum),
-        learningResources: isTestRun ? [] : getDualBrandLearningResources(contentWeekNum, i),
-        outcome: isTestRun ? "System testing and exploration" : getDualBrandOutcome(contentWeekNum, i),
+        ryxenTasks: getPersonalBrandTasks(contentWeekNum, i),
+        havenXTasks: getCompanyBrandTasks(contentWeekNum, i),
+        theme: getDualBrandTheme(contentWeekNum),
+        learningResources: getDualBrandLearningResources(contentWeekNum, i),
+        outcome: getDualBrandOutcome(contentWeekNum, i),
         // Platform-specific sessions for content planning
-        platformSessions: isTestRun ? [] : getPlatformSessions(contentWeekNum, i),
+        platformSessions: getPlatformSessions(contentWeekNum, i),
         // Project content for dual brand
-        project: isTestRun ? { title: "System Testing", description: "Test all features", requirements: [] } : getDualBrandProject(contentWeekNum, i),
+        project: getDualBrandProject(contentWeekNum, i),
         // Add missing fields for Learning, Reflection tabs
         dailyLearning: learningData,
-        reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getDualBrandReflection(contentWeekNum, i),
-        dailyQuiz: isTestRun ? null : getDualBrandQuiz(contentWeekNum, i, dayNumber),
-        isTestRun: isTestRun,
-        testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
-        testRunTasks: isTestRun ? [
-          "Explore the app interface and navigation",
-          "Test all features and functionality",
-          "Get familiar with the journey structure",
-          "Identify any issues or improvements",
-          "Prepare mentally for Day 1 onwards (Jan 25)"
-        ] : null,
+        reflection: getDualBrandReflection(contentWeekNum, i),
+        dailyQuiz: getDualBrandQuiz(contentWeekNum, i, dayNumber),
+        isTestRun: false,
+        testRunNote: null,
+        testRunTasks: null,
         // Schedule format (same as software engineering)
         schedule: {
           timeBlocks: timeBlocks,
@@ -1146,22 +1127,22 @@ export const dualBrandWeeks = generateWeeks("2026-01-19", 13).map(
 function getDualBrandFocus(weekNum, dayIndex) {
   const focuses = [
     [
-      "Brand Identity",
-      "Visual Identity",
-      "Platform Setup - Social",
-      "Platform Setup - Video",
-      "Content Pillars",
+      "Brand Identity Basics",
+      "Quick Visual Identity",
+      "Platform Setup - All 7 Platforms",
+      "Automation Tool Setup - Buffer/Hootsuite",
+      "Content Pillars (Quick)",
       "Bios & About Sections",
       "Week Reflection",
     ],
     [
-      "Content Creation 1",
-      "Content Creation 2",
-      "Video Content",
-      "Content Creation 3",
-      "Scheduling Setup",
-      "Content Audit",
-      "Week Reflection",
+      "Create & Schedule Instagram Posts",
+      "Create & Schedule X/Twitter Threads",
+      "Create & Schedule TikTok Videos",
+      "Create & Schedule Threads Posts",
+      "Create & Schedule LinkedIn Posts",
+      "Schedule YouTube Content",
+      "Week Reflection - Automation Working",
     ],
     [
       "Engagement Strategy",
@@ -1279,13 +1260,13 @@ function getDualBrandLearningResources(weekNum, dayIndex) {
         },
         {
           title: "Brand Identity Design Guide - Canva",
-          url: "https://www.canva.com/designschool/tutorials/brand-identity-design/",
+          url: "https://www.canva.com/design-school/courses/branding-design",
           category: "Tutorial",
           platform: "Canva",
         },
         {
           title: "Brand Strategy Framework - HubSpot",
-          url: "https://blog.hubspot.com/marketing/brand-strategy",
+          url: "https://offers.hubspot.com/how-to-build-a-brand",
           category: "Article",
           platform: "HubSpot",
         },
@@ -1319,7 +1300,7 @@ function getDualBrandLearningResources(weekNum, dayIndex) {
         },
         {
           title: "X (Twitter) Profile Setup Guide",
-          url: "https://help.twitter.com/en/managing-your-account/customizing-your-profile",
+          url: "https://help.x.com/en/managing-your-account/customizing-your-profile",
           category: "Official",
           platform: "X/Twitter",
         },
@@ -1346,6 +1327,50 @@ function getDualBrandLearningResources(weekNum, dayIndex) {
           url: "https://help.instagram.com/1631821640426723",
           category: "Official",
           platform: "Threads",
+        },
+        {
+          title: "GitHub Profile README Guide",
+          url: "https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme",
+          category: "Official",
+          platform: "GitHub",
+        },
+        {
+          title: "GitHub Profile Best Practices",
+          url: "https://github.com/abhisheknaiidu/awesome-github-profile-readme",
+          category: "Examples",
+          platform: "GitHub",
+        },
+      ],
+      [
+        {
+          title: "Buffer Setup Guide - Connect All Platforms",
+          url: "https://buffer.com/help/articles/connect-social-accounts",
+          category: "Tutorial",
+          platform: "Buffer",
+        },
+        {
+          title: "Hootsuite Setup Guide - Connect Social Accounts",
+          url: "https://help.hootsuite.com/hc/en-us/articles/360040314234-Connect-your-social-networks",
+          category: "Tutorial",
+          platform: "Hootsuite",
+        },
+        {
+          title: "How to Schedule Posts on Buffer",
+          url: "https://buffer.com/help/articles/how-to-schedule-posts",
+          category: "Tutorial",
+          platform: "Buffer",
+        },
+        {
+          title: "Buffer Best Times to Post",
+          url: "https://buffer.com/library/best-time-to-post",
+          category: "Guide",
+          platform: "Buffer",
+        },
+        {
+          title: "Automate Social Media Posts - Complete Guide",
+          url: "https://blog.hootsuite.com/how-to-schedule-social-media-posts/",
+          category: "Guide",
+          platform: "All",
         },
       ],
       [
@@ -1907,22 +1932,23 @@ function getPersonalBrandTasks(weekNum, dayIndex) {
   // Fallback for Week 1 or if execution plan not available
   const tasks = [
     [
-      "Define Personal Brand (_richman.oo7) mission, values, target persona",
-      "Design Personal Brand logo concept, color palette",
-      "Create/optimize Personal Brand Instagram, X, TikTok profiles",
-      "Create Personal Brand YouTube channel",
-      "Define 5 Personal Brand content pillars",
-      "Write compelling bios for all Personal Brand platforms",
-      "Review week foundation work",
+      "Define Personal Brand (_richman.oo7) mission in 1 sentence",
+      "Choose Personal Brand colors (use Canva palette)",
+      "Create/optimize Personal Brand Instagram, TikTok, X, Threads, LinkedIn, YouTube, GitHub profiles",
+      "Set up Buffer/Hootsuite account & connect all 7 platforms",
+      "Define 3 Personal Brand content pillars (keep it simple)",
+      "Write bios for all Personal Brand platforms (use templates)",
+      "Test automation: Schedule 1 test post to all platforms",
     ],
     [
-      "Create 3 Personal Brand Instagram posts",
-      "Create 5 Personal Brand X/Twitter threads",
-      "Script 2 Personal Brand YouTube Shorts",
-      "Create 3 Personal Brand TikTok videos",
-      "Schedule Week 3 content",
-      "Review all created content",
-      "Analyze what content resonated",
+      "Create 3 Personal Brand Instagram posts → Schedule in Buffer for next 3 days",
+      "Create 5 Personal Brand X/Twitter threads → Schedule in Buffer for next 5 days",
+      "Create 3 Personal Brand Threads posts → Schedule in Buffer for next 3 days",
+      "Create 2 Personal Brand TikTok videos → Schedule in Buffer for next 2 days",
+      "Create 3 Personal Brand LinkedIn posts → Schedule in Buffer for next 3 days",
+      "Update Personal Brand GitHub profile & README",
+      "Verify all Week 2 content is scheduled & auto-posting",
+      "Check Buffer dashboard - ensure all posts are queued",
     ],
     [
       "Define _richman.oo7 engagement tactics",
@@ -2043,22 +2069,24 @@ function getCompanyBrandTasks(weekNum, dayIndex) {
   // Fallback for Week 1 or if execution plan not available
   const tasks = [
     [
-      "Define Company Brand (_ryxen.oo7) mission, positioning, ideal client",
-      "Design Company Brand logo concept, brand guidelines",
-      "Create/optimize Company Brand LinkedIn, X, Instagram profiles",
-      "Create Company Brand YouTube channel",
-      "Define 5 Company Brand content pillars",
-      "Write compelling bios for all Company Brand platforms",
-      "Review week foundation work",
+      "Define Company Brand (_ryxen.oo7) mission in 1 sentence",
+      "Choose Company Brand colors (use Canva palette)",
+      "Create/optimize Company Brand Instagram, TikTok, X, Threads, LinkedIn, YouTube, GitHub profiles",
+      "Set up Buffer/Hootsuite account & connect all 7 platforms for _ryxen.oo7",
+      "Define 3 Company Brand content pillars (keep it simple)",
+      "Write bios for all Company Brand platforms (use templates)",
+      "Test automation: Schedule 1 test post to all platforms",
     ],
     [
-      "Create 3 _ryxen.oo7 LinkedIn posts",
-      "Create 5 _ryxen.oo7 X/Twitter threads",
-      "Script 2 _ryxen.oo7 YouTube Shorts",
-      "Create 3 _ryxen.oo7 TikTok videos",
-      "Schedule Week 3 content",
-      "Review all created content",
-      "Analyze what content resonated",
+      "Create 3 _ryxen.oo7 Instagram posts → Schedule in Buffer for next 3 days",
+      "Create 3 _ryxen.oo7 LinkedIn posts → Schedule in Buffer for next 3 days",
+      "Create 5 _ryxen.oo7 X/Twitter threads → Schedule in Buffer for next 5 days",
+      "Create 3 _ryxen.oo7 Threads posts → Schedule in Buffer for next 3 days",
+      "Create 2 _ryxen.oo7 TikTok videos → Schedule in Buffer for next 2 days",
+      "Create 2 _ryxen.oo7 YouTube Shorts scripts → Schedule in Buffer",
+      "Update _ryxen.oo7 GitHub profile & README",
+      "Verify all Week 2 content is scheduled & auto-posting",
+      "Check Buffer dashboard - ensure all posts are queued",
     ],
     [
       "Define _ryxen.oo7 engagement tactics",
@@ -2185,22 +2213,22 @@ function getDualBrandTheme(weekNum) {
 function getDualBrandOutcome(weekNum, dayIndex) {
   const outcomes = [
     [
-      "Mission statements for both brands",
-      "Logo concepts + brand guidelines",
-      "3 platforms set up per brand",
-      "YouTube channels live",
-      "Content pillar documents",
-      "Optimized bios across platforms",
-      "Week 1 foundation complete",
+      "Mission statements for both brands (1 sentence each)",
+      "Color palettes chosen (Canva)",
+      "7 platforms set up per brand (Instagram, TikTok, X, Threads, LinkedIn, YouTube, GitHub)",
+      "Buffer/Hootsuite accounts created & all 14 platforms connected",
+      "3 content pillars defined per brand",
+      "Bios written for all platforms",
+      "Automation tested - 1 post scheduled to all platforms",
     ],
     [
-      "3 posts per brand ready",
-      "5 threads per brand ready",
-      "2 scripts per brand complete",
-      "3 TikToks per brand ready",
-      "Content scheduled for Week 3",
-      "Brand voice consistency verified",
-      "Week 2 content batch complete",
+      "3 Instagram posts created & scheduled",
+      "5 X/Twitter threads created & scheduled",
+      "3 Threads posts created & scheduled",
+      "3 TikTok videos created & scheduled",
+      "3 LinkedIn posts created & scheduled",
+      "All content auto-posting via Buffer/Hootsuite",
+      "Week 2: Automation working - no manual posting needed",
     ],
     [
       "Engagement plan per brand",
@@ -2337,9 +2365,12 @@ function getDualBrandProject(weekNum, dayIndex) {
           "Set up and optimize social media profiles for both brands",
         requirements: [
           "Create/optimize Instagram profiles",
-          "Create/optimize X/Twitter profiles",
           "Create/optimize TikTok profiles",
+          "Create/optimize X (Twitter) profiles",
+          "Create/optimize Threads profiles",
           "Create/optimize LinkedIn profiles",
+          "Create/optimize YouTube channels",
+          "Create/optimize GitHub profiles",
         ],
       },
       {
@@ -2422,6 +2453,25 @@ function getDualBrandProject(weekNum, dayIndex) {
           "Create 3 _richman.oo7 TikTok videos",
           "Create 3 _ryxen.oo7 TikTok videos",
           "Edit and optimize",
+        ],
+      },
+      {
+        title: "Threads Content Project",
+        description: "Create Threads posts for both brands",
+        requirements: [
+          "Create 3 _richman.oo7 Threads posts",
+          "Create 3 _ryxen.oo7 Threads posts",
+          "Engage with community",
+        ],
+      },
+      {
+        title: "GitHub Profile Project",
+        description: "Optimize GitHub profiles for both brands",
+        requirements: [
+          "Update _richman.oo7 GitHub profile & README",
+          "Update _ryxen.oo7 GitHub profile & README",
+          "Create pinned repositories",
+          "Add project showcases",
           "Schedule uploads",
         ],
       },
@@ -3279,7 +3329,7 @@ function getDualBrandProject(weekNum, dayIndex) {
 }
 
 // Writer's Journey - Complete 12 weeks (84 days, 7 days per week)
-export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
+export const writersWeeks = generateWeeks("2026-02-01", 12).map((week, idx) => {
   const days = [];
 
   for (let i = 0; i < 7; i++) {
@@ -3287,9 +3337,10 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
     dayDate.setDate(new Date(week.startDate).getDate() + i);
 
     const dayDateString = dayDate.toISOString().split("T")[0];
-    // Week 0: All days are Day 0 (testing week)
-    // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
-    const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
+    // Day 0 = Sunday, February 1, 2026 (Week 1, i=0)
+    // Day 1 = Monday, February 2, 2026 (Week 1, i=1)
+    // Calculate: idx * 7 + i (Week 1 Sunday = 0*7+0 = 0, Week 1 Monday = 0*7+1 = 1, etc.)
+    const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 84
 
     // Get actual day name from the date
     const dayNames = [
@@ -3310,34 +3361,31 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
     
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
 
-    // Week 0 (Jan 18-24): All days are Day 0 (Testing & Trials Week) - no actual content
-    // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
-    // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
-    const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
-    // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
-    const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
+    // Week 1 starts from Day 1 (Monday, February 2, 2026) - actual content execution begins
+    // Content week numbering: Day 1 = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+    // Week numbering: idx 0 = Week 1, idx 1 = Week 2, etc.
+    const contentWeekNum = idx + 1; // Week 1, 2, 3, etc.
 
     // For weekends (Saturday/Sunday), no content - rest days
-    // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
-    const isRestDay = isWeekend && !isTestRun;
+    const isRestDay = isWeekend;
     // Only get content for weekdays (Monday-Friday, i < 5)
     const weekdayIndex = i < 5 ? i : null;
-    const writerResources = isTestRun ? [] : (isRestDay ? [] : (weekdayIndex !== null ? getWriterResources(contentWeekNum, weekdayIndex) : []));
-    const learning = isTestRun ? "System Testing" : (isRestDay ? "Rest Day" : (weekdayIndex !== null ? getWriterLearning(contentWeekNum, weekdayIndex) : "Rest Day"));
-    const execution = isTestRun ? "Test app features" : (isRestDay ? "No writing tasks - Rest day" : (weekdayIndex !== null ? getWriterExecution(contentWeekNum, weekdayIndex) : "No writing tasks - Rest day"));
+    const writerResources = isRestDay ? [] : (weekdayIndex !== null ? getWriterResources(contentWeekNum, weekdayIndex) : []);
+    const learning = isRestDay ? "Rest Day" : (weekdayIndex !== null ? getWriterLearning(contentWeekNum, weekdayIndex) : "Rest Day");
+    const execution = isRestDay ? "No writing tasks - Rest day" : (weekdayIndex !== null ? getWriterExecution(contentWeekNum, weekdayIndex) : "No writing tasks - Rest day");
     
     // Get time blocks and organize schedule (same format as software engineering)
     const timeBlocks = getWritersTimeBlocks(dayIndex);
     const learningData = {
       title: learning,
-      description: isTestRun ? "Explore and test the app features" : (isRestDay ? "Take a break and rest. Writing happens on weekdays." : `Learn about ${learning}`),
+      description: isRestDay ? "Take a break and rest. Writing happens on weekdays." : `Learn about ${learning}`,
     };
     const projectData = {
       title: execution,
-      description: isTestRun ? "Test all features" : (isRestDay ? "No writing tasks today - enjoy your rest!" : `Execute: ${execution}`),
-      requirements: isTestRun ? [] : (isRestDay ? [] : [execution]),
+      description: isRestDay ? "No writing tasks today - enjoy your rest!" : `Execute: ${execution}`,
+      requirements: isRestDay ? [] : [execution],
     };
-    const scheduledContent = isTestRun ? null : organizeWritersSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
+    const scheduledContent = organizeWritersSchedule(learningData, projectData, dayIndex, timeBlocks, dayNumber);
 
     days.push({
       dayNumber: dayNumber,
@@ -3345,23 +3393,17 @@ export const writersWeeks = generateWeeks("2026-01-19", 12).map((week, idx) => {
       dayName: actualDayName,
       learning: learning,
       execution: execution,
-      reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : (isRestDay ? { questions: ["How did the week go?", "What will you focus on next week?"] } : (weekdayIndex !== null ? getWriterReflection(contentWeekNum, weekdayIndex) : { questions: ["How did the week go?", "What will you focus on next week?"] })),
-      theme: isTestRun ? "Testing & Trials Week" : (isRestDay ? "Rest Day" : (weekdayIndex !== null ? getWriterTheme(contentWeekNum) : "Rest Day")),
+      reflection: isRestDay ? { questions: ["How did the week go?", "What will you focus on next week?"] } : (weekdayIndex !== null ? getWriterReflection(contentWeekNum, weekdayIndex) : { questions: ["How did the week go?", "What will you focus on next week?"] }),
+      theme: isRestDay ? "Rest Day" : (weekdayIndex !== null ? getWriterTheme(contentWeekNum) : "Rest Day"),
       resources: writerResources,
       // Add missing fields for Learning, Project tabs (map from existing fields)
       dailyLearning: learningData,
       project: projectData,
-      dailyQuiz: isTestRun ? null : (isRestDay ? null : getWriterQuiz(contentWeekNum, weekdayIndex !== null ? weekdayIndex : 0, dayNumber)),
-      isTestRun: isTestRun,
+      dailyQuiz: isRestDay ? null : getWriterQuiz(contentWeekNum, weekdayIndex !== null ? weekdayIndex : 0, dayNumber),
+      isTestRun: false,
       isRestDay: isRestDay,
-      testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
-      testRunTasks: isTestRun ? [
-        "Explore the app interface and navigation",
-        "Test all features and functionality",
-        "Get familiar with the journey structure",
-        "Identify any issues or improvements",
-        "Prepare mentally for Day 1 onwards (Jan 25)"
-      ] : null,
+      testRunNote: null,
+      testRunTasks: null,
       // Schedule format (same as software engineering)
       schedule: {
         timeBlocks: timeBlocks,
@@ -5103,7 +5145,7 @@ function getProjectComponentForDay(dayNumber, discipline) {
 // Software Engineering Journey - Full 13-Week Journey
 // January 19, 2026 - April 18, 2026 (90 days)
 // Official Ascension Phase - Day 1 = January 19, 2026 (Monday)
-export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
+export const softwareEngineeringWeeks = generateWeeks("2026-02-01", 26).map(
   (week, idx) => {
     const days = [];
     const weekNum = idx + 1;
@@ -5113,9 +5155,10 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
       dayDate.setDate(new Date(week.startDate).getDate() + i);
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      // Week 0: All days are Day 0 (testing week)
-      // Week 1+: Day 1 starts from Jan 25 (Week 1, first day)
-      const dayNumber = idx === 0 ? 0 : ((idx - 1) * 7 + i + 1);
+      // Day 0 = Sunday, February 1, 2026 (Week 0, i=0)
+      // Day 1 = Monday, February 2, 2026 (Week 0, i=1)
+      // Calculate: idx * 7 + i (Week 0 Sunday = 0*7+0 = 0, Week 0 Monday = 0*7+1 = 1, etc.)
+      const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 180
 
       // Get actual day name from the date
       const dayNames = [
@@ -5134,19 +5177,17 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
       const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
       const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 0 (Jan 18-24): All days are Day 0 (Testing & Trials Week) - no actual content
-      // Week 1 (Jan 25+): Day 1 starts from Jan 25 - actual content execution begins
-      // Content week numbering: Day 1 (Jan 25) = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
-      const isTestRun = dayNumber === 0; // Day 0 (all Week 0 days) are testing, Day 1+ is actual content
-      // Day 1 (Jan 25, Week 1) uses Week 1 content, Week 1 (idx=1) uses Week 1 content, Week 2 (idx=2) uses Week 2 content
-      const contentWeekNum = isTestRun ? 0 : (idx === 0 ? 1 : idx);
+      // Week 1 starts from Day 1 (Monday, February 2, 2026) - actual content execution begins
+      // Content week numbering: Day 1 = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
+      // Week numbering: idx 0 = Week 1, idx 1 = Week 2, etc.
+      const contentWeekNum = idx + 1; // Week 1, 2, 3, etc.
 
-      // For Week 0 (testing), use minimal placeholder content; for Week 1+, use actual content
-      // Pass dayNumber to ensure content is unique per day (1-90) and progressive
-      const learningData = isTestRun ? { title: "System Testing", description: "Explore and test the app features" } : getSoftwareEngineeringLearning(contentWeekNum, i, dayNumber);
-      const workflowData = isTestRun ? null : getSoftwareEngineeringCursorWorkflow(contentWeekNum, i);
-      let projectData = isTestRun ? { title: "System Testing", description: "Test all features" } : getSoftwareEngineeringProject(contentWeekNum, i, dayNumber);
-      const disciplineRotation = isTestRun ? { primary: "Frontend" } : getDisciplineRotation(contentWeekNum, dayIndex);
+      // Use actual content for all days (no test run)
+      // Pass dayNumber to ensure content is unique per day (1-182) and progressive
+      const learningData = getSoftwareEngineeringLearning(contentWeekNum, i, dayNumber);
+      const workflowData = getSoftwareEngineeringCursorWorkflow(contentWeekNum, i);
+      let projectData = getSoftwareEngineeringProject(contentWeekNum, i, dayNumber);
+      const disciplineRotation = getDisciplineRotation(contentWeekNum, dayIndex);
       const timeBlocks = getTimeBlocks(dayIndex); // Use actual day of week
 
       // Enrich project data with project-driven information for each discipline
@@ -5183,8 +5224,8 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
         }
       }
 
-      // Map content to time blocks (skip for test run)
-      const scheduledContent = isTestRun ? null : organizeContentBySchedule(
+      // Map content to time blocks
+      const scheduledContent = organizeContentBySchedule(
         learningData,
         projectData,
         workflowData,
@@ -5196,7 +5237,7 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
       );
 
       // Get project component information for each discipline
-      const projectInfo = isTestRun ? {} : {
+      const projectInfo = {
         frontend: getProjectComponentForDay(dayNumber, "Frontend"),
         mobile: getProjectComponentForDay(dayNumber, "Mobile"),
         backend: getProjectComponentForDay(dayNumber, "Backend"),
@@ -5207,7 +5248,7 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
       };
 
       // Create discipline-specific project information
-      const disciplineProjects = isTestRun ? {} : {
+      const disciplineProjects = {
         Frontend: {
           name: DISCIPLINE_PROJECTS.Frontend.name,
           description: DISCIPLINE_PROJECTS.Frontend.description,
@@ -5236,34 +5277,28 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
 
       // Get primary discipline for backward compatibility
       const primaryDiscipline = disciplineRotation.primary || "Frontend";
-      const defaultProject = isTestRun ? { title: "System Testing", description: "Test all features" } : (disciplineProjects[primaryDiscipline] || disciplineProjects.Frontend);
+      const defaultProject = disciplineProjects[primaryDiscipline] || disciplineProjects.Frontend;
 
       days.push({
         dayNumber: dayNumber,
         date: dayDateString,
         dayName: actualDayName,
-        theme: isTestRun ? "Testing & Trials Week" : getSoftwareEngineeringTheme(contentWeekNum),
+        theme: getSoftwareEngineeringTheme(contentWeekNum),
         dailyLearning: learningData,
         cursorWorkflow: workflowData,
         miniProject: projectData,
         // Resources are discipline-specific and come from schedule sessions, not day-level
         // Each discipline (Mobile, Frontend, Backend, WordPress) has its own resources in their schedule sessions
         resources: [], // Empty - resources come from discipline-specific schedule sessions
-        monetization: isTestRun ? null : getSoftwareEngineeringMonetization(contentWeekNum, i),
-        quiz: isTestRun ? null : getSoftwareEngineeringQuizzes(contentWeekNum, i),
-        socialPosting: isTestRun ? null : getSoftwareEngineeringSocialPosting(contentWeekNum, i),
-        reflection: isTestRun ? { questions: ["How is the app working for you?", "Any issues to report?"] } : getSoftwareEngineeringReflection(contentWeekNum, i, dayNumber),
-        dailyQuiz: isTestRun ? null : getDailyCumulativeQuiz(contentWeekNum, i, dayNumber),
-        practicalAssessment: isTestRun ? null : getDailyPracticalAssessment(contentWeekNum, i, dayNumber),
-        isTestRun: isTestRun,
-        testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
-        testRunTasks: isTestRun ? [
-          "Explore the app interface and navigation",
-          "Test all features and functionality",
-          "Get familiar with the journey structure",
-          "Identify any issues or improvements",
-          "Prepare mentally for Day 1 onwards (Jan 25)"
-        ] : null,
+        monetization: getSoftwareEngineeringMonetization(contentWeekNum, i),
+        quiz: getSoftwareEngineeringQuizzes(contentWeekNum, i),
+        socialPosting: getSoftwareEngineeringSocialPosting(contentWeekNum, i),
+        reflection: getSoftwareEngineeringReflection(contentWeekNum, i, dayNumber),
+        dailyQuiz: getDailyCumulativeQuiz(contentWeekNum, i, dayNumber),
+        practicalAssessment: getDailyPracticalAssessment(contentWeekNum, i, dayNumber),
+        isTestRun: false,
+        testRunNote: null,
+        testRunTasks: null,
         schedule: {
           timeBlocks: timeBlocks,
           disciplineRotation: disciplineRotation,
@@ -5273,15 +5308,9 @@ export const softwareEngineeringWeeks = generateWeeks("2026-01-19", 13).map(
         project: defaultProject,
         // Discipline-specific projects (for UI to switch between)
         disciplineProjects: disciplineProjects,
-        isTestRun: isTestRun,
-        testRunNote: isTestRun ? "Testing & Trials Week - Explore the app, test features, and get familiar with the journey structure. This week is for learning and experimentation - no iterations." : null,
-        testRunTasks: isTestRun ? [
-          "Explore the app interface and navigation",
-          "Test all features and functionality",
-          "Get familiar with the journey structure",
-          "Identify any issues or improvements",
-          "Prepare mentally for Day 1 onwards (Jan 25)"
-        ] : null,
+        isTestRun: false,
+        testRunNote: null,
+        testRunTasks: null,
       });
     }
 
@@ -9819,7 +9848,7 @@ function getDisciplineContent(
 // Schedule Structure:
 // - Body Transformation: Mon-Fri, 5:30 AM - 6:30 AM
 // - Dual Branding: Mon-Fri, 4:45 AM - 5:30 AM; Saturday, 5:00 AM - 6:00 AM
-// - Reading: Bible (Weekdays & Sunday, 6:00-6:15 AM), E-Book (Mon-Wed, 6:15-6:45 AM), Physical (Thu-Fri, 6:15-6:45 AM; Sat, 8:00-8:30 PM)
+// - Reading: Bible (Mon-Fri, 6:00-6:30 AM; Sat, 7:30-8:00 AM; Sun, 6:00-6:30 AM), E-Book (Sat, 5:00-6:00 PM), Physical (Sun, 7:00-8:00 PM)
 // - Software Engineering: Mobile (Mon-Wed, 6:45-8:00 AM; Sat Revision 1:30-3:00 PM), Frontend (Thu-Fri, 6:45-8:00 AM; Sat Revision 3:00-4:00 PM), Backend (Fri, 7:30-9:00 PM; Sat Revision 4:00-5:00 PM), WordPress (Sunday, 5:00-6:00 AM)
 function getTimeBlocks(dayIndex) {
   const isSaturday = dayIndex === 5;
@@ -9963,47 +9992,45 @@ function getReadingTimeBlocks(dayIndex) {
   const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
   const isSaturday = dayIndex === 5;
   const isSunday = dayIndex === 6;
-  const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2;
-  const isThursdayToFriday = dayIndex >= 3 && dayIndex <= 4;
   
   const blocks = {
     deepLearning: [],
     focusedImplementation: [],
   };
   
-  // Bible: 6:00-6:15 AM (Weekdays & Sunday)
+  // Bible: 6:00-6:30 AM (Mon-Fri), 7:30-8:00 AM (Sat), 6:00-6:30 AM (Sun)
   if (isWeekday || isSunday) {
     blocks.deepLearning.push({
-      time: "6:00 AM - 6:15 AM",
+      time: "6:00 AM - 6:30 AM",
       type: "bible",
-      duration: "15 min",
-      isRevision: false,
-    });
-  }
-  
-  // E-Book: 6:15-6:45 AM (Mon-Wed)
-  if (isMondayToWednesday) {
-    blocks.deepLearning.push({
-      time: "6:15 AM - 6:45 AM",
-      type: "ebook",
-      duration: "30 min",
-      isRevision: false,
-    });
-  }
-  
-  // Physical: 6:15-6:45 AM (Thu-Fri), 8:00-8:30 PM (Sat)
-  if (isThursdayToFriday) {
-    blocks.deepLearning.push({
-      time: "6:15 AM - 6:45 AM",
-      type: "physical",
       duration: "30 min",
       isRevision: false,
     });
   } else if (isSaturday) {
-    blocks.focusedImplementation.push({
-      time: "8:00 PM - 8:30 PM",
-      type: "physical",
+    blocks.deepLearning.push({
+      time: "7:30 AM - 8:00 AM",
+      type: "bible",
       duration: "30 min",
+      isRevision: false,
+    });
+  }
+  
+  // E-Book: 5:00-6:00 PM (Saturday ONLY)
+  if (isSaturday) {
+    blocks.focusedImplementation.push({
+      time: "5:00 PM - 6:00 PM",
+      type: "ebook",
+      duration: "60 min",
+      isRevision: false,
+    });
+  }
+  
+  // Physical Book: 7:00-8:00 PM (Sunday ONLY)
+  if (isSunday) {
+    blocks.deepLearning.push({
+      time: "7:00 PM - 8:00 PM",
+      type: "physical",
+      duration: "60 min",
       isRevision: false,
     });
   }
@@ -10013,24 +10040,24 @@ function getReadingTimeBlocks(dayIndex) {
 
 function getDualBrandTimeBlocks(dayIndex) {
   const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
-  const isSaturday = dayIndex === 5;
+  const isSunday = dayIndex === 6;
   
   if (isWeekday) {
-    // Mon-Fri: 4:45-5:30 AM
+    // Mon-Fri: 5:00-6:00 PM
     return {
       deepLearning: [{
-        time: "4:45 AM - 5:30 AM",
+        time: "5:00 PM - 6:00 PM",
         type: "brand-building",
-        duration: "45 min",
+        duration: "60 min",
         isRevision: false,
       }],
       focusedImplementation: [],
     };
-  } else if (isSaturday) {
-    // Saturday: 5:00-6:00 AM
+  } else if (isSunday) {
+    // Sunday: 3:00-4:00 AM
     return {
       deepLearning: [{
-        time: "5:00 AM - 6:00 AM",
+        time: "3:00 AM - 4:00 AM",
         type: "brand-building",
         duration: "60 min",
         isRevision: false,
@@ -10039,7 +10066,7 @@ function getDualBrandTimeBlocks(dayIndex) {
     };
   }
   
-  // Sunday: Rest
+  // Saturday: Rest
   return {
     deepLearning: [],
     focusedImplementation: [],

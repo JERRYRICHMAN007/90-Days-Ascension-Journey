@@ -7,7 +7,7 @@ import { Button } from '../ui/button';
 import { Dropdown } from '../ui/dropdown';
 import { cn } from '../../lib/utils';
 import { 
-  getCurrentPhase, 
+  getCurrentPhaseStatus, 
   getCurrentDayNumber, 
   formatDayNumber,
   getJourneyProgress 
@@ -26,7 +26,7 @@ export function TopNav() {
   const { user } = useAuth();
   const globalLevel = getLevel();
   
-  const currentPhase = getCurrentPhase();
+  const currentPhaseStatus = getCurrentPhaseStatus();
   const currentDay = getCurrentDayNumber();
   const progress = getJourneyProgress();
 
@@ -47,8 +47,8 @@ export function TopNav() {
             </span>
           </button>
           
-          {/* Day Number - Only show on mobile if in ascension/preparation */}
-          {(currentPhase === 'ascension' || (currentPhase === 'preparation' && currentDay === 0)) && currentDay !== null && (
+          {/* Day Number - Show if in journey (preparation, phase1 or phase2) */}
+          {(currentPhaseStatus === 'preparation' || currentPhaseStatus === 'phase1' || currentPhaseStatus === 'phase2') && currentDay !== null && (
             <>
               <div className="h-5 w-px bg-border/50 hidden sm:block"></div>
               <div className="flex items-center gap-2 shrink-0 min-w-0">
@@ -68,14 +68,14 @@ export function TopNav() {
               </div>
             </>
           )}
-          {currentPhase === 'preparation' && currentDay !== 0 && (
+          {currentPhaseStatus === 'preparation' && currentDay !== 0 && (
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide truncate px-2 py-0.5 rounded bg-muted/30">
               Prep
             </div>
           )}
-          {currentPhase === 'before' && (
+          {currentPhaseStatus === 'before' && (
             <div className="text-xs text-muted-foreground truncate hidden sm:inline px-2 py-0.5 rounded bg-muted/30">
-              Day 0: Jan 18 • Starts Jan 19, 2026
+              Day 0: Feb 1 • Starts Feb 2, 2026
             </div>
           )}
         </div>

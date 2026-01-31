@@ -30,7 +30,10 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useGamification } from '../../hooks/useGamification';
 import { useAuth } from '../../contexts/AuthContext';
-import { getCurrentDayNumber, getCurrentPhase, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow } from '../../utils/dates';
+import { getCurrentDayNumber, getCurrentPhaseStatus, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow } from '../../utils/dates';
+import { getCurrentPhase, getPhaseDayNumber, getPhaseDescription, formatPhaseDayNumber, isDisciplineAvailable } from '../../utils/phases';
+import { calculateSessionBasedProgress, isDayFullyComplete, markSessionComplete, isSessionComplete, cleanInvalidProgress } from '../../utils/progressTracking';
+import { SessionCompletionButton } from '../SessionCompletionButton';
 import { getQuoteOfTheDay } from '../../data/quotes';
 import { cn } from '../../lib/utils';
 import { getJourneyPreparation } from '../../data/preparationData';
@@ -102,11 +105,38 @@ export function JourneyDetailV2({
   }
   
   // Safe access with defaults (xp and getLevel already declared above)
+  // Ensure all journeys start at 0 XP and Level 1
   const journeyXP = (xp?.domains?.[journeyId]) || 0;
-  const journeyLevel = getLevel ? getLevel(journeyId) : { level: 1 };
+  
+  // FORCE Level 0 if XP is 0 or if we're on Day 0 (preparation phase)
+  // This ensures all journeys show "Progress to Level 1" when starting
+  const currentDayForLevelCheck = getCurrentDayNumber();
+  const phaseForLevelCheck = getCurrentPhaseStatus();
+  const isDay0 = currentDayForLevelCheck === 0 || currentDayForLevelCheck === null || phaseForLevelCheck === 'preparation';
+  
+  // If XP is 0 OR we're on Day 0/preparation, ALWAYS force Level 1
+  // This prevents showing incorrect levels from old data
+  const shouldForceLevel1 = journeyXP === 0 || isDay0;
+  
+  const journeyLevelData = getLevel ? getLevel(journeyId) : { level: 0, currentXP: 0, xpToNext: 100 };
+  const journeyLevel = shouldForceLevel1 
+    ? { level: 0, currentXP: 0, xpToNext: 100 } 
+    : journeyLevelData;
   const journeyProgress = userProgress?.[journeyId] || {};
-  const completedDays = Object.values(journeyProgress).filter(Boolean).length;
-  const progressPercentage = Math.round((completedDays / (journey?.totalDays || 1)) * 100);
+  
+  // Clean invalid progress data first (removes stale completions from old structure)
+  // This runs once when component mounts or when journey/weeks change
+  useEffect(() => {
+    if (weeks && weeks.length > 0) {
+      cleanInvalidProgress(journeyId, weeks);
+    }
+  }, [journeyId, weeks]);
+  
+  // Use session-based progress calculation ONLY (completion-based, not time-based)
+  // No fallback to legacy progress - all progress must be earned
+  const sessionProgress = calculateSessionBasedProgress(journeyId, weeks);
+  const completedDays = sessionProgress.completedDays || 0;
+  const progressPercentage = sessionProgress.percentage || 0;
 
   // Check if we're in preparation phase (Day 0)
   const currentPhase = getCurrentPhase();
@@ -123,22 +153,18 @@ export function JourneyDetailV2({
   const preparationData = getJourneyPreparation(journeyId);
   
   // Find current week - handle case where selectedWeek might be out of bounds
-  // When on Day 0 or Day 1, default to Week 0 to ensure Day 1 is accessible
-  // Also ensure we use the correct week for the selected day
-  // Week 0 = Testing (Days 0-6), Week 1 = First week of actual content (Days 7-13), etc.
+  // Calculate which week the selected day belongs to
+  // Day 1 = Week 1, Days 1-7 = Week 1, Days 8-14 = Week 2, etc.
   let effectiveWeek = selectedWeek;
-  if (selectedDay === 0 || selectedDay === 1) {
-    effectiveWeek = 0; // Week 0 = Testing week
-  } else if (selectedDay > 0) {
-    // Calculate which week the selected day belongs to
-    // Day 0 = Week 0, Days 1-6 = Week 0, Days 7-13 = Week 1, Days 14-20 = Week 2, etc.
-    const calculatedWeek = selectedDay === 0 ? 0 : Math.floor(selectedDay / 7);
-    if (calculatedWeek >= 0 && calculatedWeek < weeks.length) {
+  if (selectedDay >= 1) {
+    // Calculate which week the selected day belongs to (Day 1 starts Week 1)
+    const calculatedWeek = Math.floor((selectedDay - 1) / 7) + 1;
+    if (calculatedWeek >= 1 && calculatedWeek <= weeks.length) {
       effectiveWeek = calculatedWeek;
     }
   }
   // Find current week - prioritize selected week, but fallback to effective week if day not found
-  let currentWeek = weeks.find((w) => w && w.weekNumber === selectedWeek) || weeks[0] || null;
+  let currentWeek = weeks.find((w) => w && w.weekNumber === selectedWeek) || weeks.find((w) => w && w.weekNumber === effectiveWeek) || weeks[0] || null;
   
   // Find current day - search across all weeks to ensure we find it regardless of selected week
   // This ensures the mark complete button works for all weeks, not just week 1
@@ -206,25 +232,52 @@ export function JourneyDetailV2({
   useEffect(() => {
     // Only auto-select if we have a valid current day number
     if (currentDayNumber !== null && currentDayNumber !== undefined && weeks.length > 0) {
+      // Skip Day 0 - always start from Day 1
+      const effectiveDay = currentDayNumber > 0 ? currentDayNumber : 1;
+      
       // Calculate which week contains the current day
-      // Day 0 = Week 0, Days 1-6 = Week 0, Days 7-13 = Week 1, Days 14-20 = Week 2, etc.
-      const currentWeekNumber = currentDayNumber === 0 ? 0 : Math.floor(currentDayNumber / 7);
+      // Day 1 = Week 1, Days 1-7 = Week 1, Days 8-14 = Week 2, etc.
+      const currentWeekNumber = effectiveDay ? Math.ceil((effectiveDay - 1) / 7) + 1 : 1;
       
       // Only update if the selected day/week doesn't match the current day
       // This prevents infinite loops by checking if we need to update
-      if (selectedDay !== currentDayNumber || selectedWeek !== currentWeekNumber) {
+      if (selectedDay !== effectiveDay || selectedWeek !== currentWeekNumber) {
         // Update week first if needed
-        if (selectedWeek !== currentWeekNumber && currentWeekNumber >= 0 && currentWeekNumber < weeks.length) {
+        if (selectedWeek !== currentWeekNumber && currentWeekNumber >= 1 && currentWeekNumber <= weeks.length) {
           onWeekChange(currentWeekNumber);
         }
-        // Then update day
-        if (selectedDay !== currentDayNumber) {
-          onDayChange(currentDayNumber);
+        // Then update day (skip Day 0, always use Day 1 or higher)
+        if (selectedDay !== effectiveDay) {
+          onDayChange(effectiveDay);
         }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDayNumber, weeks.length]); // Only run when currentDayNumber or weeks data changes
+  
+  // Auto-select first content day when week changes OR on initial load
+  useEffect(() => {
+    if (selectedWeek && weeks.length > 0) {
+      const week = weeks.find(w => w && w.weekNumber === selectedWeek);
+      if (week && week.days && week.days.length > 0) {
+        // Find the first day with actual content (Day 1 or higher, skip Day 0)
+        const firstContentDay = week.days.find(d => d && d.dayNumber > 0);
+        if (firstContentDay) {
+          // Auto-select if:
+          // 1. No day is selected (null/undefined)
+          // 2. Day 0 is selected (preparation day)
+          // 3. Selected day is not in the current week
+          const selectedDayInWeek = week.days.find(d => d && d.dayNumber === selectedDay);
+          if (selectedDay === 0 || selectedDay === null || selectedDay === undefined || !selectedDayInWeek) {
+            if (selectedDay !== firstContentDay.dayNumber) {
+              onDayChange(firstContentDay.dayNumber);
+            }
+          }
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWeek, weeks]); // Run when selectedWeek changes or weeks load
   
   // Auto-scroll to selected week and day in horizontal navigation
   useEffect(() => {
@@ -313,16 +366,21 @@ export function JourneyDetailV2({
     { id: 'WordPress', label: 'WordPress', icon: Globe, color: '#8b5cf6' },
   ];
 
-  // Filter to only show disciplines that are scheduled for this day
+  // Filter to only show disciplines that are available in current phase
   const disciplines = useMemo(() => {
-    if (journeyId !== 'software-engineering' || scheduledDisciplines.length === 0) {
-      // If no schedule data, show all disciplines (fallback)
-      return allDisciplines.filter(d => d.id !== 'WordPress' || isSunday);
+    if (journeyId !== 'software-engineering') {
+      return allDisciplines;
     }
     
-    // Only show disciplines that are in the schedule for this day
-    return allDisciplines.filter(d => scheduledDisciplines.includes(d.id));
-  }, [journeyId, scheduledDisciplines, isSunday]);
+    // Use phase-based filtering
+    const dayNumber = currentDay?.dayNumber || selectedDay;
+    if (dayNumber) {
+      return allDisciplines.filter(d => isDisciplineAvailable(d.id, dayNumber));
+    }
+    
+    // Fallback: if no day number, show Phase 1 disciplines
+    return allDisciplines.filter(d => d.id === 'Mobile' || d.id === 'Frontend');
+  }, [journeyId, currentDay?.dayNumber, selectedDay]);
   
   // Auto-select first available discipline if current one is not scheduled
   useEffect(() => {
@@ -587,32 +645,22 @@ export function JourneyDetailV2({
     return dayTasks.every(task => taskCompletion[task.id] === true);
   }, [dayTasks, taskCompletion]);
 
-  // Automatically mark day as complete when all tasks are completed
-  useEffect(() => {
-    // Only auto-complete if:
-    // 1. We have a current day
-    // 2. All tasks are completed
-    // 3. The day is not already marked as complete
-    // 4. The day can be completed (today only)
-    if (
-      currentDay?.dayNumber &&
-      allTasksCompleted &&
-      dayTasks.length > 0 && // Only if there are tasks (don't auto-complete days with no tasks)
-      !getDayProgress(currentDay) &&
-      canCompleteDay(currentDay.dayNumber)
-    ) {
-      // Automatically mark the day as complete
-      // NOTE: No automatic XP award here - XP is only earned through completing tasks, quizzes, etc.
-      updateProgress(journeyId, currentDay.dayNumber, true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allTasksCompleted, currentDay?.dayNumber, dayTasks.length, journeyId, updateProgress, journeyProgress]);
+  // REMOVED: Auto-completion logic
+  // Progress must be explicitly earned through session completion.
+  // Days are only marked complete when user explicitly confirms all sessions are done.
+  // No automatic progress advancement based on task completion.
   
   const getWeekProgress = (week) => {
     if (!week || !week.days) return 0;
     const weekDays = week.days || [];
     if (weekDays.length === 0) return 0;
-    const completed = weekDays.filter((d) => d && d.dayNumber && journeyProgress[d.dayNumber]).length;
+    
+    // Count days with completed sessions
+    const completed = weekDays.filter((d) => {
+      if (!d || d.dayNumber === null || d.dayNumber === undefined) return false;
+      return isDayFullyComplete(journeyId, d) || journeyProgress[d.dayNumber];
+    }).length;
+    
     return Math.round((completed / weekDays.length) * 100);
   };
 
@@ -875,6 +923,36 @@ export function JourneyDetailV2({
               </div>
             </div>
 
+            {/* Phase Information - Software Engineering */}
+            {journeyId === 'software-engineering' && currentDay?.dayNumber && (
+              <div className="text-sm space-y-1">
+                {(() => {
+                  const phase = getCurrentPhase(currentDay.dayNumber);
+                  const phaseDay = getPhaseDayNumber(currentDay.dayNumber);
+                  const phaseDesc = getPhaseDescription(phase);
+                  const phaseDaysRemaining = phase === 1 ? (90 - phaseDay) : phase === 2 ? (180 - phaseDay) : null;
+                  
+                  if (!phase) return null;
+                  
+                  return (
+                    <>
+                      <div>
+                        <span className="text-muted-foreground">Phase {phase}: </span>
+                        <span className="font-medium text-foreground">{phaseDesc}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Phase Day: </span>
+                        <span className="font-medium text-foreground">{formatPhaseDayNumber(currentDay.dayNumber)}</span>
+                        {phaseDaysRemaining !== null && (
+                          <span className="text-muted-foreground ml-2">({phaseDaysRemaining} days remaining)</span>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+            
             {/* Learning Plan Summary - Software Engineering */}
             {journeyId === 'software-engineering' && currentDay?.schedule && (
               <div className="text-sm">
@@ -912,13 +990,13 @@ export function JourneyDetailV2({
                     key={week.weekNumber}
                     onClick={() => {
                       onWeekChange(week.weekNumber);
-                      // Automatically select the first day of the selected week
+                      // Automatically select the first CONTENT day (Day 1 or higher, skip Day 0)
                       const selectedWeekData = weeks.find(w => w.weekNumber === week.weekNumber);
                       if (selectedWeekData?.days && selectedWeekData.days.length > 0) {
-                        // Find the first available day (skip Day 0 if it exists, otherwise use first day)
-                        const firstDay = selectedWeekData.days.find(d => d && d.dayNumber > 0) || selectedWeekData.days[0];
-                        if (firstDay && firstDay.dayNumber !== selectedDay) {
-                          onDayChange(firstDay.dayNumber);
+                        // Find the first day with actual content (Day 1 or higher)
+                        const firstContentDay = selectedWeekData.days.find(d => d && d.dayNumber > 0);
+                        if (firstContentDay && firstContentDay.dayNumber !== selectedDay) {
+                          onDayChange(firstContentDay.dayNumber);
                         }
                       }
                       // Auto-scroll to selected week
@@ -1075,6 +1153,14 @@ export function JourneyDetailV2({
                         key={week.weekNumber}
                         onClick={() => {
                           onWeekChange(week.weekNumber);
+                          // Automatically select the first CONTENT day (Day 1 or higher, skip Day 0)
+                          const selectedWeekData = weeks.find(w => w.weekNumber === week.weekNumber);
+                          if (selectedWeekData?.days && selectedWeekData.days.length > 0) {
+                            const firstContentDay = selectedWeekData.days.find(d => d && d.dayNumber > 0);
+                            if (firstContentDay) {
+                              onDayChange(firstContentDay.dayNumber);
+                            }
+                          }
                           setIsMobileSidebarOpen(false);
                         }}
                         className={cn(
@@ -1138,10 +1224,10 @@ export function JourneyDetailV2({
                   </button>
                 )}
 
-                {/* When on Day 0, always show Day 1 from Week 0 as preview */}
-                {selectedDay === 0 && (() => {
-                  const week0 = weeks.find(w => w && w.weekNumber === 0);
-                  const day1 = week0?.days?.find(d => d && d.dayNumber === 1);
+                {/* Show Day 1 from Week 1 as preview if needed */}
+                {selectedDay === 1 && (() => {
+                  const week1 = weeks.find(w => w && w.weekNumber === 1);
+                  const day1 = week1?.days?.find(d => d && d.dayNumber === 1);
                   if (!day1) return null;
                   
                   // Verify Day 1 is accessible
@@ -1152,7 +1238,7 @@ export function JourneyDetailV2({
                     <button
                         onClick={() => {
                           if (day1IsAccessible) {
-                            onWeekChange(0);
+                            onWeekChange(1);
                             onDayChange(1);
                             setIsMobileSidebarOpen(false);
                           }
@@ -1803,6 +1889,24 @@ export function JourneyDetailV2({
                                     {session.content?.description && (
                                       <p className="text-sm text-muted-foreground">{session.content.description}</p>
                                     )}
+                                    {/* Session Completion Button */}
+                                    {currentDay?.dayNumber !== undefined && (
+                                      <div className="mt-3 pt-3 border-t border-border/50">
+                                        <SessionCompletionButton
+                                          journeyId={journeyId}
+                                          dayNumber={currentDay.dayNumber}
+                                          sessionType="deepLearning"
+                                          sessionIndex={idx}
+                                          discipline={session.discipline || activeDiscipline}
+                                          onComplete={() => {
+                                            // Refresh UI after completion
+                                            window.dispatchEvent(new CustomEvent('session-completed', {
+                                              detail: { journeyId, dayNumber: currentDay.dayNumber }
+                                            }));
+                                          }}
+                                        />
+                                      </div>
+                                    )}
                                   </div>
                                 </Card>
                               ))}
@@ -1874,6 +1978,24 @@ export function JourneyDetailV2({
                                           </li>
                                         ))}
                                       </ul>
+                                    )}
+                                    {/* Session Completion Button */}
+                                    {currentDay?.dayNumber !== undefined && (
+                                      <div className="mt-3 pt-3 border-t border-border/50">
+                                        <SessionCompletionButton
+                                          journeyId={journeyId}
+                                          dayNumber={currentDay.dayNumber}
+                                          sessionType="focusedImplementation"
+                                          sessionIndex={idx}
+                                          discipline={session.discipline || activeDiscipline}
+                                          onComplete={() => {
+                                            // Refresh UI after completion
+                                            window.dispatchEvent(new CustomEvent('session-completed', {
+                                              detail: { journeyId, dayNumber: currentDay.dayNumber }
+                                            }));
+                                          }}
+                                        />
+                                      </div>
                                     )}
                                   </div>
                                 </Card>
@@ -2047,7 +2169,30 @@ export function JourneyDetailV2({
                               <h4 className="text-sm font-semibold text-foreground">Today's Focus: {currentDay.focus}</h4>
                             </div>
                             {currentDay.workout && (
-                              <p className="text-sm text-foreground mb-2">Workout: {currentDay.workout}</p>
+                              <div className="mb-2">
+                                <p className="text-sm text-foreground mb-2">
+                                  Workout: {typeof currentDay.workout === 'object' 
+                                    ? currentDay.workout.name || 'Complete workout'
+                                    : currentDay.workout}
+                                </p>
+                                {/* Workout Completion Button */}
+                                {currentDay?.dayNumber !== undefined && (
+                                  <div className="mt-3 pt-3 border-t border-border/50">
+                                    <SessionCompletionButton
+                                      journeyId={journeyId}
+                                      dayNumber={currentDay.dayNumber}
+                                      sessionType="daily"
+                                      sessionIndex={0}
+                                      onComplete={() => {
+                                        // Refresh UI after completion
+                                        window.dispatchEvent(new CustomEvent('session-completed', {
+                                          detail: { journeyId, dayNumber: currentDay.dayNumber }
+                                        }));
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             )}
                             {currentDay.nutrition && (
                               <p className="text-sm text-foreground mb-2">Nutrition: {currentDay.nutrition}</p>

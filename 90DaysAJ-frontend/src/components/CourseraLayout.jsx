@@ -344,6 +344,7 @@ function CourseraLayout({
                 <DisciplineTabs
                   activeDiscipline={activeDiscipline}
                   onDisciplineChange={setActiveDiscipline}
+                  currentDayNumber={selectedDay}
                 />
 
                 {/* Discipline View - Only show active discipline */}
@@ -355,6 +356,7 @@ function CourseraLayout({
                       currentDay={currentDay}
                       onStartSession={setActiveSession}
                       activeSession={activeSession}
+                      journeyId={journeyId}
                     />
                   </div>
                 ) : (

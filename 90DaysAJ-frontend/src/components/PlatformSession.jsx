@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Instagram, Twitter, Youtube, Facebook, Linkedin, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Instagram, Twitter, Youtube, Facebook, Linkedin, MessageSquare, CheckCircle2, Github } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 
@@ -7,10 +7,10 @@ const platforms = {
   instagram: { name: "Instagram", icon: Instagram, color: "bg-gradient-to-r from-purple-500 to-pink-500", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } },
   tiktok: { name: "TikTok", icon: MessageSquare, color: "bg-black", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } },
   x: { name: "X (Twitter)", icon: Twitter, color: "bg-black", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } },
-  threads: { name: "Threads", icon: MessageSquare, color: "bg-black", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } },
-  facebook: { name: "Facebook", icon: Facebook, color: "bg-blue-600", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } },
+  threads: { name: "Threads", icon: MessageSquare, color: "bg-gradient-to-r from-gray-800 to-gray-900", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } },
   linkedin: { name: "LinkedIn", icon: Linkedin, color: "bg-blue-700", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } },
-  youtube: { name: "YouTube", icon: Youtube, color: "bg-red-600", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } }
+  youtube: { name: "YouTube", icon: Youtube, color: "bg-red-600", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } },
+  github: { name: "GitHub", icon: Github, color: "bg-gray-800", brandColors: { havenX: "from-blue-500 to-cyan-500", ryxen: "from-purple-500 to-pink-500" } }
 };
 
 function PlatformSession({ platform, brand, dayNumber, weekNumber }) {
@@ -32,11 +32,11 @@ function PlatformSession({ platform, brand, dayNumber, weekNumber }) {
           hashtags: "#automation #businesssystems #efficiency #productivity #businessautomation",
           captionStyle: "Educational, problem-solving focused, includes CTA to learn more"
         },
-        linkedin: {
-          postTypes: ["Case studies", "Thought leadership articles", "Industry insights"],
-          bestTimes: "8-9 AM, 12-1 PM, 5-6 PM",
-          hashtags: "#businessautomation #operations #efficiency #B2B",
-          captionStyle: "Professional, data-driven, includes value proposition"
+        tiktok: {
+          postTypes: ["Quick automation tips (15-60s)", "Behind-the-scenes workflow", "Problem-solution format"],
+          bestTimes: "6-10 AM, 7-9 PM",
+          hashtags: "#automation #productivity #businesshacks #efficiency",
+          captionStyle: "Hook in first 3 seconds, educational, trending sounds"
         },
         x: {
           postTypes: ["Threads on automation systems", "Quick tips", "Industry news commentary"],
@@ -44,11 +44,29 @@ function PlatformSession({ platform, brand, dayNumber, weekNumber }) {
           hashtags: "#automation #business #productivity",
           captionStyle: "Concise, actionable, thread format for longer content"
         },
+        threads: {
+          postTypes: ["Automation insights", "Quick wins", "Community engagement"],
+          bestTimes: "8-9 AM, 12-1 PM, 5-6 PM",
+          hashtags: "#automation #productivity #business",
+          captionStyle: "Conversational, authentic, similar to Instagram but text-focused"
+        },
+        linkedin: {
+          postTypes: ["Case studies", "Thought leadership articles", "Industry insights"],
+          bestTimes: "8-9 AM, 12-1 PM, 5-6 PM",
+          hashtags: "#businessautomation #operations #efficiency #B2B",
+          captionStyle: "Professional, data-driven, includes value proposition"
+        },
         youtube: {
           postTypes: ["Tutorial videos", "System walkthroughs", "Client success stories"],
           bestTimes: "Upload Tuesday-Thursday, 2-4 PM",
           hashtags: "#automation #businesssystems #tutorial",
           captionStyle: "Detailed descriptions, timestamps, clear CTAs"
+        },
+        github: {
+          postTypes: ["Automation scripts & tools", "Open source contributions", "Technical documentation"],
+          bestTimes: "Anytime (code-focused platform)",
+          hashtags: "#automation #productivity #opensource #devtools",
+          captionStyle: "Technical, well-documented README files, clear code comments"
         }
       },
       ryxen: {
@@ -58,11 +76,11 @@ function PlatformSession({ platform, brand, dayNumber, weekNumber }) {
           hashtags: "#wealthmindset #financialfreedom #personalgrowth #abundance",
           captionStyle: "Inspirational, personal, includes reflection questions"
         },
-        linkedin: {
-          postTypes: ["Financial insights", "Wealth building strategies", "Personal development"],
-          bestTimes: "8-9 AM, 12-1 PM, 5-6 PM",
-          hashtags: "#wealth #financialfreedom #mindset #entrepreneurship",
-          captionStyle: "Professional yet personal, value-driven, includes engagement questions"
+        tiktok: {
+          postTypes: ["Wealth tips (15-60s)", "Day in the life", "Mindset shifts"],
+          bestTimes: "6-10 AM, 7-9 PM",
+          hashtags: "#wealthmindset #financialfreedom #moneytips #entrepreneurship",
+          captionStyle: "Hook in first 3 seconds, relatable, trending sounds"
         },
         x: {
           postTypes: ["Wealth mindset threads", "Daily affirmations", "Financial tips"],
@@ -70,11 +88,29 @@ function PlatformSession({ platform, brand, dayNumber, weekNumber }) {
           hashtags: "#wealthmindset #financialfreedom #mindset",
           captionStyle: "Motivational, thread format, includes actionable insights"
         },
+        threads: {
+          postTypes: ["Wealth insights", "Daily motivation", "Community engagement"],
+          bestTimes: "8-9 AM, 12-1 PM, 5-6 PM",
+          hashtags: "#wealthmindset #financialfreedom #growth",
+          captionStyle: "Conversational, authentic, text-focused inspiration"
+        },
+        linkedin: {
+          postTypes: ["Financial insights", "Wealth building strategies", "Personal development"],
+          bestTimes: "8-9 AM, 12-1 PM, 5-6 PM",
+          hashtags: "#wealth #financialfreedom #mindset #entrepreneurship",
+          captionStyle: "Professional yet personal, value-driven, includes engagement questions"
+        },
         youtube: {
           postTypes: ["Mindset coaching videos", "Wealth building strategies", "Personal stories"],
           bestTimes: "Upload Tuesday-Thursday, 2-4 PM",
           hashtags: "#wealthmindset #financialfreedom #personalgrowth",
           captionStyle: "Engaging intros, personal stories, clear takeaways"
+        },
+        github: {
+          postTypes: ["Financial tools & calculators", "Wealth tracking projects", "Educational code examples"],
+          bestTimes: "Anytime (code-focused platform)",
+          hashtags: "#fintech #personalfinance #wealthbuilding #opensource",
+          captionStyle: "Technical, educational, well-documented financial tools"
         }
       }
     };

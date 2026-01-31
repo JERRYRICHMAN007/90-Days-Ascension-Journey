@@ -1,25 +1,53 @@
 import { useMemo } from 'react'
+import { calculateSessionBasedProgress, isDayFullyComplete } from '../utils/progressTracking'
 import './ProgressTracker.css'
 
-function ProgressTracker({ userProgress, journeyId, totalDays }) {
+function ProgressTracker({ userProgress, journeyId, totalDays, weeks }) {
   const progressData = useMemo(() => {
-    const journeyProgress = userProgress[journeyId] || {}
-    const completedDays = Object.values(journeyProgress).filter(Boolean).length
-    const percentage = Math.round((completedDays / totalDays) * 100)
+    // Use session-based progress calculation ONLY
+    // No fallback to legacy progress - all progress must be earned through completion
+    const sessionProgress = weeks 
+      ? calculateSessionBasedProgress(journeyId, weeks)
+      : { completedSessions: 0, totalSessions: 0, percentage: 0, completedDays: 0, totalDays: 0 };
     
-    // Calculate streak
+    // Always use session-based data - no legacy fallback
+    const completedDays = sessionProgress.completedDays || 0
+    const percentage = sessionProgress.percentage || 0
+    
+    // Calculate streak based on consecutive completed days
     let currentStreak = 0
     let longestStreak = 0
     let tempStreak = 0
     
+    // Get all completed day numbers from session progress ONLY
+    const completedDayNumbers = new Set()
+    if (weeks) {
+      weeks.forEach(week => {
+        if (week.days) {
+          week.days.forEach(day => {
+            if (day && day.dayNumber > 0) {
+              // Check if day is fully complete using session tracking
+              if (isDayFullyComplete(journeyId, day)) {
+                completedDayNumbers.add(day.dayNumber);
+              }
+            }
+          })
+        }
+      })
+    }
+    
+    // Calculate streak from day 1 onwards - based ONLY on completed sessions
     for (let i = 1; i <= totalDays; i++) {
-      if (journeyProgress[i]) {
+      if (completedDayNumbers.has(i)) {
         tempStreak++
         currentStreak = tempStreak
         longestStreak = Math.max(longestStreak, tempStreak)
       } else {
         tempStreak = 0
-        currentStreak = 0
+        // Only reset current streak if we've started tracking
+        if (completedDayNumbers.size > 0) {
+          currentStreak = 0
+        }
       }
     }
     
@@ -35,9 +63,11 @@ function ProgressTracker({ userProgress, journeyId, totalDays }) {
       longestStreak,
       weeksCompleted,
       daysInCurrentWeek,
-      remaining: totalDays - completedDays
+      remaining: totalDays - completedDays,
+      completedSessions: sessionProgress.completedSessions,
+      totalSessions: sessionProgress.totalSessions
     }
-  }, [userProgress, journeyId, totalDays])
+  }, [userProgress, journeyId, totalDays, weeks])
 
   return (
     <div className="progress-tracker">

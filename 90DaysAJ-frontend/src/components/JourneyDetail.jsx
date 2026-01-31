@@ -23,7 +23,8 @@ import { Progress } from "./ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { JourneySidebar } from "./journey/JourneySidebar";
 import { JourneyDetailV2 } from "./journey/JourneyDetailV2";
-import { getCurrentPhase, getCurrentDayNumber } from "../utils/dates";
+import { getCurrentPhaseStatus, getCurrentDayNumber } from "../utils/dates";
+import { calculateSessionBasedProgress, isDayFullyComplete } from "../utils/progressTracking";
 import "./JourneyDetail.css";
 
 function JourneyDetail({
@@ -44,13 +45,14 @@ function JourneyDetail({
   const { weeks, journey } = getJourneyData(journeyId);
   // Initialize with first available week/day, or default to 1
   const firstWeek = weeks && weeks.length > 0 ? weeks[0] : null;
-  const firstDay = firstWeek?.days && firstWeek.days.length > 0 ? firstWeek.days[0] : null;
-  const currentPhase = getCurrentPhase();
+  const firstDay = firstWeek?.days && firstWeek.days.length > 0 ? firstWeek.days.find(d => d && d.dayNumber === 1) || firstWeek.days[0] : null;
+  const currentPhaseStatus = getCurrentPhaseStatus();
   // Get current day number - defaults to present day
   const currentDayNumber = getCurrentDayNumber();
-  // Default to current day number, or Day 0 if in preparation phase, or first day as fallback
-  const defaultDay = currentDayNumber !== null ? currentDayNumber : (currentPhase === 'preparation' || currentPhase === 'before' ? 0 : (firstDay?.dayNumber || 1));
-  // Calculate default week based on default day
+  // Default to current day number, but skip Day 0 - always start from Day 1
+  // If currentDayNumber is 0 or null, default to Day 1
+  const defaultDay = (currentDayNumber !== null && currentDayNumber > 0) ? currentDayNumber : 1;
+  // Calculate default week based on default day (Day 1 = Week 1)
   const defaultWeek = defaultDay === 0 ? 1 : Math.ceil(defaultDay / 7);
   const [selectedWeek, setSelectedWeek] = useState(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(defaultDay);
@@ -62,20 +64,20 @@ function JourneyDetail({
     return <div>Journey not found</div>;
   }
 
-  const journeyProgress = userProgress[journeyId] || {};
-  const completedDays = Object.values(journeyProgress).filter(Boolean).length;
-  const progressPercentage = Math.round(
-    (completedDays / journey.totalDays) * 100
-  );
+  // Use session-based progress calculation ONLY - no legacy fallback
+  const sessionProgress = calculateSessionBasedProgress(journeyId, weeks || []);
+  const completedDays = sessionProgress.completedDays || 0;
+  const progressPercentage = sessionProgress.percentage || 0;
 
   const getDayProgress = (day) => {
-    return journeyProgress[day.dayNumber] || false;
+    // Use session-based completion check
+    return isDayFullyComplete(journeyId, day) || false;
   };
 
   const getWeekProgress = (week) => {
     const weekDays = week.days || [];
     const completed = weekDays.filter(
-      (d) => journeyProgress[d.dayNumber]
+      (d) => d && d.dayNumber > 0 && isDayFullyComplete(journeyId, d)
     ).length;
     return Math.round((completed / weekDays.length) * 100);
   };

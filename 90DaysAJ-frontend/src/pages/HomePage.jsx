@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useGamification } from "../hooks/useGamification";
 import { useAuth } from "../contexts/AuthContext";
 import { LevelBar } from "../components/ui/level-bar";
@@ -21,12 +21,13 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getJourneyData } from "../data/journeyData";
 import {
-  getCurrentPhase,
+  getCurrentPhaseStatus,
   getCurrentDayNumber,
   formatDayNumber,
   getJourneyProgress,
   getDaysRemaining,
 } from "../utils/dates";
+import { calculateSessionBasedProgress, cleanInvalidProgress, resetAllProgress } from "../utils/progressTracking";
 
 const journeyCards = [
   {
@@ -66,6 +67,98 @@ export function HomePage({ userProgress }) {
   const { xp, streaks, getLevel } = useGamification();
   const globalLevel = getLevel();
   
+  // Expose reset function globally for manual reset via console
+  useEffect(() => {
+    window.resetAllProgress = () => {
+      console.log('🔄 Manual reset requested...');
+      localStorage.setItem('force_reset_all', 'true');
+      resetAllProgress();
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    };
+    
+    return () => {
+      delete window.resetAllProgress;
+    };
+  }, []);
+  
+  // Clean invalid progress for all journeys once on mount
+  // Also reset all gamification data if we're on Day 0 (fresh start)
+  useEffect(() => {
+    const currentDay = getCurrentDayNumber();
+    const phase = getCurrentPhaseStatus();
+    
+    // FORCE RESET: If we're on Day 0 (preparation day), ALWAYS reset all progress and gamification
+    // This ensures a fresh start on February 1, 2026
+    // Also check for manual reset flag
+    const forceReset = localStorage.getItem('force_reset_all') === 'true';
+    
+    if (currentDay === 0 || phase === 'preparation' || forceReset) {
+      const hasExistingXP = localStorage.getItem('ascensionXP');
+      const hasExistingCompletions = localStorage.getItem('sessionCompletions');
+      
+      // Check if there's any data to reset OR if force reset is requested
+      const hasData = hasExistingXP || hasExistingCompletions;
+      
+      if (hasData || forceReset) {
+        let shouldReset = forceReset; // Force reset takes priority
+        
+        if (!shouldReset && hasExistingXP) {
+          try {
+            const xpData = JSON.parse(hasExistingXP);
+            shouldReset = xpData && (xpData.global > 0 || Object.keys(xpData.domains || {}).length > 0);
+          } catch (e) {
+            shouldReset = true;
+          }
+        }
+        
+        if (!shouldReset && hasExistingCompletions) {
+          shouldReset = hasExistingCompletions !== '{}' && hasExistingCompletions !== 'null';
+        }
+        
+        // Always reset on Day 0 if there's any data OR if force reset is requested
+        if (shouldReset) {
+          console.log('🔄 FORCING reset of all progress and gamification data...');
+          console.log('  Reason:', forceReset ? 'Manual force reset' : 'Day 0 detected');
+          resetAllProgress();
+          // Clear reset flags
+          localStorage.removeItem('day0_reset_completed');
+          localStorage.removeItem('force_reset_all');
+          // Reload page to reflect changes
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+          return; // Exit early to prevent further processing
+        }
+      }
+    } else if (phase !== 'preparation' && currentDay !== 0) {
+      // Clear the reset flag when we move past Day 0
+      localStorage.removeItem('day0_reset_completed');
+      localStorage.removeItem('force_reset_all');
+    }
+    
+    // Clean invalid progress for all journeys
+    const journeyIds = [
+      "body-transformation",
+      "reading",
+      "writers",
+      "dual-brand",
+      "software-engineering",
+    ];
+    
+    journeyIds.forEach((journeyId) => {
+      try {
+        const journeyData = getJourneyData(journeyId);
+        if (journeyData?.weeks) {
+          cleanInvalidProgress(journeyId, journeyData.weeks);
+        }
+      } catch (error) {
+        console.error(`Error cleaning progress for ${journeyId}:`, error);
+      }
+    });
+  }, []); // Run once on mount
+  
   // Get greeting based on time of day
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -98,7 +191,7 @@ export function HomePage({ userProgress }) {
     const todayDateStr = today.toISOString().split("T")[0];
 
     // Use new date utilities
-    const phase = getCurrentPhase();
+    const phase = getCurrentPhaseStatus();
     const dayNumber = getCurrentDayNumber();
     const journeyProgress = getJourneyProgress();
     const remaining = getDaysRemaining();
@@ -113,8 +206,8 @@ export function HomePage({ userProgress }) {
 
     const tasks = [];
     
-    // Only show tasks if in ascension phase
-    if (phase === "ascension" && dayNumber) {
+    // Only show tasks if in phase1 or phase2
+    if ((phase === "phase1" || phase === "phase2") && dayNumber) {
       const journeyIds = [
         "body-transformation",
         "reading",
@@ -130,13 +223,13 @@ export function HomePage({ userProgress }) {
           // Find today's day in the journey
           for (const week of weeks) {
             if (week.days) {
-              // Find day by date or by day number (for ascension phase)
+              // Find day by date or by day number (for phase1 or phase2)
               const todayDay = week.days.find((day) => {
                 // Match by date if available
                 if (day.date === todayDateStr) return true;
-                // Match by day number if in ascension phase
+                // Match by day number if in phase1 or phase2
                 if (
-                  phase === "ascension" &&
+                  (phase === "phase1" || phase === "phase2") &&
                   dayNumber &&
                   day.dayNumber === dayNumber
                 )
@@ -289,20 +382,7 @@ export function HomePage({ userProgress }) {
             </div>
           </>
         )}
-        {currentPhase === "preparation" && currentDay !== 0 && (
-          <>
-            <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Preparation Phase
-            </div>
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-muted-foreground px-2">
-              Getting Ready for Your Ascension
-            </div>
-            <div className="text-xs sm:text-sm text-muted-foreground px-2">
-              Day 0: January 18, 2026 • Journey begins January 19, 2026
-            </div>
-          </>
-        )}
-        {currentPhase === "ascension" && currentDay && currentDay > 0 && (
+        {(currentPhase === "phase1" || currentPhase === "phase2") && currentDay && currentDay > 0 && (
           <>
             <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               {formatDayNumber(currentDay)}
@@ -321,7 +401,7 @@ export function HomePage({ userProgress }) {
               Your Ascension Journey
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground px-2">
-              Day 0: January 18, 2026 • Start: January 19, 2026
+              Day 0: February 1, 2026 • Start: February 2, 2026
             </div>
           </>
         )}
@@ -329,7 +409,7 @@ export function HomePage({ userProgress }) {
           <>
             <div className="text-lg sm:text-xl md:text-2xl font-bold px-2">🎉 Journey Complete</div>
             <div className="text-xs sm:text-sm text-muted-foreground px-2">
-              You've completed the 90-day ascension journey
+              You've completed the 180-day ascension journey
             </div>
           </>
         )}
@@ -342,13 +422,13 @@ export function HomePage({ userProgress }) {
             {getUserName() ? `${getGreeting()}, ${getUserName()}! 👋` : `${getGreeting()}! 🌟`}
           </h1>
           <p className="text-muted-foreground mt-2 text-sm sm:text-base break-words">
-            {currentPhase === "ascension"
-              ? "Continue your ascension journey"
-              : currentPhase === "preparation"
+            {currentPhase === "preparation"
               ? "Prepare for your transformation"
+              : (currentPhase === "phase1" || currentPhase === "phase2")
+              ? "Continue your ascension journey"
               : "Your transformation awaits"}
           </p>
-          {(currentPhase === "ascension" || (currentPhase === "preparation" && currentDay === 0)) && currentDay !== null && (
+          {((currentPhase === "phase1" || currentPhase === "phase2") || (currentPhase === "preparation" && currentDay === 0)) && currentDay !== null && (
             <p className="text-xs sm:text-sm text-muted-foreground mt-2 break-words">{todayDate}</p>
           )}
         </div>
@@ -387,7 +467,7 @@ export function HomePage({ userProgress }) {
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display break-words">Today's Focus</h2>
-          {currentPhase === "ascension" && todayTasks.length > 0 && (
+          {(currentPhase === "phase1" || currentPhase === "phase2") && todayTasks.length > 0 && (
             <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap shrink-0 px-2.5 py-1 bg-muted/50 rounded-md">
               {todayTasks.filter((t) => t.completed).length} /{" "}
               {todayTasks.length}
@@ -395,7 +475,7 @@ export function HomePage({ userProgress }) {
           )}
         </div>
 
-        {currentPhase === "ascension" && todayTasks.length > 0 && (
+        {(currentPhase === "phase1" || currentPhase === "phase2") && todayTasks.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -449,7 +529,7 @@ export function HomePage({ userProgress }) {
           </div>
           </motion.div>
         )}
-        {currentPhase === "ascension" && todayTasks.length === 0 && (
+        {(currentPhase === "phase1" || currentPhase === "phase2") && todayTasks.length === 0 && (
           <Card className="p-6 text-center">
             <p className="text-muted-foreground">
               No tasks scheduled for today. Enjoy your rest day! 🧘
@@ -459,13 +539,13 @@ export function HomePage({ userProgress }) {
         {currentPhase === "preparation" && (
           <Card className="p-6">
             <div className="text-center space-y-3">
-              <p className="text-lg font-semibold">Preparation Phase</p>
+              <p className="text-lg font-semibold">Preparation Day</p>
               <p className="text-sm text-muted-foreground">
                 Use this time to familiarize yourself with the system, review
-                your journey plans, and prepare for January 19th.
+                your journey plans, and prepare for February 2nd.
               </p>
               <p className="text-xs text-muted-foreground mt-4">
-                Day 0: January 18, 2026 • Journey begins January 19, 2026
+                Day 0: February 1, 2026 • Journey begins February 2, 2026
               </p>
             </div>
           </Card>
@@ -474,10 +554,10 @@ export function HomePage({ userProgress }) {
           <Card className="p-6">
             <div className="text-center space-y-2">
               <p className="text-lg font-semibold">
-                Day 0: January 18, 2026 • Start: January 19, 2026
+                Your Ascension Journey
               </p>
               <p className="text-sm text-muted-foreground">
-                Preparation Day: January 18, 2026 • Journey begins January 19, 2026
+                Day 0: February 1, 2026 • Journey begins February 2, 2026
               </p>
             </div>
           </Card>
@@ -497,18 +577,30 @@ export function HomePage({ userProgress }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
           {journeyCards.map((journey, index) => {
             try {
-              const journeyProgress = userProgress[journey.id] || {};
-              const completedDays =
-                Object.values(journeyProgress).filter(Boolean).length;
               const journeyData = getJourneyData(journey.id);
               const totalDays = journeyData?.journey?.totalDays || 90;
-              const progressPercentage = Math.round(
-                (completedDays / totalDays) * 100
-              );
+              
+              // Use session-based progress calculation ONLY - no legacy fallback
+              // Note: cleanInvalidProgress is called in useEffect to avoid render issues
+              const sessionProgress = calculateSessionBasedProgress(journey.id, journeyData?.weeks || []);
+              const completedDays = sessionProgress.completedDays || 0;
+              const progressPercentage = sessionProgress.percentage || 0;
 
-              // Get journey stats
-              const journeyXP = xp.domains[journey.id] || 0;
-              const journeyLevel = getLevel(journey.id);
+              // Get journey stats - ensure all start at 0 XP and Level 1
+              const journeyXP = (xp.domains && xp.domains[journey.id]) ? xp.domains[journey.id] : 0;
+              
+              // FORCE Level 1 if XP is 0 or if we're on Day 0 (preparation phase)
+              // This ensures all journeys show Level 1 when starting
+              const currentDay = getCurrentDayNumber();
+              const phase = getCurrentPhaseStatus();
+              const isDay0 = currentDay === 0 || currentDay === null || phase === 'preparation';
+              const shouldForceLevel1 = journeyXP === 0 || isDay0;
+              
+              const journeyLevelData = getLevel(journey.id);
+              // Force Level 0 if conditions are met (prevents showing incorrect levels from old data)
+              const journeyLevel = shouldForceLevel1 
+                ? { level: 0, currentXP: 0, xpToNext: 100 } 
+                : journeyLevelData;
 
               return (
                 <JourneyCardV2

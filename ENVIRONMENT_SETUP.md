@@ -5,8 +5,8 @@
 ### Frontend (Vercel) - Required Variables
 
 ```env
-# Production API URL (your Railway backend URL + /v1)
-VITE_API_BASE_URL=https://your-backend.railway.app/v1
+# Production API URL (your backend URL + /v1)
+VITE_API_BASE_URL=https://your-backend-url.com/v1
 ```
 
 **Where to set:**
@@ -14,7 +14,7 @@ VITE_API_BASE_URL=https://your-backend.railway.app/v1
 2. Add for **Production** environment
 3. Redeploy after adding
 
-### Backend (Railway) - Required Variables
+### Backend (Vercel/Render/Other) - Required Variables
 
 ```env
 # Database
@@ -40,7 +40,7 @@ FRONTEND_URL=https://your-frontend-app.vercel.app
 ```
 
 **Where to set:**
-1. Railway Dashboard → Your Project → Variables tab
+1. Your hosting platform (Vercel/Render/etc.) → Your Project → Environment Variables
 2. Add each variable
 3. Redeploy after adding
 
@@ -71,15 +71,15 @@ FRONTEND_URL=http://localhost:5173
 ## Verification Checklist
 
 ### ✅ Backend Deployment
-- [ ] Backend deployed to Railway
-- [ ] Health endpoint works: `https://your-backend.railway.app/health`
-- [ ] All environment variables set in Railway
+- [ ] Backend deployed (Vercel/Render/other)
+- [ ] Health endpoint works: `https://your-backend-url.com/health`
+- [ ] All environment variables set
 - [ ] `NODE_ENV=production` is set
 - [ ] `APP_URL` matches your frontend URL exactly
 
 ### ✅ Frontend Deployment
 - [ ] `VITE_API_BASE_URL` set in Vercel
-- [ ] Value points to Railway backend URL + `/v1`
+- [ ] Value points to your backend URL + `/v1`
 - [ ] Frontend redeployed after adding variable
 - [ ] Browser console shows correct API URL (not localhost)
 
@@ -88,7 +88,7 @@ FRONTEND_URL=http://localhost:5173
 - [ ] Login works on your phone (different network)
 - [ ] Login works on friend's device
 - [ ] No CORS errors in browser console
-- [ ] API calls go to Railway URL (check Network tab)
+- [ ] API calls go to your backend URL (check Network tab)
 
 ## Common Issues
 
@@ -103,7 +103,7 @@ FRONTEND_URL=http://localhost:5173
 ### Issue: CORS Error
 
 **Solution:**
-1. Verify `APP_URL` in Railway matches frontend URL exactly
+1. Verify `APP_URL` in backend environment matches frontend URL exactly
 2. Both should use HTTPS (not HTTP)
 3. No trailing slashes
 4. Check browser console for exact CORS error
@@ -111,9 +111,9 @@ FRONTEND_URL=http://localhost:5173
 ### Issue: Backend not accessible
 
 **Solution:**
-1. Check Railway deployment is successful
-2. Test health endpoint: `https://your-backend.railway.app/health`
-3. Check Railway logs for errors
+1. Check backend deployment is successful
+2. Test health endpoint: `https://your-backend-url.com/health`
+3. Check backend logs for errors
 4. Verify all environment variables are set
 
 ## Security Notes

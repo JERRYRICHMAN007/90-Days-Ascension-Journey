@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import DisciplineRoadmap from "./DisciplineRoadmap";
 import SessionScreen from "./SessionScreen";
+import { SessionCompletionButton } from "./SessionCompletionButton";
+import { isSessionComplete } from "../utils/progressTracking";
 
 function DisciplineView({
   discipline,

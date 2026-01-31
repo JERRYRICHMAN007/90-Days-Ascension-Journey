@@ -32,7 +32,7 @@ const getApiBaseUrl = () => {
     // Fallback: construct from current hostname (if backend is on same domain)
     // Or use a default production URL
     console.warn('⚠️ VITE_API_BASE_URL not set in production. Please configure it in Vercel environment variables.');
-    console.warn('   Set VITE_API_BASE_URL to your production backend URL (e.g., https://your-backend.railway.app/v1)');
+    console.warn('   Set VITE_API_BASE_URL to your production backend URL (e.g., https://your-backend-url.com/v1)');
     
     // Return a placeholder that will fail gracefully with helpful error
     return 'PRODUCTION_API_URL_NOT_CONFIGURED';
@@ -58,7 +58,7 @@ if ((import.meta.env.PROD || (typeof window !== 'undefined' && window.location.p
   console.error('⚠️ PRODUCTION WARNING: API URL not configured!');
   console.error('   Current API URL:', API_BASE_URL);
   console.error('   Set VITE_API_BASE_URL in Vercel environment variables');
-  console.error('   Example: https://your-backend.railway.app/v1');
+      console.error('   Example: https://your-backend-url.com/v1');
 }
 
 class ApiClient {
@@ -101,7 +101,7 @@ class ApiClient {
       console.error('   Steps:');
       console.error('   1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables');
       console.error('   2. Add: VITE_API_BASE_URL');
-      console.error('   3. Value: https://your-backend.railway.app/v1');
+      console.error('   3. Value: https://your-backend-url.com/v1');
       console.error('   4. Set for: Production environment');
       console.error('   5. Redeploy frontend');
       
@@ -258,7 +258,7 @@ class ApiClient {
               console.error('   API URL:', this.baseURL);
               console.error('   Fix: Set VITE_API_BASE_URL in Vercel environment variables');
               console.error('   Go to: Vercel Dashboard → Settings → Environment Variables');
-              console.error('   Add: VITE_API_BASE_URL = https://your-backend.railway.app/v1');
+              console.error('   Add: VITE_API_BASE_URL = https://your-backend-url.com/v1');
               errorMessage = 'Backend server is not configured. The administrator needs to set up the backend connection.';
             } else {
               errorMessage = 'Cannot connect to authentication server. Please check your internet connection and try again.';

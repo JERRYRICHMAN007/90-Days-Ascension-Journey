@@ -2,11 +2,19 @@ import { useState, useEffect } from "react";
 import { Play, Pause, Square, Clock, CheckCircle2, BookOpen, Code } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { markSessionComplete, isSessionComplete } from "../utils/progressTracking";
 
-function SessionScreen({ session, onComplete, onNext }) {
+function SessionScreen({ session, onComplete, onNext, journeyId, dayNumber, sessionType, sessionIndex, discipline }) {
   const [isRunning, setIsRunning] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
+  
+  // Check if session is already marked as complete
+  const [isCompleted, setIsCompleted] = useState(() => {
+    if (journeyId && dayNumber !== undefined && sessionType && sessionIndex !== undefined) {
+      return isSessionComplete(journeyId, dayNumber, sessionType, sessionIndex, discipline);
+    }
+    return false;
+  });
 
   useEffect(() => {
     let interval = null;
@@ -41,8 +49,31 @@ function SessionScreen({ session, onComplete, onNext }) {
   };
 
   const handleComplete = () => {
-    setIsCompleted(true);
     setIsRunning(false);
+    
+    // Mark session as complete in progress tracking system
+    if (journeyId && dayNumber !== undefined && sessionType && sessionIndex !== undefined) {
+      const success = markSessionComplete(
+        journeyId,
+        dayNumber,
+        sessionType,
+        sessionIndex,
+        discipline,
+        {
+          timeElapsed,
+          completedAt: new Date().toISOString()
+        }
+      );
+      
+      if (success) {
+        setIsCompleted(true);
+      }
+    } else {
+      // Fallback for sessions without tracking data
+      setIsCompleted(true);
+    }
+    
+    // Trigger completion callback
     if (onComplete) {
       onComplete({
         ...session,

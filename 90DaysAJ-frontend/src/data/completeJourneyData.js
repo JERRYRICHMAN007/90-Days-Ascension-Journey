@@ -33,60 +33,65 @@ export const dualBrandCompleteData = {
       date: '2025-12-03',
       dayName: 'Wednesday',
       focus: 'Platform Setup - Social',
-      ryxenTasks: 'Create/optimize Ryxen Instagram, X, TikTok profiles',
-      havenXTasks: 'Create/optimize HavenX LinkedIn, X, Instagram profiles',
+      ryxenTasks: 'Create/optimize Ryxen Instagram, TikTok, X, Threads, LinkedIn, YouTube, GitHub profiles',
+      havenXTasks: 'Create/optimize HavenX Instagram, TikTok, X, Threads, LinkedIn, YouTube, GitHub profiles',
       learningResources: [
-        { title: 'Social Media Profile Optimization', url: 'https://blog.hootsuite.com/how-to-optimize-social-media-profiles/' }
+        { title: 'Social Media Profile Optimization', url: 'https://blog.hootsuite.com/how-to-optimize-social-media-profiles/' },
+        { title: 'GitHub Profile README Guide', url: 'https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme' }
       ],
-      outcome: '3 platforms set up per brand'
+      outcome: '7 platforms set up per brand'
     },
     {
       dayNumber: 4,
       date: '2025-12-04',
       dayName: 'Thursday',
-      focus: 'Platform Setup - Video',
-      ryxenTasks: 'Create Ryxen YouTube channel, optimize description',
-      havenXTasks: 'Create HavenX YouTube channel, optimize description',
+      focus: 'Automation Tool Setup - Buffer/Hootsuite',
+      ryxenTasks: 'Set up Buffer/Hootsuite account, connect all 7 Ryxen platforms, test automation with 1 scheduled post',
+      havenXTasks: 'Set up Buffer/Hootsuite account, connect all 7 HavenX platforms, test automation with 1 scheduled post',
       learningResources: [
-        { title: 'YouTube Channel Setup', url: 'https://www.youtube.com/watch?v=UZ2fkdFzN8s' }
+        { title: 'Buffer Setup Guide - Connect All Platforms', url: 'https://buffer.com/help/articles/connect-social-accounts' },
+        { title: 'How to Schedule Posts on Buffer', url: 'https://buffer.com/help/articles/how-to-schedule-posts' },
+        { title: 'Hootsuite Setup Guide', url: 'https://help.hootsuite.com/hc/en-us/articles/360040314234-Connect-your-social-networks' }
       ],
-      outcome: 'YouTube channels live'
+      outcome: 'Automation tool configured - all platforms connected, test post scheduled'
     },
     {
       dayNumber: 5,
       date: '2025-12-05',
       dayName: 'Friday',
-      focus: 'Content Pillars',
-      ryxenTasks: 'Define 5 Ryxen content pillars (wealth, mindset, skills, etc.)',
-      havenXTasks: 'Define 5 HavenX content pillars (automation, systems, etc.)',
+      focus: 'Content Pillars (Quick)',
+      ryxenTasks: 'Define 3 Ryxen content pillars (keep it simple: wealth mindset, financial freedom, personal growth)',
+      havenXTasks: 'Define 3 HavenX content pillars (keep it simple: automation tips, business systems, efficiency)',
       learningResources: [
-        { title: 'Content Pillar Strategy', url: 'https://blog.hootsuite.com/content-pillars/' }
+        { title: 'Content Pillar Strategy', url: 'https://blog.hootsuite.com/content-pillars/' },
+        { title: 'Content Pillar Framework - Buffer', url: 'https://buffer.com/library/content-pillars/' }
       ],
-      outcome: 'Content pillar documents'
+      outcome: '3 content pillars defined per brand (simple & actionable)'
     },
     {
       dayNumber: 6,
       date: '2025-12-06',
       dayName: 'Saturday',
       focus: 'Bios & About Sections',
-      ryxenTasks: 'Write compelling bios for all Ryxen platforms',
-      havenXTasks: 'Write compelling bios for all HavenX platforms',
+      ryxenTasks: 'Write bios for all Ryxen platforms (use templates, keep it simple)',
+      havenXTasks: 'Write bios for all HavenX platforms (use templates, keep it simple)',
       learningResources: [
-        { title: 'How to Write a Bio', url: 'https://www.themuse.com/advice/how-to-write-a-bio' }
+        { title: 'How to Write a Bio', url: 'https://www.themuse.com/advice/how-to-write-a-bio' },
+        { title: 'Instagram Bio Ideas', url: 'https://blog.hootsuite.com/instagram-bio-ideas/' }
       ],
-      outcome: 'Optimized bios across platforms'
+      outcome: 'Bios written for all platforms (practical & simple)'
     },
     {
       dayNumber: 7,
       date: '2025-12-07',
       dayName: 'Sunday',
       focus: 'Week Reflection',
-      ryxenTasks: 'Review week\'s foundation work, plan content calendar',
-      havenXTasks: 'Review week\'s foundation work, plan content calendar',
+      ryxenTasks: 'Test automation: Schedule 1 test post to all Ryxen platforms via Buffer/Hootsuite',
+      havenXTasks: 'Test automation: Schedule 1 test post to all HavenX platforms via Buffer/Hootsuite',
       learningResources: [
-        { title: 'Content Calendar Template', url: 'https://coschedule.com/content-calendar-template' }
+        { title: 'Buffer Best Times to Post', url: 'https://buffer.com/library/best-time-to-post' }
       ],
-      outcome: 'Week 1 foundation complete'
+      outcome: 'Automation tested - 1 post scheduled to all platforms, ready for Week 2 content creation'
     }
   ]
 }

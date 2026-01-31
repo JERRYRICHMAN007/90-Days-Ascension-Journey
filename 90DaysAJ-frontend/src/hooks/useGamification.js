@@ -14,13 +14,29 @@ const XP_FOR_LEVEL = (level) => {
 
 export function useGamification() {
   const [xp, setXp] = useState(() => {
+    const defaultDomains = {
+      'body-transformation': 0,
+      'reading': 0,
+      'writers': 0,
+      'dual-brand': 0,
+      'software-engineering': 0,
+    };
+    
     try {
       const saved = localStorage.getItem('ascensionXP');
-      return saved ? JSON.parse(saved) : { global: 0, domains: {} };
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Ensure all journey domains exist and default to 0 if missing
+        return {
+          global: parsed.global || 0,
+          domains: { ...defaultDomains, ...(parsed.domains || {}) }
+        };
+      }
+      return { global: 0, domains: defaultDomains };
     } catch (error) {
       console.error('Error parsing XP from localStorage:', error);
       localStorage.removeItem('ascensionXP');
-      return { global: 0, domains: {} };
+      return { global: 0, domains: defaultDomains };
     }
   });
 
@@ -64,6 +80,16 @@ export function useGamification() {
       try {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) return; // User not logged in
+
+        // Check if we're on Day 0 - if so, don't load from backend (we want fresh start)
+        const { getCurrentDayNumber, getCurrentPhaseStatus } = require('../utils/dates');
+        const currentDay = getCurrentDayNumber();
+        const phase = getCurrentPhaseStatus();
+        
+        if (currentDay === 0 || phase === 'preparation') {
+          console.log('📅 Day 0 detected - Skipping backend load to ensure fresh start');
+          return;
+        }
 
         const { api } = await import('../services/api');
         
@@ -299,20 +325,81 @@ export function useGamification() {
   };
 
   const getLevel = (domain = null) => {
-    const totalXP = domain ? (xp.domains[domain] || 0) : xp.global;
-    let level = 1;
+    const totalXP = domain ? (xp.domains && xp.domains[domain] ? xp.domains[domain] : 0) : (xp.global || 0);
+    
+    // If XP is 0 or undefined, start at Level 0 (progressing to Level 1)
+    if (!totalXP || totalXP === 0) {
+      return {
+        level: 0,
+        currentXP: 0,
+        xpToNext: XP_FOR_LEVEL(1), // Need 100 XP to reach Level 1
+      };
+    }
+    
+    // Start from Level 0 and calculate which level the XP corresponds to
+    let level = 0;
     let xpForCurrentLevel = 0;
     
-    while (xpForCurrentLevel + XP_FOR_LEVEL(level) <= totalXP) {
-      xpForCurrentLevel += XP_FOR_LEVEL(level);
+    // Calculate level: Level 0 -> Level 1 needs 100 XP, Level 1 -> Level 2 needs 150 XP, etc.
+    while (xpForCurrentLevel + XP_FOR_LEVEL(level + 1) <= totalXP) {
+      xpForCurrentLevel += XP_FOR_LEVEL(level + 1);
       level++;
     }
     
     return {
       level,
       currentXP: totalXP - xpForCurrentLevel,
-      xpToNext: XP_FOR_LEVEL(level),
+      xpToNext: XP_FOR_LEVEL(level + 1), // XP needed to reach next level
     };
+  };
+
+  /**
+   * Reset all gamification data (XP, streaks, achievements)
+   * Use this when starting fresh on Day 0
+   */
+  const resetAllGamification = async () => {
+    // Reset XP - explicitly set all journey domains to 0
+    const resetXP = {
+      global: 0,
+      domains: {
+        'body-transformation': 0,
+        'reading': 0,
+        'writers': 0,
+        'dual-brand': 0,
+        'software-engineering': 0,
+      }
+    };
+    setXp(resetXP);
+    localStorage.setItem('ascensionXP', JSON.stringify(resetXP));
+    
+    // Reset streaks
+    const resetStreaks = { current: 0, longest: 0, lastDate: null };
+    setStreaks(resetStreaks);
+    localStorage.setItem('ascensionStreaks', JSON.stringify(resetStreaks));
+    
+    // Reset achievements
+    setAchievements([]);
+    localStorage.setItem('ascensionAchievements', JSON.stringify([]));
+    
+    // Clear journey-specific gamification data
+    const journeyIds = ['body-transformation', 'reading', 'writers', 'dual-brand', 'software-engineering'];
+    journeyIds.forEach(id => {
+      localStorage.removeItem(`points_${id}`);
+      localStorage.removeItem(`coins_${id}`);
+      localStorage.removeItem(`level_${id}`);
+      localStorage.removeItem(`achievements_${id}`);
+    });
+    
+    // Sync to backend if authenticated
+    try {
+      await syncXPToBackend(resetXP);
+      await syncStreaksToBackend(resetStreaks);
+      await syncAchievementsToBackend([]);
+    } catch (error) {
+      console.warn('Failed to sync reset to backend:', error);
+    }
+    
+    console.log('✅ All gamification data reset!');
   };
 
   return {
@@ -322,6 +409,7 @@ export function useGamification() {
     completeTask,
     addXP,
     getLevel,
+    resetAllGamification,
   };
 }
 

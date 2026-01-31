@@ -122,7 +122,7 @@ export function JourneyCardV2({ journey, progress, stats, index }) {
               <div className="flex flex-col items-center p-1.5 sm:p-2 rounded-lg bg-muted/30">
                 <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-levelup mb-0.5 sm:mb-1" />
                 <span className="text-sm sm:text-base md:text-lg font-bold text-foreground tabular-nums">
-                  Lv.{stats.level || 1}
+                  Lv.{stats.level !== undefined ? stats.level : 0}
                 </span>
                 <span className="text-[10px] sm:text-xs text-muted-foreground">Level</span>
               </div>

@@ -162,9 +162,11 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Block 7:15-7:30 AM (Weekdays) for Bible Reading',
-          'Block 7:30-8:15 AM (Weekdays) for E-Book Reading',
-          'Block 8:00-9:00 PM (Weekends) for Physical Books',
+          'Block 6:00-6:30 AM (Mon-Fri) for Bible Reading',
+          'Block 7:30-8:00 AM (Saturday) for Bible Reading',
+          'Block 6:00-6:30 AM (Sunday) for Bible Reading',
+          'Block 5:00-6:00 PM (Saturday) for E-Book Reading',
+          'Block 7:00-8:00 PM (Sunday) for Physical Book Reading',
           'Set up morning alarms for consistent Bible reading time',
           'Plan your reading routine and reflection time'
         ]
