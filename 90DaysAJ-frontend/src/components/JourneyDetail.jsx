@@ -52,8 +52,9 @@ function JourneyDetail({
   // Default to current day number, but skip Day 0 - always start from Day 1
   // If currentDayNumber is 0 or null, default to Day 1
   const defaultDay = (currentDayNumber !== null && currentDayNumber > 0) ? currentDayNumber : 1;
-  // Calculate default week based on default day (Day 1 = Week 1)
-  const defaultWeek = defaultDay === 0 ? 1 : Math.ceil(defaultDay / 7);
+  // Calculate default week based on default day (Day 1 = Week 1, Days 1-7 = Week 1, Days 8-14 = Week 2, etc.)
+  // Use: Math.ceil((day - 1) / 7) + 1 to ensure Day 1 = Week 1
+  const defaultWeek = defaultDay === 0 ? 1 : Math.ceil((defaultDay - 1) / 7) + 1;
   const [selectedWeek, setSelectedWeek] = useState(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -123,26 +124,8 @@ function JourneyDetail({
       if (dayParam) {
         const dayNum = parseInt(dayParam);
         setSelectedDay(dayNum);
-        const weekNum = Math.ceil(dayNum / 7);
-        setSelectedWeek(weekNum);
-      }
-    } else {
-      setActiveSection(null);
-    }
-  }, [location.search, location.pathname]);
-
-  // Handle URL parameters for section navigation
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const section = params.get("section");
-    const dayParam = params.get("day");
-
-    if (section === "quiz" || section === "assessment") {
-      setActiveSection(section);
-      if (dayParam) {
-        const dayNum = parseInt(dayParam);
-        setSelectedDay(dayNum);
-        const weekNum = Math.ceil(dayNum / 7);
+        // Calculate week correctly: Day 1 = Week 1, Days 1-7 = Week 1, Days 8-14 = Week 2, etc.
+        const weekNum = dayNum === 0 ? 1 : Math.ceil((dayNum - 1) / 7) + 1;
         setSelectedWeek(weekNum);
       }
     } else {

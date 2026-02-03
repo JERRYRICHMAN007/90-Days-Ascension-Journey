@@ -261,9 +261,14 @@ function DisciplineView({
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No deep learning sessions scheduled for {discipline} today
-                </p>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    No deep learning sessions scheduled for {discipline} today.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    This is a rest day for {discipline}.
+                  </p>
+                </div>
               )}
             </CardContent>
           </CollapsibleContent>
@@ -350,9 +355,14 @@ function DisciplineView({
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No implementation sessions scheduled for {discipline} today
-                </p>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    No implementation sessions scheduled for {discipline} today.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    This is a rest day for {discipline}.
+                  </p>
+                </div>
               )}
             </CardContent>
           </CollapsibleContent>

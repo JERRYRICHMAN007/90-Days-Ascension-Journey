@@ -1,4 +1,6 @@
-# Environment Variables Setup
+# Environment Setup Guide
+
+This document covers environment variable configuration for both frontend and backend.
 
 ## Quick Reference
 

@@ -9,11 +9,13 @@
  * - Total Journey: 180 days (90 days per phase)
  */
 
+// Use local date constructors to avoid timezone issues
+// Month is 0-indexed: 0 = January, 1 = February, etc.
 export const JOURNEY_CONSTANTS = {
-  DAY_0_START: new Date('2026-02-01'), // Day 0 - Sunday, February 1, 2026
-  ASCENSION_START: new Date('2026-02-02'), // Day 1 - Monday, February 2, 2026
-  PHASE_1_END: new Date('2026-05-02'), // Day 90 - May 2, 2026
-  PHASE_2_END: new Date('2026-07-31'), // Day 180 - July 31, 2026
+  DAY_0_START: new Date(2026, 1, 1), // Day 0 - Sunday, February 1, 2026
+  ASCENSION_START: new Date(2026, 1, 2), // Day 1 - Monday, February 2, 2026
+  PHASE_1_END: new Date(2026, 4, 2), // Day 90 - May 2, 2026
+  PHASE_2_END: new Date(2026, 6, 31), // Day 180 - July 31, 2026
   TOTAL_DAYS: 180, // 90 days per phase, 2 phases total
   PHASE_1_DAYS: 90,
   PHASE_2_DAYS: 90,
@@ -24,28 +26,29 @@ export const JOURNEY_CONSTANTS = {
  * @returns {'before' | 'preparation' | 'phase1' | 'phase2' | 'after'}
  */
 export function getCurrentPhaseStatus() {
+  // Use local date components to avoid timezone issues
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   
   const day0Start = new Date(JOURNEY_CONSTANTS.DAY_0_START);
-  day0Start.setHours(0, 0, 0, 0);
+  const day0Local = new Date(day0Start.getFullYear(), day0Start.getMonth(), day0Start.getDate());
   
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  ascensionStart.setHours(0, 0, 0, 0);
+  const ascensionLocal = new Date(ascensionStart.getFullYear(), ascensionStart.getMonth(), ascensionStart.getDate());
   
   const phase1End = new Date(JOURNEY_CONSTANTS.PHASE_1_END);
-  phase1End.setHours(23, 59, 59, 999);
+  const phase1EndLocal = new Date(phase1End.getFullYear(), phase1End.getMonth(), phase1End.getDate(), 23, 59, 59, 999);
   
   const phase2End = new Date(JOURNEY_CONSTANTS.PHASE_2_END);
-  phase2End.setHours(23, 59, 59, 999);
+  const phase2EndLocal = new Date(phase2End.getFullYear(), phase2End.getMonth(), phase2End.getDate(), 23, 59, 59, 999);
   
-  if (today < day0Start) {
+  if (todayLocal < day0Local) {
     return 'before';
-  } else if (today.getTime() === day0Start.getTime()) {
+  } else if (todayLocal.getTime() === day0Local.getTime()) {
     return 'preparation'; // Day 0
-  } else if (today >= ascensionStart && today <= phase1End) {
+  } else if (todayLocal >= ascensionLocal && todayLocal <= phase1EndLocal) {
     return 'phase1';
-  } else if (today > phase1End && today <= phase2End) {
+  } else if (todayLocal > phase1EndLocal && todayLocal <= phase2EndLocal) {
     return 'phase2';
   } else {
     return 'after';
@@ -77,14 +80,14 @@ export function getCurrentDayNumber() {
     return null;
   }
   
-  // Calculate day number from start date
+  // Use local date components to avoid timezone issues
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  ascensionStart.setHours(0, 0, 0, 0);
+  const startLocal = new Date(ascensionStart.getFullYear(), ascensionStart.getMonth(), ascensionStart.getDate());
   
-  const diffTime = today - ascensionStart;
+  const diffTime = todayLocal - startLocal;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
   // Day 1 = Feb 2, 2026 (ascensionStart)
@@ -109,7 +112,9 @@ export function getCurrentDayNumber() {
  */
 export function getDateForDay(dayNumber) {
   if (dayNumber === 0) {
-    return new Date(JOURNEY_CONSTANTS.DAY_0_START);
+    const day0 = new Date(JOURNEY_CONSTANTS.DAY_0_START);
+    // Ensure local date components
+    return new Date(day0.getFullYear(), day0.getMonth(), day0.getDate());
   }
   
   if (dayNumber < 1 || dayNumber > JOURNEY_CONSTANTS.TOTAL_DAYS) {
@@ -118,11 +123,15 @@ export function getDateForDay(dayNumber) {
   
   // Day 1 starts on February 2, 2026 (Monday)
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
+  // Use local date components to avoid timezone issues
+  const startLocal = new Date(ascensionStart.getFullYear(), ascensionStart.getMonth(), ascensionStart.getDate());
+  
   // Day 1 = Feb 2, 2026 (ascensionStart)
   // Day 2 = Feb 3, 2026 (ascensionStart + 1 day)
-  ascensionStart.setDate(ascensionStart.getDate() + dayNumber - 1);
+  const targetDate = new Date(startLocal);
+  targetDate.setDate(startLocal.getDate() + dayNumber - 1);
   
-  return ascensionStart;
+  return targetDate;
 }
 
 /**
@@ -198,15 +207,16 @@ export function getJourneyProgress() {
  */
 export function isInJourney(date) {
   const checkDate = typeof date === 'string' ? new Date(date) : date;
-  checkDate.setHours(0, 0, 0, 0);
+  // Use local date components to avoid timezone issues
+  const checkLocal = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
   
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  ascensionStart.setHours(0, 0, 0, 0);
+  const startLocal = new Date(ascensionStart.getFullYear(), ascensionStart.getMonth(), ascensionStart.getDate());
   
   const phase2End = new Date(JOURNEY_CONSTANTS.PHASE_2_END);
-  phase2End.setHours(23, 59, 59, 999);
+  const endLocal = new Date(phase2End.getFullYear(), phase2End.getMonth(), phase2End.getDate(), 23, 59, 59, 999);
   
-  return checkDate >= ascensionStart && checkDate <= phase2End;
+  return checkLocal >= startLocal && checkLocal <= endLocal;
 }
 
 /**

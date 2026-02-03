@@ -8,9 +8,11 @@
  * Start Date: Monday, February 2, 2026
  */
 
+// Use local date constructors to avoid timezone issues
+// Month is 0-indexed: 0 = January, 1 = February, etc.
 export const PHASE_CONSTANTS = {
-  DAY_0_START: new Date('2026-02-01'), // Day 0 - Sunday, February 1, 2026
-  START_DATE: new Date('2026-02-02'), // Day 1 - Monday, February 2, 2026
+  DAY_0_START: new Date(2026, 1, 1), // Day 0 - Sunday, February 1, 2026
+  START_DATE: new Date(2026, 1, 2), // Day 1 - Monday, February 2, 2026
   PHASE_1_DAYS: 90,
   PHASE_2_DAYS: 90,
   TOTAL_PHASES: 2,
@@ -137,9 +139,14 @@ export function getDateForDay(dayNumber) {
     return null;
   }
   
-  const date = new Date(PHASE_CONSTANTS.START_DATE);
-  date.setDate(date.getDate() + dayNumber - 1);
-  return date;
+  // Use local date components to avoid timezone issues
+  const startDate = new Date(PHASE_CONSTANTS.START_DATE);
+  const startLocal = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  
+  const targetDate = new Date(startLocal);
+  targetDate.setDate(startLocal.getDate() + dayNumber - 1);
+  
+  return targetDate;
 }
 
 /**

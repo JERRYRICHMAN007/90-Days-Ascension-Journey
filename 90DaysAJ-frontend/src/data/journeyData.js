@@ -758,6 +758,8 @@ export const readingWeeks = generateWeeks("2026-02-01", 13).map((week, idx) => {
 function getWeekdayReading(weekNum, dayIndex) {
   // dayIndex: 0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday
   const sessions = [];
+  const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2; // Monday-Wednesday
+  const isThursdayToFriday = dayIndex >= 3 && dayIndex <= 4; // Thursday-Friday
   
   // Bible Reading: ALL weekdays (Monday-Friday), 6:00-6:30 AM
   sessions.push({
@@ -767,8 +769,45 @@ function getWeekdayReading(weekNum, dayIndex) {
     focus: "Spiritual, financial, wisdom grounding",
   });
 
-  // E-Book Reading: REMOVED from weekdays - only on Saturdays at 5:00 PM - 6:00 PM
-  // Physical Book Reading: REMOVED from weekdays - only on Sundays at 7:00 PM - 8:00 PM
+  // E-Book Reading: Monday to Wednesday, 5:00-6:00 PM
+  if (isMondayToWednesday) {
+    const ebook = getEBookForWeek(weekNum);
+    let material = ebook;
+    let chapters = "";
+
+    // Add chapter numbers for Atomic Habits
+    if (ebook === "Atomic Habits") {
+      if (weekNum === 1) {
+        chapters = "Chapters 1-7";
+      } else if (weekNum === 2) {
+        chapters = "Chapters 8-14";
+      }
+      material = `Atomic Habits - James Clear (${chapters})`;
+    } else if (ebook === "Atomic Habits (Advanced)") {
+      if (weekNum === 6) {
+        chapters = "Chapters 15-20";
+        material = `Atomic Habits - James Clear (${chapters})`;
+      }
+    }
+
+    sessions.push({
+      time: "5:00-6:00 PM",
+      type: "E-Reading",
+      material: material,
+      focus: "Mindset, success, wealth, strategy",
+      chapters: chapters || null,
+    });
+  }
+
+  // Physical Book Reading: Thursday and Friday, 5:00-6:00 PM
+  if (isThursdayToFriday) {
+    sessions.push({
+      time: "5:00-6:00 PM",
+      type: "Physical Book",
+      material: getPhysicalBookForWeek(weekNum),
+      focus: "Deep reading and comprehension",
+    });
+  }
 
   return sessions;
 }
@@ -778,7 +817,7 @@ function getWeekendReading(weekNum, dayIndex) {
   const sessions = [];
   
   if (dayIndex === 0) {
-    // Sunday: Bible Reading (6:00-6:30 AM) + Physical Book Reading (7:00-8:00 PM)
+    // Sunday: Bible Reading (6:00-6:30 AM) + Physical Book Reading (3:00-4:00 PM)
     sessions.push({
       time: "6:00-6:30 AM",
       type: "Bible Reading",
@@ -786,7 +825,7 @@ function getWeekendReading(weekNum, dayIndex) {
       focus: "Spiritual, financial, wisdom grounding",
     });
     sessions.push({
-      time: "7:00-8:00 PM",
+      time: "3:00-4:00 PM",
       type: "Physical Book",
       material: getPhysicalBookForWeek(weekNum),
       focus: "Deep reading and comprehension",
@@ -800,7 +839,7 @@ function getWeekendReading(weekNum, dayIndex) {
       focus: "Spiritual, financial, wisdom grounding",
     });
     
-    // E-Book Reading: Saturday only, 5:00-6:00 PM
+    // E-Book Reading: Saturday, 5:00-6:00 PM
     const ebook = getEBookForWeek(weekNum);
     let material = ebook;
     let chapters = "";
@@ -1273,10 +1312,10 @@ function getDualBrandLearningResources(weekNum, dayIndex) {
       ],
       [
         {
-          title: "Logo Design Principles - 99designs",
-          url: "https://99designs.com/blog/tips/logo-design-basics/",
+          title: "Logo Design Principles - Essential Guidelines",
+          url: "https://www.canva.com/learn/logo-design-basics/",
           category: "Guide",
-          platform: "99designs",
+          platform: "Canva",
         },
         {
           title: "Color Psychology in Branding",
@@ -9844,12 +9883,13 @@ function getDisciplineContent(
 }
 
 // Scheduling and Discipline Rotation Helpers
-// Updated schedule based on final time allocations (January 2026)
+// Updated schedule (February 2026) - Final Schedule
 // Schedule Structure:
-// - Body Transformation: Mon-Fri, 5:30 AM - 6:30 AM
-// - Dual Branding: Mon-Fri, 4:45 AM - 5:30 AM; Saturday, 5:00 AM - 6:00 AM
-// - Reading: Bible (Mon-Fri, 6:00-6:30 AM; Sat, 7:30-8:00 AM; Sun, 6:00-6:30 AM), E-Book (Sat, 5:00-6:00 PM), Physical (Sun, 7:00-8:00 PM)
-// - Software Engineering: Mobile (Mon-Wed, 6:45-8:00 AM; Sat Revision 1:30-3:00 PM), Frontend (Thu-Fri, 6:45-8:00 AM; Sat Revision 3:00-4:00 PM), Backend (Fri, 7:30-9:00 PM; Sat Revision 4:00-5:00 PM), WordPress (Sunday, 5:00-6:00 AM)
+// - Software Engineering: Mobile (Mon-Wed, 9:30pm-11:00pm), Frontend (Thu 9:30pm-11:30pm, Fri 8:30pm-10:00pm)
+// - Body Transformation: Mon-Fri, 5:00 AM - 5:30 AM
+// - Dual Branding: Mon-Fri, 6:30 AM - 7:30 AM; Sunday, 3:00 AM - 4:00 AM
+// - Reading: Bible (Mon-Fri, 6:00-6:30 AM; Sun, 6:00-6:30 AM; Sat, 7:30-8:00 AM), E-Book (Mon-Wed, 5:00-6:00 PM; Sat, 5:00-6:00 PM), Physical (Thu-Fri, 5:00-6:00 PM; Sun, 3:00-4:00 PM)
+// - Writing: Mon-Fri, 4:00 PM - 5:00 PM; Sat, 4:00 PM - 5:00 PM
 function getTimeBlocks(dayIndex) {
   const isSaturday = dayIndex === 5;
   const isSunday = dayIndex === 6;
@@ -9859,65 +9899,24 @@ function getTimeBlocks(dayIndex) {
   const isThursday = dayIndex === 3; // Thursday
   const isFriday = dayIndex === 4; // Friday
   const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2; // Monday-Wednesday
-  const isThursdayToFriday = dayIndex >= 3 && dayIndex <= 4; // Thursday-Friday
-  const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
 
-  if (isSaturday) {
-    // Saturday: Mobile Revision (1:30-3:00 PM), Frontend Revision (3:00-4:00 PM), Backend Revision (4:00-5:00 PM)
+  // Saturday and Sunday: No Software Engineering sessions
+  if (isSaturday || isSunday) {
     return {
-      deepLearning: [
-        {
-          time: "1:30 PM - 3:00 PM",
-          discipline: "Mobile",
-          type: "revision",
-          duration: "90 min",
-          isRevision: true,
-        },
-        {
-          time: "3:00 PM - 4:00 PM",
-          discipline: "Frontend",
-          type: "revision",
-          duration: "60 min",
-          isRevision: true,
-        },
-      ],
-      focusedImplementation: [
-        {
-          time: "4:00 PM - 5:00 PM",
-          discipline: "Backend",
-          type: "revision",
-          duration: "60 min",
-          isRevision: true,
-        },
-      ],
-    };
-  }
-
-  if (isSunday) {
-    // Sunday: WordPress (5:00-6:00 AM)
-    return {
-      deepLearning: [
-        {
-          time: "5:00 AM - 6:00 AM",
-          discipline: "WordPress",
-          type: "study",
-          duration: "60 min",
-          isRevision: false,
-        },
-      ],
+      deepLearning: [],
       focusedImplementation: [],
     };
   }
 
   if (isMondayToWednesday) {
-    // Monday-Wednesday: Mobile (6:45 AM - 8:00 AM)
+    // Monday-Wednesday: Mobile Engineering (9:30 PM - 11:00 PM)
     return {
       deepLearning: [
         {
-          time: "6:45 AM - 8:00 AM",
+          time: "9:30 PM - 11:00 PM",
           discipline: "Mobile",
           type: "study",
-          duration: "75 min",
+          duration: "90 min",
           isRevision: false,
         },
       ],
@@ -9925,34 +9924,36 @@ function getTimeBlocks(dayIndex) {
     };
   }
 
-  if (isThursdayToFriday) {
-    // Thursday-Friday: Frontend (6:45 AM - 8:00 AM)
-    // Friday: Backend (7:30 PM - 9:00 PM)
-    const blocks = {
+  if (isThursday) {
+    // Thursday: Frontend Engineering (9:30 PM - 11:30 PM)
+    return {
       deepLearning: [
         {
-          time: "6:45 AM - 8:00 AM",
+          time: "9:30 PM - 11:30 PM",
           discipline: "Frontend",
           type: "study",
-          duration: "75 min",
+          duration: "120 min",
           isRevision: false,
         },
       ],
       focusedImplementation: [],
     };
+  }
 
-    // Add Backend on Friday evening
-    if (isFriday) {
-      blocks.focusedImplementation.push({
-        time: "7:30 PM - 9:00 PM",
-        discipline: "Backend",
-        type: "build",
-        duration: "90 min",
-        isRevision: false,
-      });
-    }
-
-    return blocks;
+  if (isFriday) {
+    // Friday: Frontend Engineering (8:30 PM - 10:00 PM)
+    return {
+      deepLearning: [
+        {
+          time: "8:30 PM - 10:00 PM",
+          discipline: "Frontend",
+          type: "study",
+          duration: "90 min",
+          isRevision: false,
+        },
+      ],
+      focusedImplementation: [],
+    };
   }
 
   // Fallback (should not reach here)
@@ -9969,12 +9970,12 @@ function getBodyTransformationTimeBlocks(dayIndex) {
   const isSunday = dayIndex === 6;
   
   if (isWeekday) {
-    // Monday-Friday: 5:30-6:30 AM
+    // Monday-Friday: 5:00-5:30 AM
     return {
       deepLearning: [{
-        time: "5:30 AM - 6:30 AM",
+        time: "5:00 AM - 5:30 AM",
         type: "workout",
-        duration: "60 min",
+        duration: "30 min",
         isRevision: false,
       }],
       focusedImplementation: [],
@@ -9992,6 +9993,8 @@ function getReadingTimeBlocks(dayIndex) {
   const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
   const isSaturday = dayIndex === 5;
   const isSunday = dayIndex === 6;
+  const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2; // Monday-Wednesday
+  const isThursdayToFriday = dayIndex >= 3 && dayIndex <= 4; // Thursday-Friday
   
   const blocks = {
     deepLearning: [],
@@ -10015,8 +10018,8 @@ function getReadingTimeBlocks(dayIndex) {
     });
   }
   
-  // E-Book: 5:00-6:00 PM (Saturday ONLY)
-  if (isSaturday) {
+  // E-Book: 5:00-6:00 PM (Mon-Wed, Sat)
+  if (isMondayToWednesday || isSaturday) {
     blocks.focusedImplementation.push({
       time: "5:00 PM - 6:00 PM",
       type: "ebook",
@@ -10025,10 +10028,17 @@ function getReadingTimeBlocks(dayIndex) {
     });
   }
   
-  // Physical Book: 7:00-8:00 PM (Sunday ONLY)
-  if (isSunday) {
-    blocks.deepLearning.push({
-      time: "7:00 PM - 8:00 PM",
+  // Physical Book: 5:00-6:00 PM (Thu-Fri), 3:00-4:00 PM (Sun)
+  if (isThursdayToFriday) {
+    blocks.focusedImplementation.push({
+      time: "5:00 PM - 6:00 PM",
+      type: "physical",
+      duration: "60 min",
+      isRevision: false,
+    });
+  } else if (isSunday) {
+    blocks.focusedImplementation.push({
+      time: "3:00 PM - 4:00 PM",
       type: "physical",
       duration: "60 min",
       isRevision: false,
@@ -10043,10 +10053,10 @@ function getDualBrandTimeBlocks(dayIndex) {
   const isSunday = dayIndex === 6;
   
   if (isWeekday) {
-    // Mon-Fri: 5:00-6:00 PM
+    // Mon-Fri: 6:30-7:30 AM
     return {
       deepLearning: [{
-        time: "5:00 PM - 6:00 PM",
+        time: "6:30 AM - 7:30 AM",
         type: "brand-building",
         duration: "60 min",
         isRevision: false,
@@ -10054,7 +10064,7 @@ function getDualBrandTimeBlocks(dayIndex) {
       focusedImplementation: [],
     };
   } else if (isSunday) {
-    // Sunday: 3:00-4:00 AM
+    // Sunday: 3:00-4:00 AM (Planning & Automation)
     return {
       deepLearning: [{
         time: "3:00 AM - 4:00 AM",
@@ -10075,21 +10085,22 @@ function getDualBrandTimeBlocks(dayIndex) {
 
 function getWritersTimeBlocks(dayIndex) {
   const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
+  const isSaturday = dayIndex === 5;
   
-  if (isWeekday) {
-    // Weekdays: 12:30-1:00 PM
+  if (isWeekday || isSaturday) {
+    // Mon-Fri: 4:00-5:00 PM, Sat: 4:00-5:00 PM
     return {
       deepLearning: [{
-        time: "12:30 PM - 1:00 PM",
+        time: "4:00 PM - 5:00 PM",
         type: "writing",
-        duration: "30 min",
+        duration: "60 min",
         isRevision: false,
       }],
       focusedImplementation: [],
     };
   }
   
-  // Weekend: Rest
+  // Sunday: Rest
   return {
     deepLearning: [],
     focusedImplementation: [],
@@ -10202,38 +10213,37 @@ function getDisciplineRotation(weekNum, dayIndex) {
   const isThursday = dayIndex === 3;
   const isFriday = dayIndex === 4;
   const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2; // Monday-Wednesday
-  const isThursdayToFriday = dayIndex >= 3 && dayIndex <= 4; // Thursday-Friday
   const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
 
-  // Saturday: Mobile Revision, Frontend Revision, Backend Revision
+  // Saturday: No Software Engineering sessions
   if (isSaturday) {
     return {
-      primary: "Mobile",
-      secondary: "Frontend",
-      tertiary: "Backend",
+      primary: null,
+      secondary: null,
+      tertiary: null,
       quaternary: null,
-      allDisciplines: ["Mobile", "Frontend", "Backend"],
-      priorityOrder: ["Mobile", "Frontend", "Backend"],
-      rotationOrder: ["Mobile", "Frontend", "Backend"],
+      allDisciplines: [],
+      priorityOrder: [],
+      rotationOrder: [],
       earlyMorningDiscipline: null,
     };
   }
 
-  // Sunday: WordPress only
+  // Sunday: No Software Engineering sessions
   if (isSunday) {
     return {
-      primary: "WordPress",
+      primary: null,
       secondary: null,
       tertiary: null,
       quaternary: null,
-      allDisciplines: ["WordPress"],
-      priorityOrder: ["WordPress"],
-      rotationOrder: ["WordPress"],
-      earlyMorningDiscipline: "WordPress",
+      allDisciplines: [],
+      priorityOrder: [],
+      rotationOrder: [],
+      earlyMorningDiscipline: null,
     };
   }
 
-  // Monday-Wednesday: Mobile only
+  // Monday-Wednesday: Mobile only (9:30 PM - 11:00 PM)
   if (isMondayToWednesday) {
     return {
       primary: "Mobile",
@@ -10243,25 +10253,35 @@ function getDisciplineRotation(weekNum, dayIndex) {
       allDisciplines: ["Mobile"],
       priorityOrder: ["Mobile"],
       rotationOrder: ["Mobile"],
-      earlyMorningDiscipline: "Mobile",
+      earlyMorningDiscipline: null,
     };
   }
 
-  // Thursday-Friday: Frontend (and Backend on Friday evening)
-  if (isThursdayToFriday) {
-    const disciplines = isFriday 
-      ? ["Frontend", "Backend"]
-      : ["Frontend"];
-    
+  // Thursday: Frontend only (9:30 PM - 11:30 PM)
+  if (isThursday) {
     return {
       primary: "Frontend",
-      secondary: isFriday ? "Backend" : null,
+      secondary: null,
       tertiary: null,
       quaternary: null,
-      allDisciplines: disciplines,
-      priorityOrder: disciplines,
-      rotationOrder: disciplines,
-      earlyMorningDiscipline: "Frontend",
+      allDisciplines: ["Frontend"],
+      priorityOrder: ["Frontend"],
+      rotationOrder: ["Frontend"],
+      earlyMorningDiscipline: null,
+    };
+  }
+
+  // Friday: Frontend only (8:30 PM - 10:00 PM)
+  if (isFriday) {
+    return {
+      primary: "Frontend",
+      secondary: null,
+      tertiary: null,
+      quaternary: null,
+      allDisciplines: ["Frontend"],
+      priorityOrder: ["Frontend"],
+      rotationOrder: ["Frontend"],
+      earlyMorningDiscipline: null,
     };
   }
 
@@ -10274,7 +10294,7 @@ function getDisciplineRotation(weekNum, dayIndex) {
     allDisciplines: ["Mobile"],
     priorityOrder: ["Mobile"],
     rotationOrder: ["Mobile"],
-    earlyMorningDiscipline: "Mobile",
+    earlyMorningDiscipline: null,
   };
 }
 

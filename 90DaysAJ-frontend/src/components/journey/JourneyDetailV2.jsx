@@ -33,6 +33,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getCurrentDayNumber, getCurrentPhaseStatus, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow } from '../../utils/dates';
 import { getCurrentPhase, getPhaseDayNumber, getPhaseDescription, formatPhaseDayNumber, isDisciplineAvailable } from '../../utils/phases';
 import { calculateSessionBasedProgress, isDayFullyComplete, markSessionComplete, isSessionComplete, cleanInvalidProgress } from '../../utils/progressTracking';
+import { hasScheduledActivities, getNoActivityMessage } from '../../utils/daySchedule';
 import { SessionCompletionButton } from '../SessionCompletionButton';
 import { getQuoteOfTheDay } from '../../data/quotes';
 import { cn } from '../../lib/utils';
@@ -237,14 +238,18 @@ export function JourneyDetailV2({
       
       // Calculate which week contains the current day
       // Day 1 = Week 1, Days 1-7 = Week 1, Days 8-14 = Week 2, etc.
-      const currentWeekNumber = effectiveDay ? Math.ceil((effectiveDay - 1) / 7) + 1 : 1;
+      // Formula: Math.ceil((day - 1) / 7) + 1 ensures Day 1 = Week 1
+      const currentWeekNumber = effectiveDay > 0 ? Math.ceil((effectiveDay - 1) / 7) + 1 : 1;
+      
+      // Ensure week number is within valid range
+      const validWeekNumber = Math.max(1, Math.min(currentWeekNumber, weeks.length));
       
       // Only update if the selected day/week doesn't match the current day
       // This prevents infinite loops by checking if we need to update
-      if (selectedDay !== effectiveDay || selectedWeek !== currentWeekNumber) {
+      if (selectedDay !== effectiveDay || selectedWeek !== validWeekNumber) {
         // Update week first if needed
-        if (selectedWeek !== currentWeekNumber && currentWeekNumber >= 1 && currentWeekNumber <= weeks.length) {
-          onWeekChange(currentWeekNumber);
+        if (selectedWeek !== validWeekNumber && validWeekNumber >= 1 && validWeekNumber <= weeks.length) {
+          onWeekChange(validWeekNumber);
         }
         // Then update day (skip Day 0, always use Day 1 or higher)
         if (selectedDay !== effectiveDay) {
@@ -2037,8 +2042,32 @@ export function JourneyDetailV2({
                             </Card>
                           )}
 
-                          {/* Fallback: Show dailyLearning if no schedule content */}
-                          {disciplineContent.deepLearning.length === 0 && disciplineContent.implementation.length === 0 && currentDay.dailyLearning && (
+                          {/* Show informative message if no scheduled activities */}
+                          {disciplineContent.deepLearning.length === 0 && disciplineContent.implementation.length === 0 && !hasScheduledActivities(currentDay, journeyId) && (
+                            <Card className="p-6 border border-border/50 bg-muted/30">
+                              <div className="flex items-start gap-3">
+                                <Info className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
+                                <div>
+                                  {(() => {
+                                    const message = getNoActivityMessage(currentDay, weeks, journeyId);
+                                    return (
+                                      <>
+                                        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+                                          {message.title}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                          {message.description}
+                                        </p>
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            </Card>
+                          )}
+
+                          {/* Fallback: Show dailyLearning if no schedule content but has learning content */}
+                          {disciplineContent.deepLearning.length === 0 && disciplineContent.implementation.length === 0 && hasScheduledActivities(currentDay, journeyId) && currentDay.dailyLearning && (
                             <>
                               {typeof currentDay.dailyLearning === 'object' && (
                                 <>
@@ -2140,92 +2169,119 @@ export function JourneyDetailV2({
                             </>
                           )}
                         </>
-                      ) : journeyId === 'body-transformation' && currentDay.focus ? (
+                      ) : journeyId === 'body-transformation' ? (
                         <>
-                          {currentDay.dailyLearning && (
-                            <Card className="p-4 sm:p-6 border border-border/50">
-                              <div className="flex items-center gap-2 mb-4">
-                                <Target className="w-5 h-5 text-primary" />
-                                <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.dailyLearning.title}</h3>
-                              </div>
-                              {currentDay.dailyLearning.description && (
-                                <p className="text-sm text-muted-foreground mb-4">{currentDay.dailyLearning.description}</p>
+                          {hasScheduledActivities(currentDay, journeyId) && currentDay.focus ? (
+                            <>
+                              {currentDay.dailyLearning && (
+                                <Card className="p-4 sm:p-6 border border-border/50">
+                                  <div className="flex items-center gap-2 mb-4">
+                                    <Target className="w-5 h-5 text-primary" />
+                                    <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.dailyLearning.title}</h3>
+                                  </div>
+                                  {currentDay.dailyLearning.description && (
+                                    <p className="text-sm text-muted-foreground mb-4">{currentDay.dailyLearning.description}</p>
+                                  )}
+                                  {currentDay.dailyLearning.topics && Array.isArray(currentDay.dailyLearning.topics) && currentDay.dailyLearning.topics.length > 0 && (
+                                    <ul className="space-y-2">
+                                      {currentDay.dailyLearning.topics.map((topic, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                          <span className="text-primary mt-1">•</span>
+                                          <span>{topic}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </Card>
                               )}
-                              {currentDay.dailyLearning.topics && Array.isArray(currentDay.dailyLearning.topics) && currentDay.dailyLearning.topics.length > 0 && (
-                                <ul className="space-y-2">
-                                  {currentDay.dailyLearning.topics.map((topic, idx) => (
-                                    <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                                      <span className="text-primary mt-1">•</span>
-                                      <span>{topic}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </Card>
-                          )}
-                          <Card className="p-4 sm:p-6 border border-border/50">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-2xl">💪</span>
-                              <h4 className="text-sm font-semibold text-foreground">Today's Focus: {currentDay.focus}</h4>
-                            </div>
-                            {currentDay.workout && (
-                              <div className="mb-2">
-                                <p className="text-sm text-foreground mb-2">
-                                  Workout: {typeof currentDay.workout === 'object' 
-                                    ? currentDay.workout.name || 'Complete workout'
-                                    : currentDay.workout}
-                                </p>
-                                {/* Workout Completion Button */}
-                                {currentDay?.dayNumber !== undefined && (
-                                  <div className="mt-3 pt-3 border-t border-border/50">
-                                    <SessionCompletionButton
-                                      journeyId={journeyId}
-                                      dayNumber={currentDay.dayNumber}
-                                      sessionType="daily"
-                                      sessionIndex={0}
-                                      onComplete={() => {
-                                        // Refresh UI after completion
-                                        window.dispatchEvent(new CustomEvent('session-completed', {
-                                          detail: { journeyId, dayNumber: currentDay.dayNumber }
-                                        }));
-                                      }}
-                                    />
+                              <Card className="p-4 sm:p-6 border border-border/50">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-2xl">💪</span>
+                                  <h4 className="text-sm font-semibold text-foreground">Today's Focus: {currentDay.focus}</h4>
+                                </div>
+                                {currentDay.workout && (
+                                  <div className="mb-2">
+                                    <p className="text-sm text-foreground mb-2">
+                                      Workout: {typeof currentDay.workout === 'object' 
+                                        ? currentDay.workout.name || 'Complete workout'
+                                        : currentDay.workout}
+                                    </p>
+                                    {/* Workout Completion Button */}
+                                    {currentDay?.dayNumber !== undefined && (
+                                      <div className="mt-3 pt-3 border-t border-border/50">
+                                        <SessionCompletionButton
+                                          journeyId={journeyId}
+                                          dayNumber={currentDay.dayNumber}
+                                          sessionType="daily"
+                                          sessionIndex={0}
+                                          onComplete={() => {
+                                            // Refresh UI after completion
+                                            window.dispatchEvent(new CustomEvent('session-completed', {
+                                              detail: { journeyId, dayNumber: currentDay.dayNumber }
+                                            }));
+                                          }}
+                                        />
+                                      </div>
+                                    )}
                                   </div>
                                 )}
+                                {currentDay.nutrition && (
+                                  <p className="text-sm text-foreground mb-2">Nutrition: {currentDay.nutrition}</p>
+                                )}
+                                {currentDay.mindset && (
+                                  <p className="text-sm text-muted-foreground">Mindset: {currentDay.mindset}</p>
+                                )}
+                              </Card>
+                            </>
+                          ) : (
+                            <Card className="p-6 border border-border/50 bg-muted/30">
+                              <div className="flex items-start gap-3">
+                                <Info className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
+                                <div>
+                                  {(() => {
+                                    const message = getNoActivityMessage(currentDay, weeks, journeyId);
+                                    return (
+                                      <>
+                                        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+                                          {message.title}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                          {message.description}
+                                        </p>
+                                      </>
+                                    );
+                                  })()}
+                                </div>
                               </div>
-                            )}
-                            {currentDay.nutrition && (
-                              <p className="text-sm text-foreground mb-2">Nutrition: {currentDay.nutrition}</p>
-                            )}
-                            {currentDay.mindset && (
-                              <p className="text-sm text-muted-foreground">Mindset: {currentDay.mindset}</p>
-                            )}
-                          </Card>
-                        </>
-                      ) : journeyId === 'reading' && currentDay.readingSessions ? (
-                        <>
-                          {currentDay.dailyLearning && (
-                            <Card className="p-4 sm:p-6 border border-border/50">
-                              <div className="flex items-center gap-2 mb-4">
-                                <BookOpen className="w-5 h-5 text-primary" />
-                                <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.dailyLearning.title}</h3>
-                              </div>
-                              {currentDay.dailyLearning.description && (
-                                <p className="text-sm text-muted-foreground mb-4">{currentDay.dailyLearning.description}</p>
-                              )}
-                              {currentDay.dailyLearning.topics && Array.isArray(currentDay.dailyLearning.topics) && currentDay.dailyLearning.topics.length > 0 && (
-                                <ul className="space-y-2">
-                                  {currentDay.dailyLearning.topics.map((topic, idx) => (
-                                    <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                                      <span className="text-primary mt-1">•</span>
-                                      <span>{topic}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
                             </Card>
                           )}
-                          {currentDay.readingSessions && Array.isArray(currentDay.readingSessions) && currentDay.readingSessions.length > 0 && (
+                        </>
+                      ) : journeyId === 'reading' ? (
+                        <>
+                          {hasScheduledActivities(currentDay, journeyId) && currentDay.readingSessions ? (
+                            <>
+                              {currentDay.dailyLearning && (
+                                <Card className="p-4 sm:p-6 border border-border/50">
+                                  <div className="flex items-center gap-2 mb-4">
+                                    <BookOpen className="w-5 h-5 text-primary" />
+                                    <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.dailyLearning.title}</h3>
+                                  </div>
+                                  {currentDay.dailyLearning.description && (
+                                    <p className="text-sm text-muted-foreground mb-4">{currentDay.dailyLearning.description}</p>
+                                  )}
+                                  {currentDay.dailyLearning.topics && Array.isArray(currentDay.dailyLearning.topics) && currentDay.dailyLearning.topics.length > 0 && (
+                                    <ul className="space-y-2">
+                                      {currentDay.dailyLearning.topics.map((topic, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                                          <span className="text-primary mt-1">•</span>
+                                          <span>{topic}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </Card>
+                              )}
+                              {currentDay.readingSessions && Array.isArray(currentDay.readingSessions) && currentDay.readingSessions.length > 0 && (
                             <Card className="p-4 sm:p-6 border border-border/50">
                               <h4 className="text-sm font-semibold text-foreground mb-3">Today's Reading Sessions:</h4>
                               <div className="space-y-3">
@@ -2272,32 +2328,82 @@ export function JourneyDetailV2({
                               </div>
                             </Card>
                           )}
+                            </>
+                          ) : (
+                            <Card className="p-6 border border-border/50 bg-muted/30">
+                              <div className="flex items-start gap-3">
+                                <Info className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
+                                <div>
+                                  {(() => {
+                                    const message = getNoActivityMessage(currentDay, weeks, journeyId);
+                                    return (
+                                      <>
+                                        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+                                          {message.title}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                          {message.description}
+                                        </p>
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            </Card>
+                          )}
                         </>
-                      ) : journeyId === 'writers' && currentDay.learning ? (
+                      ) : journeyId === 'writers' ? (
                         <>
-                          <Card className="p-4 sm:p-6 border border-border/50">
-                            <div className="flex items-center gap-2 mb-4">
-                              <BookOpen className="w-5 h-5 text-primary" />
-                              <h3 className="text-base sm:text-lg font-semibold text-foreground">Learning: {currentDay.learning}</h3>
-                            </div>
-                            {currentDay.theme && (
-                              <p className="text-sm text-muted-foreground mb-4">Theme: {currentDay.theme}</p>
-                            )}
-                          </Card>
+                          {hasScheduledActivities(currentDay, journeyId) && currentDay.learning ? (
+                            <>
+                              <Card className="p-4 sm:p-6 border border-border/50">
+                                <div className="flex items-center gap-2 mb-4">
+                                  <BookOpen className="w-5 h-5 text-primary" />
+                                  <h3 className="text-base sm:text-lg font-semibold text-foreground">Learning: {currentDay.learning}</h3>
+                                </div>
+                                {currentDay.theme && (
+                                  <p className="text-sm text-muted-foreground mb-4">Theme: {currentDay.theme}</p>
+                                )}
+                              </Card>
+                            </>
+                          ) : (
+                            <Card className="p-6 border border-border/50 bg-muted/30">
+                              <div className="flex items-start gap-3">
+                                <Info className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
+                                <div>
+                                  {(() => {
+                                    const message = getNoActivityMessage(currentDay, weeks, journeyId);
+                                    return (
+                                      <>
+                                        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+                                          {message.title}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                          {message.description}
+                                        </p>
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            </Card>
+                          )}
                         </>
-                      ) : journeyId === 'dual-brand' && currentDay.focus ? (
+                      ) : journeyId === 'dual-brand' ? (
                         <>
-                          <Card className="p-4 sm:p-6 border border-border/50">
-                            <div className="flex items-center gap-2 mb-4">
-                              <Target className="w-5 h-5 text-primary" />
-                              <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.focus}</h3>
-                            </div>
-                            {currentDay.theme && (
-                              <p className="text-sm text-muted-foreground mb-4">Theme: {currentDay.theme}</p>
-                            )}
-                          </Card>
-                          
-                          {currentDay.personalBrandTasks && (
+                          {hasScheduledActivities(currentDay, journeyId) && currentDay.focus ? (
+                            <>
+                              <Card className="p-4 sm:p-6 border border-border/50">
+                                <div className="flex items-center gap-2 mb-4">
+                                  <Target className="w-5 h-5 text-primary" />
+                                  <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.focus}</h3>
+                                </div>
+                                {currentDay.theme && (
+                                  <p className="text-sm text-muted-foreground mb-4">Theme: {currentDay.theme}</p>
+                                )}
+                              </Card>
+                              
+                              {currentDay.personalBrandTasks && (
                             <Card className="p-4 sm:p-6 border border-border/50">
                               <div className="flex items-center gap-2 mb-4">
                                 <span className="text-2xl">👤</span>
@@ -2352,7 +2458,30 @@ export function JourneyDetailV2({
                             </Card>
                           )}
                         </>
-                      ) : currentDay.dailyLearning ? (
+                      ) : (
+                        <Card className="p-6 border border-border/50 bg-muted/30">
+                          <div className="flex items-start gap-3">
+                            <Info className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
+                            <div>
+                              {(() => {
+                                const message = getNoActivityMessage(currentDay, weeks, journeyId);
+                                return (
+                                  <>
+                                    <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+                                      {message.title}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      {message.description}
+                                    </p>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        </Card>
+                      )}
+                    </>
+                  ) : currentDay.dailyLearning ? (
                         <>
                           {typeof currentDay.dailyLearning === 'object' && (
                             <>

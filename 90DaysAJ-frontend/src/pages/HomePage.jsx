@@ -530,10 +530,15 @@ export function HomePage({ userProgress }) {
           </motion.div>
         )}
         {(currentPhase === "phase1" || currentPhase === "phase2") && todayTasks.length === 0 && (
-          <Card className="p-6 text-center">
-            <p className="text-muted-foreground">
-              No tasks scheduled for today. Enjoy your rest day! 🧘
-            </p>
+          <Card className="p-6 text-center bg-muted/30">
+            <div className="space-y-2">
+              <p className="text-foreground font-medium">
+                No session scheduled for today.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Take this time to rest and recharge. Your next session will be available soon.
+              </p>
+            </div>
           </Card>
         )}
         {currentPhase === "preparation" && (

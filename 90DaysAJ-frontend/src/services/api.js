@@ -12,33 +12,47 @@ const getApiBaseUrl = () => {
     return import.meta.env.VITE_API_BASE_URL;
   }
   
-  // 2. Detect production environment
-  // Check if we're in a production build OR if hostname is not localhost
-  const isProduction = import.meta.env.PROD || 
-                       (typeof window !== 'undefined' && 
-                        window.location.hostname !== 'localhost' && 
-                        window.location.hostname !== '127.0.0.1' &&
-                        !window.location.hostname.includes('localhost') &&
-                        window.location.protocol === 'https:');
+  // 2. Detect production environment more reliably
+  // Production = built with Vite PROD mode OR deployed on Vercel/other hosting
+  const isVercelDeployment = typeof window !== 'undefined' && 
+                            (window.location.hostname.includes('vercel.app') ||
+                             window.location.hostname.includes('vercel.com'));
+  
+  const isProductionBuild = import.meta.env.PROD;
+  
+  // Only treat as production if:
+  // - Built in production mode AND
+  // - (Deployed on Vercel OR using HTTPS with non-localhost hostname)
+  const isProduction = isProductionBuild && 
+                       (isVercelDeployment || 
+                        (typeof window !== 'undefined' && 
+                         window.location.protocol === 'https:' &&
+                         window.location.hostname !== 'localhost' && 
+                         window.location.hostname !== '127.0.0.1' &&
+                         !window.location.hostname.match(/^192\.168\./))); // Exclude local network IPs
   
   if (isProduction) {
-    // In production, try to detect backend URL from environment or use a default
-    // This should be set via Vercel environment variables
-    const prodUrl = import.meta.env.VITE_PROD_API_URL;
-    if (prodUrl) {
-      return prodUrl;
-    }
-    
-    // Fallback: construct from current hostname (if backend is on same domain)
-    // Or use a default production URL
-    console.warn('⚠️ VITE_API_BASE_URL not set in production. Please configure it in Vercel environment variables.');
-    console.warn('   Set VITE_API_BASE_URL to your production backend URL (e.g., https://your-backend-url.com/v1)');
+    // In production, VITE_API_BASE_URL MUST be set
+    console.error('⚠️ PRODUCTION WARNING: API URL not configured!');
+    console.error('   Current API URL: http://localhost:5001/v1');
+    console.error('   Set VITE_API_BASE_URL in Vercel environment variables');
+    console.error('   Example: https://your-backend.railway.app/v1');
     
     // Return a placeholder that will fail gracefully with helpful error
     return 'PRODUCTION_API_URL_NOT_CONFIGURED';
   }
   
-  // 3. Development fallback
+  // 3. Development fallback (local network access)
+  // If accessed from another device on local network, try to use the host machine's IP
+  if (typeof window !== 'undefined' && 
+      window.location.hostname !== 'localhost' && 
+      window.location.hostname !== '127.0.0.1' &&
+      window.location.hostname.match(/^192\.168\./)) {
+    // On local network - use the same hostname but port 5001
+    return `http://${window.location.hostname}:5001/v1`;
+  }
+  
+  // 4. Default localhost for development
   return 'http://localhost:5001/v1';
 };
 

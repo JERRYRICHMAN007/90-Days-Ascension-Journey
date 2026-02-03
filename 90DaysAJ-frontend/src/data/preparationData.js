@@ -25,8 +25,8 @@ export const journeyPreparationData = {
         title: 'Schedule & Time Blocks',
         icon: '⏰',
         tasks: [
-          'Block 5:30-6:00 AM (Weekdays & Sunday) in your calendar',
-          'Set morning alarms for consistent wake-up time (Weekdays & Sunday)',
+          'Workouts: Monday to Friday, 5:00 AM - 5:30 AM',
+          'Set morning alarms for consistent wake-up time',
           'Plan your pre-workout routine (wake up, hydrate, warm-up)',
           'Schedule post-workout recovery time',
           'Plan meal prep schedule for nutrition goals'
@@ -105,7 +105,9 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Block 5:00-6:00 PM (Weekdays & Saturday) in your calendar',
+          'Dual Branding: Monday to Friday, 6:30 AM - 7:30 AM',
+          'Dual Branding: Sunday, 3:00 AM - 4:00 AM (Planning & Automation)',
+          'Block all time slots in your calendar accordingly',
           'Plan content creation workflow',
           'Set up review and approval process',
           'Schedule brand consistency checks'
@@ -162,11 +164,9 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Block 6:00-6:30 AM (Mon-Fri) for Bible Reading',
-          'Block 7:30-8:00 AM (Saturday) for Bible Reading',
-          'Block 6:00-6:30 AM (Sunday) for Bible Reading',
-          'Block 5:00-6:00 PM (Saturday) for E-Book Reading',
-          'Block 7:00-8:00 PM (Sunday) for Physical Book Reading',
+          'Bible Reading: Monday to Friday, 6:00-6:30 AM; Sunday, 6:00-6:30 AM; Saturday, 7:30-8:00 AM',
+          'E-Book Reading: Monday to Wednesday, 5:00-6:00 PM; Saturday, 5:00-6:00 PM',
+          'Physical Book Reading: Thursday and Friday, 5:00-6:00 PM; Sunday, 3:00-4:00 PM',
           'Set up morning alarms for consistent Bible reading time',
           'Plan your reading routine and reflection time'
         ]
@@ -222,7 +222,9 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Block 4:15-5:00 PM (Weekdays) in your calendar',
+          'Writing: Monday to Friday, 4:00 PM - 5:00 PM',
+          'Writing: Saturday, 4:00 PM - 5:00 PM',
+          'Block all time slots in your calendar accordingly',
           'Plan writing workflow and process',
           'Set up writing goals and milestones',
           'Plan review and editing time'
@@ -284,10 +286,8 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Mobile Engineering: Monday 4:00-5:30 AM, Tuesday-Friday 2:00-4:00 AM, Saturday 1:30-3:00 PM (Weekly revision)',
-          'Frontend Engineering: Monday-Friday 2:45-4:15 PM, Saturday 3:00-4:00 PM',
-          'Backend Engineering: Monday-Friday 8:00-9:30 PM, Saturday 4:00-5:00 PM',
-          'Systems Engineering: Sunday 3:00-5:30 AM',
+          'Mobile Engineering: Monday to Wednesday, 9:30 PM - 11:00 PM',
+          'Frontend Engineering: Thursday, 9:30 PM - 11:30 PM; Friday, 8:30 PM - 10:00 PM',
           'Block all time slots in your calendar accordingly',
           'Plan discipline rotation schedule and code review time'
         ]
