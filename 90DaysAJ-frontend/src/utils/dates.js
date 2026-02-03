@@ -2,8 +2,8 @@
  * Date utilities for the 90 Days Ascension Journey
  * 
  * Updated Timeline:
- * - Day 0 = Sunday, February 1, 2026 - Preparation Day
- * - Day 1 = Monday, February 2, 2026 - First day of journey
+ * - Day 0 = Saturday, February 7, 2026 - Preparation Day
+ * - Day 1 = Sunday, February 8, 2026 - First day of journey (Week 1 starts)
  * - Phase 1 (Days 1-90): Mobile Engineering + Frontend Engineering only
  * - Phase 2 (Days 91-180): Backend Engineering + WordPress
  * - Total Journey: 180 days (90 days per phase)
@@ -11,11 +11,15 @@
 
 // Use local date constructors to avoid timezone issues
 // Month is 0-indexed: 0 = January, 1 = February, etc.
+// All journeys start from February 8, 2026
+const day0Date = new Date(2026, 1, 7); // Day 0 - Saturday, February 7, 2026 - Preparation Day
+const day1Date = new Date(2026, 1, 8); // Day 1 - Sunday, February 8, 2026 - First day of journey
+
 export const JOURNEY_CONSTANTS = {
-  DAY_0_START: new Date(2026, 1, 1), // Day 0 - Sunday, February 1, 2026
-  ASCENSION_START: new Date(2026, 1, 2), // Day 1 - Monday, February 2, 2026
-  PHASE_1_END: new Date(2026, 4, 2), // Day 90 - May 2, 2026
-  PHASE_2_END: new Date(2026, 6, 31), // Day 180 - July 31, 2026
+  DAY_0_START: day0Date, // Day 0 - Saturday, February 7, 2026 - Preparation Day
+  ASCENSION_START: day1Date, // Day 1 - Sunday, February 8, 2026 - First day of journey
+  PHASE_1_END: new Date(2026, day1Date.getMonth(), day1Date.getDate() + 89), // Day 90
+  PHASE_2_END: new Date(2026, day1Date.getMonth(), day1Date.getDate() + 179), // Day 180
   TOTAL_DAYS: 180, // 90 days per phase, 2 phases total
   PHASE_1_DAYS: 90,
   PHASE_2_DAYS: 90,
@@ -57,8 +61,8 @@ export function getCurrentPhaseStatus() {
 
 /**
  * Calculate the current day number (0-180)
- * Day 0 = Sunday, February 1, 2026 (Preparation)
- * Day 1 = Monday, February 2, 2026
+ * Day 0 = Saturday, February 7, 2026 (Preparation)
+ * Day 1 = Sunday, February 8, 2026
  * Days 1-90 = Phase 1, Days 91-180 = Phase 2
  * @returns {number | null}
  */
@@ -105,8 +109,8 @@ export function getCurrentDayNumber() {
 
 /**
  * Get the date for a specific day number (0-180)
- * Day 0 = Sunday, February 1, 2026 (Preparation)
- * Day 1 = Monday, February 2, 2026
+ * Day 0 = Saturday, February 7, 2026 (Preparation)
+ * Day 1 = Sunday, February 8, 2026
  * @param {number} dayNumber - Day number (0-180)
  * @returns {Date | null}
  */

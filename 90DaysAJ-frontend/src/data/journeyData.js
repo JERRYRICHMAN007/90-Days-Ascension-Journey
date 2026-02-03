@@ -49,14 +49,17 @@ export const journeys = [
   },
 ];
 
-// OFFICIAL START DATE: Journey begins February 1, 2026
+// OFFICIAL START DATE: All journeys start from February 8, 2026
 // All weeks start on Sunday
-// Week 1 starts on Sunday, February 2, 2026 (the Sunday that includes/follows Feb 1)
-// Day 0 = February 1, 2026 (Saturday) - Preparation/Setup Day (before Week 1)
-// Day 1 = February 2, 2026 (Sunday) - First day of journey (Week 1, Day 0)
+// Week 1 starts on Sunday, February 8, 2026
+// Day 0 = February 7, 2026 (Saturday) - Preparation/Setup Day (before Week 1)
+// Day 1 = February 8, 2026 (Sunday) - First day of journey (Week 1, Day 1)
 // Phase 1 (Days 1-90): Mobile Engineering + Frontend Engineering only
 // Phase 2 (Days 91-180): Backend Engineering + WordPress
-// All journeys: Weeks always start on Sunday, beginning from Feb 2, 2026
+// All journeys: Weeks always start on Sunday, beginning from February 8, 2026
+
+// All journeys start from February 8, 2026
+const JOURNEY_START_DATE = "2026-02-08";
 
 // Helper function to generate all weeks
 // Starts from Week 1 (no Week 0)
@@ -404,7 +407,7 @@ function getDualBrandReflection(weekNum, dayIndex) {
 }
 
 // Body Transformation Journey - Complete 13 weeks
-export const bodyTransformationWeeks = generateWeeks("2026-02-01", 13).map(
+export const bodyTransformationWeeks = generateWeeks(JOURNEY_START_DATE, 13).map(
   (week, idx) => {
     const days = [];
     const workoutTypes = [
@@ -418,14 +421,18 @@ export const bodyTransformationWeeks = generateWeeks("2026-02-01", 13).map(
     ];
 
     for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(week.startDate);
-      dayDate.setDate(new Date(week.startDate).getDate() + i);
+      // Parse startDate string properly to avoid timezone issues
+      // week.startDate is in format "YYYY-MM-DD"
+      const [year, month, day] = week.startDate.split('-').map(Number);
+      const dayDate = new Date(year, month - 1, day + i); // month is 0-indexed in JavaScript
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      // Day 0 = Sunday, February 1, 2026 (Week 0, i=0)
-      // Day 1 = Monday, February 2, 2026 (Week 0, i=1)
-      // Calculate: idx * 7 + i (Week 0 Sunday = 0*7+0 = 0, Week 0 Monday = 0*7+1 = 1, etc.)
-      const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 180
+      // Day 0 = Saturday, February 7, 2026 (Preparation, before Week 1)
+      // Day 1 = Sunday, February 8, 2026 (Week 1, i=0) - First day of journey
+      // Calculate: Week 1 (idx=0) starts at Day 1, so dayNumber = idx * 7 + i + 1
+      // Week 1: i=0 -> Day 1, i=1 -> Day 2, ..., i=6 -> Day 7
+      // Week 2: i=0 -> Day 8, i=1 -> Day 9, ..., i=6 -> Day 14
+      const dayNumber = idx * 7 + i + 1; // Day 1, 2, 3, ... up to 180 (Day 0 is separate)
 
       // Get actual day name from the date
       const dayNames = [
@@ -444,7 +451,7 @@ export const bodyTransformationWeeks = generateWeeks("2026-02-01", 13).map(
       const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
       const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 1 starts from Day 1 (Monday, February 2, 2026) - actual content execution begins
+      // Week 1 starts from Day 1 (Sunday, February 8, 2026) - actual content execution begins
       // Content week numbering: Day 1 = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
       // Week numbering: idx 0 = Week 1, idx 1 = Week 2, etc.
       const contentWeekNum = idx + 1; // Week 1, 2, 3, etc.
@@ -676,18 +683,18 @@ function getWorkoutResources(weekNum, dayIndex) {
 }
 
 // Reading Journey - Complete 13 weeks
-export const readingWeeks = generateWeeks("2026-02-01", 13).map((week, idx) => {
+export const readingWeeks = generateWeeks(JOURNEY_START_DATE, 13).map((week, idx) => {
   const days = [];
 
   for (let i = 0; i < 7; i++) {
-    const dayDate = new Date(week.startDate);
-    dayDate.setDate(new Date(week.startDate).getDate() + i);
-
+    // Parse startDate string properly to avoid timezone issues
+    const [year, month, day] = week.startDate.split('-').map(Number);
+    const dayDate = new Date(year, month - 1, day + i); // month is 0-indexed in JavaScript
     const dayDateString = dayDate.toISOString().split("T")[0];
-    // Day 0 = Sunday, February 1, 2026 (Week 1, i=0)
-    // Day 1 = Monday, February 2, 2026 (Week 1, i=1)
-    // Calculate: idx * 7 + i (Week 1 Sunday = 0*7+0 = 0, Week 1 Monday = 0*7+1 = 1, etc.)
-    const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 90
+    // Day 0 = Saturday, February 7, 2026 (Preparation, before Week 1)
+    // Day 1 = Sunday, February 8, 2026 (Week 1, i=0) - First day of journey
+    // Calculate: Week 1 (idx=0) starts at Day 1, so dayNumber = idx * 7 + i + 1
+    const dayNumber = idx * 7 + i + 1; // Day 1, 2, 3, ... up to 90 (Day 0 is separate)
 
     // Get actual day name from the date
     const dayNames = [
@@ -1079,19 +1086,23 @@ function getReadingResources(weekNum, dayOfWeek) {
 }
 
 // Dual Brand Journey - Complete 13 weeks
-export const dualBrandWeeks = generateWeeks("2026-02-01", 13).map(
+export const dualBrandWeeks = generateWeeks(JOURNEY_START_DATE, 13).map(
   (week, idx) => {
     const days = [];
 
     for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(week.startDate);
-      dayDate.setDate(new Date(week.startDate).getDate() + i);
+      // Parse startDate string properly to avoid timezone issues
+      // week.startDate is in format "YYYY-MM-DD"
+      const [year, month, day] = week.startDate.split('-').map(Number);
+      const dayDate = new Date(year, month - 1, day + i); // month is 0-indexed in JavaScript
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      // Day 0 = Sunday, February 1, 2026 (Week 0, i=0)
-      // Day 1 = Monday, February 2, 2026 (Week 0, i=1)
-      // Calculate: idx * 7 + i (Week 0 Sunday = 0*7+0 = 0, Week 0 Monday = 0*7+1 = 1, etc.)
-      const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 180
+      // Day 0 = Saturday, February 7, 2026 (Preparation, before Week 1)
+      // Day 1 = Sunday, February 8, 2026 (Week 1, i=0) - First day of journey
+      // Calculate: Week 1 (idx=0) starts at Day 1, so dayNumber = idx * 7 + i + 1
+      // Week 1: i=0 -> Day 1, i=1 -> Day 2, ..., i=6 -> Day 7
+      // Week 2: i=0 -> Day 8, i=1 -> Day 9, ..., i=6 -> Day 14
+      const dayNumber = idx * 7 + i + 1; // Day 1, 2, 3, ... up to 180 (Day 0 is separate)
 
       // Get actual day name from the date
       const dayNames = [
@@ -1110,7 +1121,7 @@ export const dualBrandWeeks = generateWeeks("2026-02-01", 13).map(
       const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
       const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 1 starts from Day 1 (Monday, February 2, 2026) - actual content execution begins
+      // Week 1 starts from Day 1 (Sunday, February 8, 2026) - actual content execution begins
       // Content week numbering: Day 1 = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
       // Week numbering: idx 0 = Week 1, idx 1 = Week 2, etc.
       const contentWeekNum = idx + 1; // Week 1, 2, 3, etc.
@@ -3368,18 +3379,18 @@ function getDualBrandProject(weekNum, dayIndex) {
 }
 
 // Writer's Journey - Complete 12 weeks (84 days, 7 days per week)
-export const writersWeeks = generateWeeks("2026-02-01", 12).map((week, idx) => {
+export const writersWeeks = generateWeeks(JOURNEY_START_DATE, 12).map((week, idx) => {
   const days = [];
 
   for (let i = 0; i < 7; i++) {
-    const dayDate = new Date(week.startDate);
-    dayDate.setDate(new Date(week.startDate).getDate() + i);
-
+    // Parse startDate string properly to avoid timezone issues
+    const [year, month, day] = week.startDate.split('-').map(Number);
+    const dayDate = new Date(year, month - 1, day + i); // month is 0-indexed in JavaScript
     const dayDateString = dayDate.toISOString().split("T")[0];
-    // Day 0 = Sunday, February 1, 2026 (Week 1, i=0)
-    // Day 1 = Monday, February 2, 2026 (Week 1, i=1)
-    // Calculate: idx * 7 + i (Week 1 Sunday = 0*7+0 = 0, Week 1 Monday = 0*7+1 = 1, etc.)
-    const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 84
+    // Day 0 = Saturday, February 7, 2026 (Preparation, before Week 1)
+    // Day 1 = Sunday, February 8, 2026 (Week 1, i=0) - First day of journey
+    // Calculate: Week 1 (idx=0) starts at Day 1, so dayNumber = idx * 7 + i + 1
+    const dayNumber = idx * 7 + i + 1; // Day 1, 2, 3, ... up to 84 (Day 0 is separate)
 
     // Get actual day name from the date
     const dayNames = [
@@ -5184,20 +5195,24 @@ function getProjectComponentForDay(dayNumber, discipline) {
 // Software Engineering Journey - Full 13-Week Journey
 // January 19, 2026 - April 18, 2026 (90 days)
 // Official Ascension Phase - Day 1 = January 19, 2026 (Monday)
-export const softwareEngineeringWeeks = generateWeeks("2026-02-01", 26).map(
+export const softwareEngineeringWeeks = generateWeeks(JOURNEY_START_DATE, 26).map(
   (week, idx) => {
     const days = [];
     const weekNum = idx + 1;
 
     for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(week.startDate);
-      dayDate.setDate(new Date(week.startDate).getDate() + i);
+      // Parse startDate string properly to avoid timezone issues
+      // week.startDate is in format "YYYY-MM-DD"
+      const [year, month, day] = week.startDate.split('-').map(Number);
+      const dayDate = new Date(year, month - 1, day + i); // month is 0-indexed in JavaScript
 
       const dayDateString = dayDate.toISOString().split("T")[0];
-      // Day 0 = Sunday, February 1, 2026 (Week 0, i=0)
-      // Day 1 = Monday, February 2, 2026 (Week 0, i=1)
-      // Calculate: idx * 7 + i (Week 0 Sunday = 0*7+0 = 0, Week 0 Monday = 0*7+1 = 1, etc.)
-      const dayNumber = idx * 7 + i; // Day 0, 1, 2, ... up to 180
+      // Day 0 = Saturday, February 7, 2026 (Preparation, before Week 1)
+      // Day 1 = Sunday, February 8, 2026 (Week 1, i=0) - First day of journey
+      // Calculate: Week 1 (idx=0) starts at Day 1, so dayNumber = idx * 7 + i + 1
+      // Week 1: i=0 -> Day 1, i=1 -> Day 2, ..., i=6 -> Day 7
+      // Week 2: i=0 -> Day 8, i=1 -> Day 9, ..., i=6 -> Day 14
+      const dayNumber = idx * 7 + i + 1; // Day 1, 2, 3, ... up to 180 (Day 0 is separate)
 
       // Get actual day name from the date
       const dayNames = [
@@ -5216,7 +5231,7 @@ export const softwareEngineeringWeeks = generateWeeks("2026-02-01", 26).map(
       const jsDayOfWeek = dayDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
       const dayIndex = jsDayOfWeek === 0 ? 6 : jsDayOfWeek - 1; // Convert to: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
 
-      // Week 1 starts from Day 1 (Monday, February 2, 2026) - actual content execution begins
+      // Week 1 starts from Day 1 (Sunday, February 8, 2026) - actual content execution begins
       // Content week numbering: Day 1 = Week 1 content, Days 1-7 = Week 1 content, Days 8-14 = Week 2 content, etc.
       // Week numbering: idx 0 = Week 1, idx 1 = Week 2, etc.
       const contentWeekNum = idx + 1; // Week 1, 2, 3, etc.

@@ -711,7 +711,10 @@ export function JourneyDetailV2({
   const formatDateShort = (dateString) => {
     if (!dateString) return '';
     try {
-      const date = new Date(dateString);
+      // Parse date string properly to avoid timezone issues
+      // dateString is in format "YYYY-MM-DD"
+      const [year, month, day] = dateString.split('-').map(Number);
+      const date = new Date(year, month - 1, day); // month is 0-indexed
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     } catch {
       return dateString;
@@ -721,7 +724,10 @@ export function JourneyDetailV2({
   const formatDayName = (dateString) => {
     if (!dateString) return '';
     try {
-      const date = new Date(dateString);
+      // Parse date string properly to avoid timezone issues
+      // dateString is in format "YYYY-MM-DD"
+      const [year, month, day] = dateString.split('-').map(Number);
+      const date = new Date(year, month - 1, day); // month is 0-indexed
       return date.toLocaleDateString('en-US', { weekday: 'short' });
     } catch {
       return '';
@@ -988,6 +994,7 @@ export function JourneyDetailV2({
             >
               {weeks.map((week) => {
                 const weekProgress = getWeekProgress(week);
+                // Active week: use selectedWeek (which defaults to current week, but changes when user clicks)
                 const isActive = week.weekNumber === selectedWeek;
                 
                 return (
@@ -1151,6 +1158,7 @@ export function JourneyDetailV2({
                 <div className="space-y-1.5 sm:space-y-2">
                   {weeks.map((week) => {
                     const weekProgress = getWeekProgress(week);
+                    // Active week: use selectedWeek (which defaults to current week, but changes when user clicks)
                     const isActive = week.weekNumber === selectedWeek;
                     
                     return (
@@ -1532,11 +1540,16 @@ export function JourneyDetailV2({
                           {dayName && (
                             <span className="font-semibold text-foreground mr-2">{dayName},</span>
                           )}
-                          {currentDay.date && new Date(currentDay.date).toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
+                          {currentDay.date && (() => {
+                            // Parse date string properly to avoid timezone issues
+                            const [year, month, day] = currentDay.date.split('-').map(Number);
+                            const date = new Date(year, month - 1, day); // month is 0-indexed
+                            return date.toLocaleDateString('en-US', {
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric'
+                            });
+                          })()}
                         </p>
                         {/* Time Allocation */}
                         {journey && journey.timeBlock && (
