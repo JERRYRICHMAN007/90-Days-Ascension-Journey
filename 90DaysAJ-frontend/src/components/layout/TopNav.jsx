@@ -75,7 +75,7 @@ export function TopNav() {
           )}
           {currentPhaseStatus === 'before' && (
             <div className="text-xs text-muted-foreground truncate hidden sm:inline px-2 py-0.5 rounded bg-muted/30">
-              Day 0: Feb 1 • Starts Feb 2, 2026
+              Day 0: Feb 15 • Starts Feb 16, 2026
             </div>
           )}
         </div>

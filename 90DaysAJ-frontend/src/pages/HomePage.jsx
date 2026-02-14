@@ -90,7 +90,7 @@ export function HomePage({ userProgress }) {
     const phase = getCurrentPhaseStatus();
     
     // FORCE RESET: If we're on Day 0 (preparation day), ALWAYS reset all progress and gamification
-    // This ensures a fresh start on February 1, 2026
+    // This ensures a fresh start on February 15, 2026 (Day 0)
     // Also check for manual reset flag
     const forceReset = localStorage.getItem('force_reset_all') === 'true';
     
@@ -401,7 +401,7 @@ export function HomePage({ userProgress }) {
               Your Ascension Journey
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground px-2">
-              Day 0: February 1, 2026 • Start: February 2, 2026
+              Day 0: February 15, 2026 • Start: February 16, 2026
             </div>
           </>
         )}
@@ -547,10 +547,10 @@ export function HomePage({ userProgress }) {
               <p className="text-lg font-semibold">Preparation Day</p>
               <p className="text-sm text-muted-foreground">
                 Use this time to familiarize yourself with the system, review
-                your journey plans, and prepare for February 2nd.
+                your journey plans, and prepare for February 16th.
               </p>
               <p className="text-xs text-muted-foreground mt-4">
-                Day 0: February 1, 2026 • Journey begins February 2, 2026
+                Day 0: February 15, 2026 • Journey begins February 16, 2026
               </p>
             </div>
           </Card>
@@ -562,7 +562,7 @@ export function HomePage({ userProgress }) {
                 Your Ascension Journey
               </p>
               <p className="text-sm text-muted-foreground">
-                Day 0: February 1, 2026 • Journey begins February 2, 2026
+                Day 0: February 15, 2026 • Journey begins February 16, 2026
               </p>
             </div>
           </Card>

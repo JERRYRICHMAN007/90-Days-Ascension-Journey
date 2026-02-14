@@ -357,7 +357,7 @@ export function resetJourneyProgress(journeyId) {
 
 /**
  * Reset ALL progress and gamification data
- * Use this when starting fresh on Day 0 (February 1, 2026)
+ * Use this when starting fresh on Day 0 (February 15, 2026)
  * Clears: session completions, XP, streaks, achievements, lesson progress
  */
 export function resetAllProgress() {

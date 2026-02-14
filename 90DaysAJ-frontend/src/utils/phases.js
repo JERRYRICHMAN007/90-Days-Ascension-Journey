@@ -1,18 +1,18 @@
 /**
  * Phase System for 90 Days Ascension Journey
  * 
- * Day 0 = Sunday, February 1, 2026 (Preparation)
+ * Day 0 = Sunday, February 15, 2026 (Preparation)
  * Phase 1 (Days 1-90): Mobile Engineering + Frontend Engineering only
  * Phase 2 (Days 91-180): Backend Engineering + WordPress
  * 
- * Start Date: Monday, February 2, 2026
+ * Start Date: Monday, February 16, 2026
  */
 
 // Use local date constructors to avoid timezone issues
 // Month is 0-indexed: 0 = January, 1 = February, etc.
 export const PHASE_CONSTANTS = {
-  DAY_0_START: new Date(2026, 1, 1), // Day 0 - Sunday, February 1, 2026
-  START_DATE: new Date(2026, 1, 2), // Day 1 - Monday, February 2, 2026
+  DAY_0_START: new Date(2026, 1, 15), // Day 0 - Sunday, February 15, 2026
+  START_DATE: new Date(2026, 1, 16), // Day 1 - Monday, February 16, 2026
   PHASE_1_DAYS: 90,
   PHASE_2_DAYS: 90,
   TOTAL_PHASES: 2,

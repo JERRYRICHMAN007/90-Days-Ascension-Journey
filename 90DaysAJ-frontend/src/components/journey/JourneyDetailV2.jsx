@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -30,7 +30,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useGamification } from '../../hooks/useGamification';
 import { useAuth } from '../../contexts/AuthContext';
-import { getCurrentDayNumber, getCurrentPhaseStatus, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow } from '../../utils/dates';
+import { getCurrentDayNumber, getCurrentPhaseStatus, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow, isDayPast } from '../../utils/dates';
 import { getCurrentPhase, getPhaseDayNumber, getPhaseDescription, formatPhaseDayNumber, isDisciplineAvailable } from '../../utils/phases';
 import { calculateSessionBasedProgress, isDayFullyComplete, markSessionComplete, isSessionComplete, cleanInvalidProgress } from '../../utils/progressTracking';
 import { hasScheduledActivities, getNoActivityMessage } from '../../utils/daySchedule';
@@ -143,7 +143,7 @@ export function JourneyDetailV2({
   const currentPhase = getCurrentPhase();
   const currentDayNumber = getCurrentDayNumber();
   
-  // Day 1 starts on January 18, 2026 - no Day 0 preparation phase
+  // Day 0 = Sunday Feb 15, 2026; Day 1 = Monday Feb 16, 2026 (Week 1 starts)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
@@ -158,8 +158,8 @@ export function JourneyDetailV2({
   // Day 1 = Week 1, Days 1-7 = Week 1, Days 8-14 = Week 2, etc.
   let effectiveWeek = selectedWeek;
   if (selectedDay >= 1) {
-    // Calculate which week the selected day belongs to (Day 1 starts Week 1)
-    const calculatedWeek = Math.floor((selectedDay - 1) / 7) + 1;
+    // Day 1-7 = Week 1, Day 8-14 = Week 2, etc.
+    const calculatedWeek = Math.ceil(selectedDay / 7);
     if (calculatedWeek >= 1 && calculatedWeek <= weeks.length) {
       effectiveWeek = calculatedWeek;
     }
@@ -229,36 +229,30 @@ export function JourneyDetailV2({
   // Discipline state for Software Engineering
   const [activeDiscipline, setActiveDiscipline] = useState('Mobile');
   
-  // Auto-select current day and week based on today's date (only on mount or when currentDayNumber changes)
+  // Track if we've done initial sync to today - only set active day to today on first load.
+  // After that, the active day ONLY moves when the user selects another day.
+  const hasInitialSyncToToday = useRef(false);
+  
+  // Auto-select today's day and week on initial load only (never override user selection)
   useEffect(() => {
-    // Only auto-select if we have a valid current day number
-    if (currentDayNumber !== null && currentDayNumber !== undefined && weeks.length > 0) {
-      // Skip Day 0 - always start from Day 1
-      const effectiveDay = currentDayNumber > 0 ? currentDayNumber : 1;
-      
-      // Calculate which week contains the current day
-      // Day 1 = Week 1, Days 1-7 = Week 1, Days 8-14 = Week 2, etc.
-      // Formula: Math.ceil((day - 1) / 7) + 1 ensures Day 1 = Week 1
-      const currentWeekNumber = effectiveDay > 0 ? Math.ceil((effectiveDay - 1) / 7) + 1 : 1;
-      
-      // Ensure week number is within valid range
-      const validWeekNumber = Math.max(1, Math.min(currentWeekNumber, weeks.length));
-      
-      // Only update if the selected day/week doesn't match the current day
-      // This prevents infinite loops by checking if we need to update
-      if (selectedDay !== effectiveDay || selectedWeek !== validWeekNumber) {
-        // Update week first if needed
-        if (selectedWeek !== validWeekNumber && validWeekNumber >= 1 && validWeekNumber <= weeks.length) {
-          onWeekChange(validWeekNumber);
-        }
-        // Then update day (skip Day 0, always use Day 1 or higher)
-        if (selectedDay !== effectiveDay) {
-          onDayChange(effectiveDay);
-        }
+    if (hasInitialSyncToToday.current) return;
+    if (currentDayNumber === null || currentDayNumber === undefined || weeks.length === 0) return;
+    
+    hasInitialSyncToToday.current = true;
+    const effectiveDay = currentDayNumber > 0 ? currentDayNumber : 1;
+    const currentWeekNumber = effectiveDay > 0 ? Math.ceil(effectiveDay / 7) : 1;
+    const validWeekNumber = Math.max(1, Math.min(currentWeekNumber, weeks.length));
+    
+    if (selectedDay !== effectiveDay || selectedWeek !== validWeekNumber) {
+      if (selectedWeek !== validWeekNumber && validWeekNumber >= 1 && validWeekNumber <= weeks.length) {
+        onWeekChange(validWeekNumber);
+      }
+      if (selectedDay !== effectiveDay) {
+        onDayChange(effectiveDay);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDayNumber, weeks.length]); // Only run when currentDayNumber or weeks data changes
+  }, [currentDayNumber, weeks.length]);
   
   // Auto-select first content day when week changes OR on initial load
   useEffect(() => {
@@ -1055,8 +1049,8 @@ export function JourneyDetailV2({
                   touchAction: 'pan-x'
                 }}
               >
-                {/* Day 0 - Preparation (only show in Week 1) */}
-                {preparationData && selectedWeek === 0 && (
+                {/* Day 0 - Preparation (Sunday 15 Feb 2026) - show when Week 1 is selected */}
+                {preparationData && selectedWeek === 1 && (
                   <button
                     onClick={() => {
                       onDayChange(0);
@@ -1070,11 +1064,14 @@ export function JourneyDetailV2({
                       'shrink-0 flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation min-w-[85px] sm:min-w-[95px] max-w-[95px] sm:max-w-[105px]',
                       selectedDay === 0
                         ? `bg-gradient-to-br ${colors.gradient} text-white shadow-lg scale-105` 
+                        : isDayPast(0)
+                        ? 'bg-muted/40 text-muted-foreground border border-border/40 hover:bg-muted/50'
                         : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-border/50'
                     )}
                   >
                     <span className="text-base sm:text-lg font-bold">0</span>
-                    <span className="text-[10px] sm:text-xs">Prep</span>
+                    <span className="text-[10px] sm:text-xs font-medium">Sun</span>
+                    <span className="text-[10px] sm:text-xs truncate max-w-full">Feb 8, 2026</span>
                   </button>
                 )}
                 
@@ -1084,6 +1081,7 @@ export function JourneyDetailV2({
                   
                   const isCompleted = getDayProgress(day);
                   const isActive = day.dayNumber === selectedDay;
+                  const dayIsPast = isDayPast(day.dayNumber);
                   const dayIsTomorrow = isTomorrow(day.dayNumber);
                   
                   // Get date for day name
@@ -1106,14 +1104,16 @@ export function JourneyDetailV2({
                         isActive 
                           ? `bg-gradient-to-br ${colors.gradient} text-white shadow-lg scale-105` 
                           : isCompleted
-                          ? 'bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20'
+                          ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/25'
+                          : dayIsPast
+                          ? 'bg-muted/40 text-muted-foreground border border-border/40 hover:bg-muted/50'
                           : dayIsTomorrow
                           ? 'bg-primary/5 text-primary border-2 border-primary/30 hover:bg-primary/10'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-border/50'
                       )}
                     >
                       {isCompleted && (
-                        <Check className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 text-primary bg-background rounded-full p-0.5" />
+                        <Check className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-500 bg-background rounded-full p-0.5" />
                       )}
                       <span className="text-base sm:text-lg font-bold">{day.dayNumber}</span>
                       {dayName && (
@@ -1231,7 +1231,7 @@ export function JourneyDetailV2({
                         Day 0 - Preparation
                       </div>
                       <div className={cn('text-[10px] sm:text-xs md:text-sm truncate', selectedDay === 0 ? 'text-white/80' : 'text-muted-foreground')}>
-                        Jan 18, 2026 • Journey Start
+                        Feb 8, 2026 • Preparation (Sun)
                       </div>
                     </div>
                   </button>
@@ -1299,6 +1299,7 @@ export function JourneyDetailV2({
                   
                   const isCompleted = getDayProgress(day);
                   const isActive = day.dayNumber === selectedDay;
+                  const dayIsPast = isDayPast(day.dayNumber);
                   const dayIsAccessible = isDayAccessible(day.dayNumber);
                   const dayIsTomorrow = isTomorrow(day.dayNumber);
                   // All days are now unlocked
@@ -1316,7 +1317,9 @@ export function JourneyDetailV2({
                         isActive 
                           ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg` 
                           : isCompleted
-                          ? 'bg-muted/50 hover:bg-muted'
+                          ? 'bg-emerald-500/15 hover:bg-emerald-500/20 border border-emerald-500/30'
+                          : dayIsPast
+                          ? 'bg-muted/40 hover:bg-muted/50 border border-border/40'
                           : dayIsTomorrow
                           ? 'hover:bg-primary/5 border border-primary/20 bg-primary/5'
                           : 'hover:bg-muted/50'
@@ -1325,7 +1328,7 @@ export function JourneyDetailV2({
                     >
                       <div className={cn(
                         'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0',
-                        isActive ? 'bg-white/20' : isCompleted ? 'bg-primary' : dayIsTomorrow ? 'bg-primary/20 border-2 border-primary/40' : 'bg-muted border-2 border-border'
+                        isActive ? 'bg-white/20' : isCompleted ? 'bg-emerald-500' : dayIsPast ? 'bg-muted border-2 border-border' : dayIsTomorrow ? 'bg-primary/20 border-2 border-primary/40' : 'bg-muted border-2 border-border'
                       )}>
                         {isCompleted && (
                           <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-white" />
@@ -1507,7 +1510,7 @@ export function JourneyDetailV2({
                         <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display mb-2 break-words">{preparationData.title}</h2>
                         <p className="text-sm sm:text-base text-muted-foreground mb-2 break-words">{preparationData.subtitle}</p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          Sunday, January 18, 2026
+                          Sunday, February 8, 2026
                         </p>
                       </div>
                     </div>
@@ -1545,9 +1548,9 @@ export function JourneyDetailV2({
                             const [year, month, day] = currentDay.date.split('-').map(Number);
                             const date = new Date(year, month - 1, day); // month is 0-indexed
                             return date.toLocaleDateString('en-US', {
-                              month: 'long',
-                              day: 'numeric',
-                              year: 'numeric'
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
                             });
                           })()}
                         </p>

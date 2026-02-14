@@ -1,23 +1,21 @@
 /**
  * Date utilities for the 90 Days Ascension Journey
- * 
- * Updated Timeline:
- * - Day 0 = Saturday, February 7, 2026 - Preparation Day
- * - Day 1 = Sunday, February 8, 2026 - First day of journey (Week 1 starts)
- * - Phase 1 (Days 1-90): Mobile Engineering + Frontend Engineering only
- * - Phase 2 (Days 91-180): Backend Engineering + WordPress
+ *
+ * Timeline:
+ * - Day 0 = Sunday, February 15, 2026 - Preparation Day
+ * - Day 1 = Monday, February 16, 2026 - First day of journey (Week 1 starts)
+ * - Phase 1 (Days 1-90), Phase 2 (Days 91-180)
  * - Total Journey: 180 days (90 days per phase)
  */
 
 // Use local date constructors to avoid timezone issues
 // Month is 0-indexed: 0 = January, 1 = February, etc.
-// All journeys start from February 8, 2026
-const day0Date = new Date(2026, 1, 7); // Day 0 - Saturday, February 7, 2026 - Preparation Day
-const day1Date = new Date(2026, 1, 8); // Day 1 - Sunday, February 8, 2026 - First day of journey
+const day0Date = new Date(2026, 1, 15); // Day 0 - Sunday, February 15, 2026 - Preparation Day
+const day1Date = new Date(2026, 1, 16); // Day 1 - Monday, February 16, 2026 - First day of journey
 
 export const JOURNEY_CONSTANTS = {
-  DAY_0_START: day0Date, // Day 0 - Saturday, February 7, 2026 - Preparation Day
-  ASCENSION_START: day1Date, // Day 1 - Sunday, February 8, 2026 - First day of journey
+  DAY_0_START: day0Date, // Day 0 - Sunday, February 15, 2026 - Preparation Day
+  ASCENSION_START: day1Date, // Day 1 - Monday, February 16, 2026 - First day of journey
   PHASE_1_END: new Date(2026, day1Date.getMonth(), day1Date.getDate() + 89), // Day 90
   PHASE_2_END: new Date(2026, day1Date.getMonth(), day1Date.getDate() + 179), // Day 180
   TOTAL_DAYS: 180, // 90 days per phase, 2 phases total
@@ -61,8 +59,8 @@ export function getCurrentPhaseStatus() {
 
 /**
  * Calculate the current day number (0-180)
- * Day 0 = Saturday, February 7, 2026 (Preparation)
- * Day 1 = Sunday, February 8, 2026
+ * Day 0 = Sunday, February 15, 2026 (Preparation)
+ * Day 1 = Monday, February 16, 2026
  * Days 1-90 = Phase 1, Days 91-180 = Phase 2
  * @returns {number | null}
  */
@@ -94,9 +92,9 @@ export function getCurrentDayNumber() {
   const diffTime = todayLocal - startLocal;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
-  // Day 1 = Feb 2, 2026 (ascensionStart)
-  // If today is Feb 2, diffDays = 0, so return 1
-  // If today is Feb 3, diffDays = 1, so return 2
+  // Day 1 = Feb 16, 2026 (ascensionStart)
+  // If today is Feb 16, diffDays = 0, so return 1
+  // If today is Feb 17, diffDays = 1, so return 2
   const dayNumber = diffDays + 1;
   
   // Ensure day number is within valid range (1-180)
@@ -109,8 +107,8 @@ export function getCurrentDayNumber() {
 
 /**
  * Get the date for a specific day number (0-180)
- * Day 0 = Saturday, February 7, 2026 (Preparation)
- * Day 1 = Sunday, February 8, 2026
+ * Day 0 = Sunday, February 15, 2026 (Preparation)
+ * Day 1 = Monday, February 16, 2026
  * @param {number} dayNumber - Day number (0-180)
  * @returns {Date | null}
  */
@@ -125,13 +123,10 @@ export function getDateForDay(dayNumber) {
     return null;
   }
   
-  // Day 1 starts on February 2, 2026 (Monday)
   const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  // Use local date components to avoid timezone issues
   const startLocal = new Date(ascensionStart.getFullYear(), ascensionStart.getMonth(), ascensionStart.getDate());
   
-  // Day 1 = Feb 2, 2026 (ascensionStart)
-  // Day 2 = Feb 3, 2026 (ascensionStart + 1 day)
+  // Day 1 = Feb 16, 2026 (ascensionStart), Day 2 = Feb 17, etc.
   const targetDate = new Date(startLocal);
   targetDate.setDate(startLocal.getDate() + dayNumber - 1);
   
@@ -272,6 +267,20 @@ export function canCompleteDay(dayNumber) {
   }
   
   return false;
+}
+
+/**
+ * Check if a day has passed (date is before today)
+ * @param {number} dayNumber - Day number to check (0-180)
+ * @returns {boolean}
+ */
+export function isDayPast(dayNumber) {
+  const today = new Date();
+  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const dayDate = getDateForDay(dayNumber);
+  if (!dayDate) return false;
+  const dayLocal = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+  return dayLocal < todayLocal;
 }
 
 /**
