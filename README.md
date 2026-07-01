@@ -1,53 +1,68 @@
-# 90 Days Ascension Journey
+# Forge90
 
-A comprehensive, gamified personal development application tracking progress across five core domains.
+One unified app: React UI + Express API.
 
-## Project Structure
+## Project structure
 
 ```
 90-Days-Ascension-Journey/
-├── 90DaysAJ-frontend/     # React frontend application
-├── 90DaysAJ-backend/      # Node.js/Express backend API
-├── ENVIRONMENT_SETUP.md   # Environment configuration guide
-└── README.md             # This file
+├── package.json       # Root — run everything from here
+├── client/            # React + Vite (UI)
+├── server/            # Express + Prisma (API)
+└── README.md
 ```
 
-## Quick Start
+## Quick start (one command)
 
-### Frontend
+From the **project root** (not inside `client` or `server`):
+
 ```bash
-cd 90DaysAJ-frontend
 npm install
+cp client/.env.example client/.env.local
+cp server/.env.example server/.env
+# Edit server/.env (database, JWT, Supabase, etc.)
+
 npm run dev
 ```
 
-### Backend
+This starts:
+
+| Service | URL |
+|---------|-----|
+| **Web app** | http://127.0.0.1:5174 |
+| **API** | http://127.0.0.1:5001/v1 |
+
+The UI talks to the API through Vite’s proxy (`/v1` → port 5001), so you use **one browser URL** for development.
+
+## Production (single server)
+
+Build both, then run the API — it also serves the React build:
+
 ```bash
-cd 90DaysAJ-backend
-npm install
-npm run dev
+npm run build
+cd server
+set NODE_ENV=production
+npm start
 ```
 
-See individual README files in each directory for detailed setup instructions.
+Open http://localhost:5001 — UI and API on the **same port**.
 
-## Features
+## Scripts (root)
 
-- **Multi-Domain Tracking**: Body Transformation, Dual Brand, Reading, Writing, Software Engineering
-- **Gamification**: XP, levels, streaks, and achievements
-- **Progress Visualization**: Real-time progress tracking
-- **Theme System**: Light, Dark, and Vibrant modes
+| Command | What it does |
+|---------|----------------|
+| `npm run dev` | API + web together |
+| `npm run dev:client` | Web only |
+| `npm run dev:server` | API only |
+| `npm run build` | Build client, then compile server |
+| `npm start` | Run API (set `NODE_ENV=production` to serve UI) |
+
+## Separate hosting (optional)
+
+You can still deploy UI (Vercel) and API (Railway) separately. Set `VITE_API_BASE_URL=https://your-api.com/v1` when building the client.
 
 ## Documentation
 
-- [Environment Setup Guide](./ENVIRONMENT_SETUP.md) - Configuration for frontend and backend
-- [Frontend README](./90DaysAJ-frontend/README.md) - Frontend setup and development
-- [Backend README](./90DaysAJ-backend/README.md) - Backend setup and API documentation
-
-## Scripts
-
-Utility scripts are organized in `scripts/` folders:
-- **Frontend**: `90DaysAJ-frontend/scripts/`
-- **Backend**: `90DaysAJ-backend/scripts/`
-
-See the README in each scripts folder for usage instructions.
-
+- [Environment setup](./ENVIRONMENT_SETUP.md)
+- [Client README](./client/README.md)
+- [Server README](./server/README.md)

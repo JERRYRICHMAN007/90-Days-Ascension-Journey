@@ -1,0 +1,54 @@
+import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sidebar } from './Sidebar';
+import { TopNav } from './TopNav';
+import { MobileNav } from './MobileNav';
+import { cn } from '../../lib/utils';
+import { pageTransition } from '../../lib/motion.js';
+
+const JOURNEY_PATHS = [
+  '/body-transformation',
+  '/dual-brand',
+  '/reading',
+  '/writers',
+  '/software-engineering',
+];
+
+export function DashboardLayout({ children, className }) {
+  const location = useLocation();
+  const isJourneyPage =
+    JOURNEY_PATHS.some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`)) ||
+    location.pathname.startsWith('/journey/') ||
+    location.pathname.startsWith('/discipline/');
+
+  return (
+    <div className="flex min-h-screen overflow-x-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <Sidebar />
+      <div className="flex-1 flex flex-col relative z-0 min-w-0 overflow-x-hidden">
+        <TopNav />
+        <main
+          className={cn(
+            'flex-1 relative z-0 overflow-x-hidden w-full',
+            isJourneyPage ? 'px-0 py-0 pb-20 md:pb-0' : 'px-6 py-8 pb-24 md:pb-10',
+            className
+          )}
+        >
+          <div className={cn(isJourneyPage ? 'w-full' : 'w-full max-w-5xl mx-auto space-y-6')}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={pageTransition.initial}
+                animate={pageTransition.animate}
+                exit={pageTransition.exit}
+                transition={pageTransition.transition}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
+        <MobileNav />
+      </div>
+    </div>
+  );
+}

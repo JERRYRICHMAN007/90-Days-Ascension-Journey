@@ -1,0 +1,25 @@
+{
+  "name": "forge90",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Forge90 — unified web app (React client + Express API)",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:client": "npm run dev -w client",
+    "dev:server": "npm run dev -w server",
+    "build": "npm run build -w client && npm run build -w server",
+    "start": "npm run start:prod -w server",
+    "start:prod": "npm run build && npm run start:prod -w server",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
