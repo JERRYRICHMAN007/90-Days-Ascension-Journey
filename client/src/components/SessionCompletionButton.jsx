@@ -11,6 +11,8 @@ export function SessionCompletionButton({
   discipline = null,
   onComplete = null,
   className = '',
+  accentColor = 'var(--neon-green)',
+  accentGlow = 'var(--neon-glow-green)',
 }) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(() =>
@@ -52,7 +54,13 @@ export function SessionCompletionButton({
   if (isCompleted) {
     return (
       <div
-        className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2 border text-[var(--neon-green)] bg-[rgba(0,255,135,0.1)] border-[var(--neon-green)] shadow-[var(--neon-glow-green)] ${className}`}
+        className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2 border transition-all duration-200 ${className}`}
+        style={{
+          color: accentColor,
+          borderColor: accentColor,
+          background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
+          boxShadow: accentGlow,
+        }}
       >
         <CheckCircle2 className="w-4 h-4" />
         <span>Completed</span>
@@ -65,7 +73,19 @@ export function SessionCompletionButton({
       type="button"
       onClick={handleComplete}
       disabled={isCompleting}
-      className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--neon-green)] hover:text-[var(--neon-green)] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 ${className}`}
+      className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide border transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 ${className}`}
+      style={{
+        borderColor: 'var(--border-subtle)',
+        color: 'var(--text-secondary)',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = accentColor;
+        e.currentTarget.style.color = accentColor;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border-subtle)';
+        e.currentTarget.style.color = 'var(--text-secondary)';
+      }}
     >
       {isCompleting ? (
         <>

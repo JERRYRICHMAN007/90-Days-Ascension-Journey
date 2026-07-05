@@ -1,97 +1,235 @@
-import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+
+import { Zap } from 'lucide-react';
+
 import { cn } from '../../lib/utils';
-import { motion } from 'framer-motion';
+
 import { useAuth } from '../../contexts/AuthContext';
-import { desktopNavItems } from './navItems';
+
+import { figmaSidebarNavItems, figmaSidebarFooterItems } from './navItems';
+
+import { getCurrentDayNumber } from '../../utils/dates';
+
+
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { signOut } = useAuth();
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-      navigate('/');
-    }
-  };
+  const location = useLocation();
+
+  const navigate = useNavigate();
+
+  const { user } = useAuth();
+
+  const currentDay = getCurrentDayNumber();
+
+
+
+  const initials = (user?.name || 'Forge Master')
+
+    .split(' ')
+
+    .map((n) => n[0])
+
+    .join('')
+
+    .slice(0, 2)
+
+    .toUpperCase();
+
+
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: collapsed ? 72 : 256 }}
-      className="hidden md:flex flex-col transition-all duration-300 relative z-10 border-r"
-      style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-subtle)' }}
+
+    <aside
+
+      className="hidden md:flex flex-col fixed inset-y-0 left-0 z-20 w-[280px] border-r"
+
+      style={{
+
+        backgroundColor: '#080f11',
+
+        borderColor: 'rgba(59, 73, 76, 0.2)',
+
+      }}
+
     >
-      <div
-        className="flex items-center justify-between h-16 px-4 border-b"
-        style={{ borderColor: 'var(--border-subtle)' }}
-      >
-        {!collapsed && (
-          <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity min-w-0">
-            <span className="text-[var(--neon-green)] text-sm" aria-hidden>●</span>
-            <span
-              className="text-lg font-bold text-white truncate"
-              style={{ letterSpacing: '0.05em' }}
-            >
-              Forge90
-            </span>
-          </Link>
-        )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg transition-colors ml-auto text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-elevated)]"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </button>
+
+      <div className="px-8 pt-8 pb-6">
+
+        <Link to="/dashboard" className="block hover:opacity-90 transition-opacity">
+
+          <span className="text-[24px] font-extrabold text-[#00daf3] tracking-[-1.2px] leading-none">
+
+            Forge90
+
+          </span>
+
+        </Link>
+
+
+
+        <div className="mt-6 flex items-center gap-3">
+
+          <div className="size-10 shrink-0 overflow-hidden rounded-full border border-[rgba(59,73,76,0.3)] bg-[#242b2d]">
+
+            {user?.avatarUrl ? (
+
+              <img
+
+                src={user.avatarUrl}
+
+                alt=""
+
+                className="size-full object-cover"
+
+              />
+
+            ) : (
+
+              <div className="flex size-full items-center justify-center text-[11px] font-bold text-[#00daf3]">
+
+                {initials}
+
+              </div>
+
+            )}
+
+          </div>
+
+          <div className="min-w-0">
+
+            <p className="text-[12px] font-bold uppercase tracking-[1.2px] text-[#dce4e5]">
+
+              MASTER RANK
+
+            </p>
+
+            <p className="text-[10px] text-[#bac9cc]">
+
+              {currentDay != null && currentDay > 0
+
+                ? `Day ${currentDay} of 90`
+
+                : 'Preparation phase'}
+
+            </p>
+
+          </div>
+
+        </div>
+
       </div>
 
-      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
-        {desktopNavItems.map((item) => {
+
+
+      <nav className="flex-1 px-3 space-y-1">
+
+        {figmaSidebarNavItems.map((item) => {
+
           const Icon = item.icon;
+
           const isActive =
-            location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+
+            location.pathname === item.path ||
+
+            (item.path === '/analytics' &&
+
+              location.pathname.startsWith('/analytics'));
+
+
 
           return (
+
             <Link
+
               key={item.path}
+
               to={item.path}
+
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium border-l-[3px]',
+
+                'flex items-center gap-4 px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] transition-colors border-l-4',
+
                 isActive
-                  ? 'text-[var(--neon-green)] border-[var(--neon-green)]'
-                  : 'text-[var(--text-secondary)] border-transparent hover:text-white'
+
+                  ? 'border-[#00e478] bg-[#242b2d] text-[#00daf3]'
+
+                  : 'border-transparent text-[#bac9cc] hover:text-[#dce4e5]'
+
               )}
-              style={isActive ? { background: 'rgba(0,255,135,0.08)' } : undefined}
-              title={collapsed ? item.label : undefined}
+
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              {!collapsed && <span className="truncate">{item.label}</span>}
+
+              <Icon className="size-[18px] shrink-0" />
+
+              <span>{item.label}</span>
+
             </Link>
+
           );
+
         })}
+
       </nav>
 
-      <div className="p-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+
+
+      <div className="px-6 py-6 border-t" style={{ borderColor: 'rgba(59,73,76,0.1)' }}>
+
         <button
-          onClick={handleLogout}
-          className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 w-full',
-            'text-sm font-medium text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-elevated)]'
-          )}
-          title={collapsed ? 'Logout' : undefined}
+
+          type="button"
+
+          onClick={() => navigate('/dashboard')}
+
+          className="flex w-full items-center justify-center gap-2 rounded-[8px] border border-[rgba(0,228,120,0.3)] bg-[#242b2d] px-4 py-4 text-[16px] font-bold text-[#00e478] transition-opacity hover:opacity-90"
+
         >
-          <LogOut className="w-4 h-4 flex-shrink-0" />
-          {!collapsed && <span>Logout</span>}
+
+          <Zap className="size-4" />
+
+          Start Daily Session
+
         </button>
+
       </div>
-    </motion.aside>
+
+
+
+      <div className="px-3 pb-8 space-y-1">
+
+        {figmaSidebarFooterItems.map((item) => {
+
+          const Icon = item.icon;
+
+          return (
+
+            <Link
+
+              key={item.label}
+
+              to={item.path}
+
+              className="flex items-center gap-4 px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[#bac9cc] hover:text-[#dce4e5] transition-colors"
+
+            >
+
+              <Icon className="size-5 shrink-0" />
+
+              <span>{item.label}</span>
+
+            </Link>
+
+          );
+
+        })}
+
+      </div>
+
+    </aside>
+
   );
+
 }
+
+

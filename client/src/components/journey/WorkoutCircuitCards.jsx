@@ -55,19 +55,37 @@ function ExerciseFlipCard({ exercise, step, isActive, onHover }) {
       className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       front={
         <div
-          className="w-full h-full rounded-xl p-4 flex flex-col items-center justify-center min-w-[120px] min-h-[140px] relative bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--neon-green)] hover:shadow-[var(--neon-glow-green)] transition-all duration-200 cursor-pointer text-center"
+          className="w-full h-full rounded-xl p-4 flex flex-col items-center justify-center min-w-[132px] sm:min-w-[148px] min-h-[168px] relative border transition-all duration-200 cursor-pointer text-center snap-start"
+          style={{
+            background: 'var(--bg-elevated)',
+            borderColor: isActive ? 'var(--neon-green)' : 'var(--border-subtle)',
+            boxShadow: isActive ? 'var(--neon-glow-green)' : 'none',
+          }}
         >
-          <span className="absolute top-2 left-2 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold tabular-nums text-[var(--neon-green)] border border-[var(--neon-green)]">
+          <span
+            className="absolute top-2.5 left-2.5 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold tabular-nums"
+            style={{
+              color: 'var(--neon-green)',
+              border: '1px solid var(--neon-green)',
+              background: 'rgba(0,255,135,0.08)',
+            }}
+          >
             {step}
           </span>
           {metric && (
-            <span className="text-3xl font-black text-white leading-none tabular-nums">{metric.split(' ')[0]}</span>
+            <span className="text-[40px] sm:text-[48px] font-extrabold text-[var(--text-primary)] leading-none tabular-nums tracking-[-0.96px]">
+              {metric.split(' ')[0]}
+            </span>
           )}
           {metric && metric.includes(' ') && (
-            <span className="text-xs text-[var(--text-secondary)] mt-1">{metric.replace(/^\d+\s*/, '')}</span>
+            <span className="text-[11px] font-bold uppercase tracking-[1.1px] text-[var(--text-secondary)] mt-1">
+              {metric.replace(/^\d+\s*/, '')}
+            </span>
           )}
-          <span className="text-sm font-semibold text-white mt-2 leading-snug line-clamp-2">{label}</span>
-          <span className="text-[10px] text-[var(--neon-green)] mt-2 tracking-wide flex items-center gap-1">
+          <span className="text-sm font-semibold text-[var(--text-primary)] mt-2 leading-snug line-clamp-2 px-1">
+            {label}
+          </span>
+          <span className="text-[10px] font-bold uppercase tracking-[1px] text-[var(--neon-green)] mt-3 flex items-center gap-1">
             <RotateCcw className="w-3 h-3" />
             Tap for form
           </span>
@@ -105,6 +123,7 @@ export function WorkoutCircuitCards({
   activeGuideKey = null,
   onExerciseHover,
   compactHeader = false,
+  hideHeader = false,
 }) {
   if (!workout || typeof workout !== 'object') return null;
 
@@ -122,6 +141,7 @@ export function WorkoutCircuitCards({
 
   return (
     <div className={compactHeader ? 'space-y-4 min-w-0' : 'mt-4 space-y-4 min-w-0'}>
+      {!hideHeader && (
       <div className="flex flex-wrap items-center justify-between gap-3">
         {!compactHeader && (
           <div className="min-w-0">
@@ -154,10 +174,12 @@ export function WorkoutCircuitCards({
           )}
         </div>
       </div>
+      )}
 
       <FlowCircuit
         label="Circuit flow · complete in order"
         accentColor="var(--neon-green)"
+        forceScroll
         footer={
           workout.rounds > 1 ? (
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">

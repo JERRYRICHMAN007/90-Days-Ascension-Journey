@@ -1,42 +1,86 @@
+import { motion } from 'framer-motion';
 import { RotateCcw, User, Building2 } from 'lucide-react';
 import { FlipCard3D } from '../ui/FlipCard3D';
-import { FlowCircuit } from '../ui/FlowCircuit';
+import { SessionCompletionButton } from '../SessionCompletionButton';
+import { BrandTomorrowPreview } from './BrandTomorrowPreview';
+import { isTomorrow } from '../../utils/dates';
 
-function BrandTaskCard({ step, icon: Icon, label, subtitle, task, emoji }) {
-  const preview = task.length > 70 ? `${task.slice(0, 70)}…` : task;
+const BRAND_ACCENT = '#00e5ff';
+const BRAND_GLOW = 'var(--neon-glow-cyan)';
+
+function BrandStreamCard({ label, subtitle, task, icon: Icon, streamTag }) {
+  const preview = task.length > 90 ? `${task.slice(0, 90)}…` : task;
 
   return (
-    <FlipCard3D
-      size="wide"
-      ariaLabel={`${label}: ${task}`}
-      front={
-        <div className="w-full h-full rounded-xl p-5 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--neon-cyan)] transition-all duration-200 flex flex-col justify-between min-h-[160px]">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-bold tracking-widest uppercase text-[#00e5ff]">{label}</span>
-            {emoji ? (
-              <span className="text-lg ml-auto" aria-hidden>{emoji}</span>
-            ) : (
-              <Icon className="w-4 h-4 text-[var(--text-secondary)] ml-auto shrink-0" />
-            )}
+    <div className="flex flex-col min-w-0 h-full">
+      <div className="mb-3">
+        <p className="forge-label" style={{ color: BRAND_ACCENT }}>
+          {streamTag}
+        </p>
+        <p className="text-sm font-bold text-[var(--text-primary)] mt-1 tracking-tight">{label}</p>
+        {subtitle && (
+          <p className="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">{subtitle}</p>
+        )}
+      </div>
+
+      <FlipCard3D
+        size="wide"
+        className="flex-1"
+        ariaLabel={`${label}: ${task}`}
+        front={
+          <div
+            className="w-full h-full rounded-xl p-5 flex flex-col justify-between min-h-[200px] border transition-all duration-200"
+            style={{
+              background: 'var(--bg-elevated)',
+              borderColor: 'var(--border-subtle)',
+            }}
+          >
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <Icon className="w-4 h-4 shrink-0" style={{ color: BRAND_ACCENT }} />
+              <span
+                className="text-[10px] font-bold uppercase tracking-[1.2px] px-2 py-0.5 rounded"
+                style={{
+                  color: BRAND_ACCENT,
+                  background: 'rgba(0,229,255,0.08)',
+                  border: '1px solid rgba(0,229,255,0.25)',
+                }}
+              >
+                Task
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-[var(--text-primary)] leading-snug line-clamp-6 flex-1">
+              {preview}
+            </p>
+            <p
+              className="text-[10px] font-bold uppercase tracking-[1px] mt-4 flex items-center gap-1"
+              style={{ color: BRAND_ACCENT }}
+            >
+              <RotateCcw className="w-3 h-3" />
+              Tap for full task
+            </p>
           </div>
-          <p className="text-white font-semibold text-sm leading-snug line-clamp-4 flex-1">{preview}</p>
-          <p className="text-xs font-semibold text-[#00e5ff] mt-4 flex items-center gap-1 hover:text-white transition-colors">
-            Tap for full task →
-          </p>
-        </div>
-      }
-      back={
-        <div className="w-full h-full rounded-xl p-5 bg-[var(--bg-elevated)] border border-[var(--neon-cyan)] flex flex-col justify-center gap-2 overflow-y-auto">
-          <p className="text-xs font-bold tracking-widest uppercase text-[#00e5ff]">{label}</p>
-          {subtitle && <p className="text-[10px] text-[var(--text-secondary)]">{subtitle}</p>}
-          <p className="text-xs text-white leading-relaxed text-left">{task}</p>
-          <p className="text-[10px] text-[var(--text-muted)] shrink-0 flex items-center gap-1">
-            <RotateCcw className="w-3 h-3" />
-            Tap to flip back
-          </p>
-        </div>
-      }
-    />
+        }
+        back={
+          <div
+            className="w-full h-full rounded-xl p-5 flex flex-col justify-center gap-2 overflow-y-auto border min-h-[200px]"
+            style={{
+              background: 'var(--bg-elevated)',
+              borderColor: BRAND_ACCENT,
+              boxShadow: BRAND_GLOW,
+            }}
+          >
+            <p className="forge-label" style={{ color: BRAND_ACCENT }}>
+              {streamTag}
+            </p>
+            <p className="text-xs text-[var(--text-primary)] leading-relaxed text-left">{task}</p>
+            <p className="text-[10px] text-[var(--text-secondary)] shrink-0 flex items-center gap-1 mt-2">
+              <RotateCcw className="w-3 h-3" />
+              Tap to flip back
+            </p>
+          </div>
+        }
+      />
+    </div>
   );
 }
 
@@ -49,74 +93,120 @@ export function DualBrandFlowHero({
   havenXTasks,
   outcome,
   focusLabel = "Today's Focus",
+  journeyId = 'dual-brand',
+  dayNumber,
+  nextDay = null,
+  onPreviewDay = null,
 }) {
   const personal = personalBrandTasks || ryxenTasks;
   const company = companyBrandTasks || havenXTasks;
-  const tasks = [];
+  const previewingTomorrow = dayNumber != null && isTomorrow(dayNumber);
+  const showTomorrowPreview =
+    nextDay && dayNumber != null && !previewingTomorrow && isTomorrow(nextDay.dayNumber);
+  const hasTasks = personal || company;
 
-  if (personal) {
-    tasks.push({
-      key: 'personal',
-      step: 1,
-      icon: User,
-      emoji: '👤',
-      label: 'Personal Brand',
-      subtitle: 'Personal journey, growth, thoughts, and general content',
-      task: personal,
-    });
-  }
-  if (company) {
-    tasks.push({
-      key: 'company',
-      step: tasks.length + 1,
-      icon: Building2,
-      emoji: '🏢',
-      label: 'Company Brand',
-      subtitle: 'Company-building journey, products, systems, and business updates',
-      task: company,
-    });
-  }
-
-  if (!focus && !tasks.length) return null;
+  if (!focus && !hasTasks) return null;
 
   return (
-    <div className="rounded-2xl border p-5 space-y-4 bg-[var(--bg-card)] overflow-hidden min-w-0" style={{ borderColor: 'var(--border-subtle)' }}>
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-2 h-2 rounded-full bg-[var(--neon-cyan)] shadow-[var(--neon-glow-cyan)]" />
-          <p className="text-xs font-bold tracking-widest uppercase text-[var(--text-secondary)]">
-            {focusLabel}
-          </p>
+    <div className="space-y-4 min-w-0">
+      <div
+        className="rounded-[12px] border overflow-hidden min-w-0"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
+      >
+        {/* Header — Figma Frame 4 */}
+        <div className="p-5 sm:p-6 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <div
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ background: BRAND_ACCENT, boxShadow: BRAND_GLOW }}
+            />
+            <p className="forge-label">{focusLabel}</p>
+          </div>
+          {focus && (
+            <h2 className="text-2xl sm:text-[32px] font-extrabold text-[var(--text-primary)] tracking-[-0.64px] leading-tight">
+              {focus}
+            </h2>
+          )}
+          {theme && (
+            <span
+              className="inline-flex items-center mt-4 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[1.2px]"
+              style={{
+                color: BRAND_ACCENT,
+                border: '1px solid rgba(0,229,255,0.35)',
+                background: 'rgba(0,229,255,0.08)',
+              }}
+            >
+              Theme · {theme}
+            </span>
+          )}
         </div>
-        {focus && (
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{focus}</h1>
-        )}
-        {theme && (
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Theme: {theme}</p>
-        )}
+
+        <div className="p-5 sm:p-6 space-y-5">
+          {hasTasks && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+              {personal && (
+                <BrandStreamCard
+                  streamTag="Stream 01"
+                  label="Personal Brand"
+                  subtitle="Personal journey, growth, thoughts, and general content"
+                  task={personal}
+                  icon={User}
+                />
+              )}
+              {company && (
+                <BrandStreamCard
+                  streamTag={personal ? 'Stream 02' : 'Stream 01'}
+                  label="Company Brand"
+                  subtitle="Company-building journey, products, systems, and business updates"
+                  task={company}
+                  icon={Building2}
+                />
+              )}
+            </div>
+          )}
+
+          {outcome && (
+            <div
+              className="rounded-xl border p-4 sm:p-5"
+              style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
+            >
+              <p className="forge-label mb-2" style={{ color: BRAND_ACCENT }}>
+                Expected Outcome
+              </p>
+              <p className="text-sm text-[var(--text-primary)] leading-relaxed">{outcome}</p>
+            </div>
+          )}
+
+          {dayNumber !== undefined && hasTasks && !previewingTomorrow && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="pt-5 border-t"
+              style={{ borderColor: 'var(--border-subtle)' }}
+            >
+              <SessionCompletionButton
+                journeyId={journeyId}
+                dayNumber={dayNumber}
+                sessionType="daily"
+                sessionIndex={0}
+                accentColor={BRAND_ACCENT}
+                accentGlow={BRAND_GLOW}
+                onComplete={() => {
+                  window.dispatchEvent(
+                    new CustomEvent('session-completed', {
+                      detail: { journeyId, dayNumber },
+                    })
+                  );
+                }}
+              />
+            </motion.div>
+          )}
+        </div>
       </div>
 
-      {tasks.length > 0 && (
-        <FlowCircuit label="Brand tasks · complete both streams" accentColor="#00e5ff">
-          {tasks.map((t) => (
-            <BrandTaskCard
-              key={t.key}
-              step={t.step}
-              icon={t.icon}
-              emoji={t.emoji}
-              label={t.label}
-              subtitle={t.subtitle}
-              task={t.task}
-            />
-          ))}
-        </FlowCircuit>
-      )}
-
-      {outcome && (
-        <div className="pt-4 border-t rounded-xl p-4 bg-[var(--bg-elevated)]" style={{ borderColor: 'var(--border-subtle)' }}>
-          <p className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1 text-[#00e5ff]">Expected Outcome</p>
-          <p className="text-sm text-white">{outcome}</p>
-        </div>
+      {showTomorrowPreview && (
+        <BrandTomorrowPreview nextDay={nextDay} onPreview={onPreviewDay} />
       )}
     </div>
   );

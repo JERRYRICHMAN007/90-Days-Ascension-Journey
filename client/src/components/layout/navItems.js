@@ -9,6 +9,8 @@ import {
   Settings,
   LayoutDashboard,
   BarChart3,
+  Sparkles,
+  LifeBuoy,
 } from 'lucide-react';
 
 export const primaryNavItems = [
@@ -32,11 +34,21 @@ export const allNavItems = [...primaryNavItems, ...secondaryNavItems];
 /** Desktop sidebar: journeys + account (no duplicate dashboard — logo links home) */
 export const desktopNavItems = [...primaryNavItems.slice(1), ...secondaryNavItems];
 
-export const mobileBottomNavItems = [
-  primaryNavItems[0],
-  { icon: Code, label: 'Journeys', path: '__journeys__', shortLabel: 'Journeys' },
-  secondaryNavItems[0],
-  secondaryNavItems[1],
+/** Figma Frame 1 sidebar — Dashboard, Analytics, Mastery */
+export const figmaSidebarNavItems = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { icon: BarChart3, label: 'Analytics', path: '/analytics' },
+  { icon: Sparkles, label: 'Mastery', path: '/achievements' },
 ];
+
+export const figmaSidebarFooterItems = [
+  { icon: Settings, label: 'Settings', path: '/settings' },
+  { icon: LifeBuoy, label: 'Support', path: '/settings' },
+];
+
+export const mobileBottomNavItems = figmaSidebarNavItems.map((item) => ({
+  ...item,
+  shortLabel: item.label,
+}));
 
 export const mobileJourneyItems = primaryNavItems.slice(1);

@@ -2114,43 +2114,23 @@ export function JourneyDetailV2({
                       ) : journeyId === 'body-transformation' ? (
                         <>
                           {hasScheduledActivities(currentDay, journeyId) && currentDay.focus ? (
-                            <>
-                              {currentDay.dailyLearning && (
-                                <Card className="p-4 sm:p-6 border border-border/50">
-                                  <div className="flex items-center gap-2 mb-4">
-                                    <Target className="w-5 h-5 text-primary" />
-                                    <h3 className="text-base sm:text-lg font-semibold text-foreground">{currentDay.dailyLearning.title}</h3>
-                                  </div>
-                                  {currentDay.dailyLearning.description && (
-                                    <p className="text-sm text-muted-foreground mb-4">{currentDay.dailyLearning.description}</p>
-                                  )}
-                                  {currentDay.dailyLearning.topics && Array.isArray(currentDay.dailyLearning.topics) && currentDay.dailyLearning.topics.length > 0 && (
-                                    <ul className="space-y-2">
-                                      {currentDay.dailyLearning.topics.map((topic, idx) => (
-                                        <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
-                                          <span className="text-primary mt-1">•</span>
-                                          <span>{topic}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                </Card>
-                              )}
-                              <BodyWorkoutHero
-                                focus={currentDay.focus}
-                                workout={currentDay.workout}
-                                workoutLink={currentDay.workoutLink}
-                                nutrition={currentDay.nutrition}
-                                mindset={currentDay.mindset}
-                                journeyId={journeyId}
-                                dayNumber={currentDay.dayNumber}
-                                focusLabel={
-                                  isTomorrow(currentDay.dayNumber)
-                                    ? "Tomorrow's Focus"
-                                    : "Today's Focus"
-                                }
-                              />
-                            </>
+                            <BodyWorkoutHero
+                              focus={currentDay.focus}
+                              workout={currentDay.workout}
+                              workoutLink={currentDay.workoutLink}
+                              nutrition={currentDay.nutrition}
+                              mindset={currentDay.mindset}
+                              journeyId={journeyId}
+                              dayNumber={currentDay.dayNumber}
+                              dailyLearning={currentDay.dailyLearning}
+                              nextDay={nextDay}
+                              onPreviewDay={onDayChange}
+                              focusLabel={
+                                isTomorrow(currentDay.dayNumber)
+                                  ? "Tomorrow's Focus"
+                                  : "Today's Focus"
+                              }
+                            />
                           ) : (
                             <Card className="p-6 border border-border/50 bg-muted/30">
                               <div className="flex items-start gap-3">
@@ -2180,6 +2160,11 @@ export function JourneyDetailV2({
                             <ReadingFlowHero
                               dailyLearning={currentDay.dailyLearning}
                               readingSessions={currentDay.readingSessions}
+                              theme={currentDay.theme}
+                              journeyId={journeyId}
+                              dayNumber={currentDay.dayNumber}
+                              nextDay={nextDay}
+                              onPreviewDay={onDayChange}
                               focusLabel={
                                 isTomorrow(currentDay.dayNumber)
                                   ? "Tomorrow's Reading"
@@ -2256,6 +2241,10 @@ export function JourneyDetailV2({
                               ryxenTasks={currentDay.ryxenTasks}
                               havenXTasks={currentDay.havenXTasks}
                               outcome={currentDay.outcome}
+                              journeyId={journeyId}
+                              dayNumber={currentDay.dayNumber}
+                              nextDay={nextDay}
+                              onPreviewDay={onDayChange}
                               focusLabel={
                                 isTomorrow(currentDay.dayNumber)
                                   ? "Tomorrow's Focus"

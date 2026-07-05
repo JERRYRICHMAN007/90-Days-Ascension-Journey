@@ -5,29 +5,50 @@
 /* PRD v2.0 Design System — Dark Neon Energy */
 
 :root {
-  /* Base surfaces */
+  /* Base surfaces — Figma Frame 1–7 */
   --bg-primary: #0a0a0a;
-  --bg-secondary: #111111;
+  --bg-secondary: #0d1516;
   --bg-card: #141414;
-  --bg-card-hover: #1a1a1a;
-  --bg-elevated: #1c1c1c;
+  --bg-card-hover: #192122;
+  --bg-elevated: #192122;
+  --bg-badge: #242b2d;
+  --bg-header: rgba(13, 21, 22, 0.8);
+  --bg-nav: rgba(8, 15, 17, 0.95);
 
-  /* Neon accents */
+  /* Neon accents — Figma exact */
   --neon-green: #00ff87;
+  --neon-green-alt: #00e478;
   --neon-cyan: #00e5ff;
-  --neon-purple: #7c3aed;
-  --neon-glow-green: 0 0 20px rgba(0, 255, 135, 0.4);
-  --neon-glow-cyan: 0 0 20px rgba(0, 229, 255, 0.4);
-  --neon-glow-purple: 0 0 20px rgba(124, 58, 237, 0.4);
+  --neon-cyan-alt: #00daf3;
+  --neon-purple: #a78bfa;
+  --neon-amber: #f59e0b;
+  --neon-blue: #3b82f6;
+  --neon-glow-green: 0 0 12px #00ff87;
+  --neon-glow-cyan: 0 0 12px #00e5ff;
+  --neon-glow-purple: 0 0 12px #a78bfa;
+  --neon-glow-amber: 0 0 12px #f59e0b;
+  --neon-glow-blue: 0 0 12px #3b82f6;
 
-  /* Text */
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
-  --text-muted: #555555;
+  /* Text — Figma Inter */
+  --text-primary: #dce4e5;
+  --text-secondary: #bac9cc;
+  --text-muted: #bac9cc;
+  --text-accent: #00daf3;
 
   /* Borders */
   --border-subtle: #222222;
   --border-active: #00ff87;
+  --border-muted: rgba(59, 73, 76, 0.3);
+
+  /* Radius — Figma */
+  --radius-card: 12px;
+  --radius-badge: 4px;
+  --radius-icon: 8px;
+  --radius-pill: 9999px;
+
+  /* Progress bar */
+  --progress-height: 6px;
+  --progress-track: #192122;
 
   /* Journey accent colors (hex) */
   --journey-body-hex: #00ff87;
@@ -64,14 +85,14 @@
   --success: 152 100% 50%;
   --warning: 38 92% 50%;
   --background: 0 0% 4%;
-  --foreground: 0 0% 100%;
-  --surface: 0 0% 7%;
-  --muted: 0 0% 11%;
-  --muted-foreground: 0 0% 63%;
+  --foreground: 186 12% 88%;
+  --surface: 186 12% 8%;
+  --muted: 192 12% 12%;
+  --muted-foreground: 186 12% 76%;
   --card: 0 0% 8%;
-  --card-foreground: 0 0% 100%;
+  --card-foreground: 186 12% 88%;
   --popover: 0 0% 8%;
-  --popover-foreground: 0 0% 100%;
+  --popover-foreground: 186 12% 88%;
   --border: 0 0% 13%;
   --input: 0 0% 13%;
   --ring: 152 100% 50%;
@@ -129,16 +150,84 @@ body {
 
 h1, h2, h3 {
   letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* Figma typography utilities */
+.forge-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  line-height: 12px;
+}
+
+.forge-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--neon-green-alt);
+  line-height: 12px;
+}
+
+.forge-heading-xl {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.72px;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.forge-heading-lg {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.48px;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.forge-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-accent);
+}
+
+.forge-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 25px;
+}
+
+.forge-progress-track {
+  height: var(--progress-height);
+  background: var(--progress-track);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.forge-rank-badge {
+  background: var(--bg-badge);
+  border-radius: var(--radius-badge);
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  line-height: 12px;
 }
 
 .neon-text-green {
   color: var(--neon-green);
-  text-shadow: 0 0 20px rgba(0, 255, 135, 0.5);
+  text-shadow: 0 0 12px rgba(0, 255, 135, 0.5);
 }
 
 .neon-text-cyan {
   color: var(--neon-cyan);
-  text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
 }
 
 /* Prevent horizontal overflow globally */

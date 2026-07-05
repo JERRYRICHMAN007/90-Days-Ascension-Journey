@@ -2,9 +2,9 @@ import { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getJourneyTrace, computeMasteryScore } from '../../utils/tracing.js';
-import { getJourneyAccent } from '../../utils/journeyAccents.js';
+import { getJourneyAccent, masteryToRank } from '../../utils/journeyAccents.js';
 
-export function JourneyTraceCard({ journeyId, index = 0 }) {
+export function JourneyTraceCard({ journeyId, index = 0, compact = false }) {
   const navigate = useNavigate();
   const [tick, setTick] = useState(0);
 
@@ -28,9 +28,10 @@ export function JourneyTraceCard({ journeyId, index = 0 }) {
   const { completion, consistency } = trace;
   const percentComplete = completion.percentComplete ?? 0;
   const isNotStarted = percentComplete === 0 && (completion.completedSessions ?? 0) === 0;
+  const rank = masteryToRank(masteryScore);
 
-  const handleNavigate = (e) => {
-    e.stopPropagation();
+  const goAnalytics = (e) => {
+    e?.stopPropagation?.();
     navigate(`/analytics/${journeyId}`);
   };
 
@@ -39,7 +40,7 @@ export function JourneyTraceCard({ journeyId, index = 0 }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="min-w-0"
+      className="min-w-0 w-full"
     >
       <div
         role="button"
@@ -48,11 +49,9 @@ export function JourneyTraceCard({ journeyId, index = 0 }) {
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') navigate(`/analytics/${journeyId}`);
         }}
-        className="relative overflow-hidden rounded-2xl p-5 min-h-[220px] flex flex-col justify-between border bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] transition-all duration-300 cursor-pointer"
+        className="forge-card flex flex-col gap-6 overflow-hidden cursor-pointer transition-all duration-300 hover:bg-[var(--bg-card-hover)] min-h-[160px]"
         style={{
           borderColor: 'var(--border-subtle)',
-          ['--journey-accent']: accent.color,
-          ['--neon-glow']: accent.glow,
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.borderColor = accent.color;
@@ -63,76 +62,95 @@ export function JourneyTraceCard({ journeyId, index = 0 }) {
           e.currentTarget.style.boxShadow = 'none';
         }}
       >
-        <div
-          className="absolute top-0 left-0 right-0 h-[2px]"
-          style={{ background: `linear-gradient(90deg, ${accent.color}, transparent)` }}
-        />
-
-        <div className="flex items-start justify-between gap-2">
+        {/* Header: icon + title + streak | rank badge */}
+        <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <span className="text-2xl shrink-0" aria-hidden>{accent.icon}</span>
+            <div
+              className="shrink-0 flex items-center justify-center size-10 rounded-[8px] border"
+              style={{
+                background: 'var(--bg-elevated)',
+                borderColor: 'rgba(59,73,76,0.2)',
+              }}
+            >
+              <span className="text-lg leading-none" aria-hidden>{accent.icon}</span>
+            </div>
             <div className="min-w-0">
-              <p
-                className="text-xs font-semibold tracking-widest uppercase truncate"
-                style={{ color: accent.color }}
-              >
-                {accent.label}
-              </p>
-              <p className="text-white font-bold text-lg leading-tight truncate">
-                {trace.journeyTitle}
+              <h3 className="forge-heading-lg truncate">{accent.fullLabel}</h3>
+              <p className="forge-label mt-2 flex items-center gap-2">
+                <span aria-hidden>🔥</span>
+                {consistency.currentStreak} DAY STREAK
               </p>
             </div>
           </div>
           <div
-            className="text-xs font-bold px-2 py-1 rounded-full shrink-0 border"
+            className="forge-rank-badge shrink-0"
             style={{
               color: accent.color,
-              borderColor: accent.color,
-              background: `rgba(${accent.rgb}, 0.1)`,
+              border: `1px solid rgba(${accent.rgb}, 0.4)`,
             }}
           >
-            {masteryScore}% Mastery
+            RANK {rank}
           </div>
         </div>
 
-        <div className="mt-4">
-          <div className="flex justify-between text-xs text-[var(--text-secondary)] mb-1">
-            <span>Day {completion.currentDay} of {completion.totalDays}</span>
-            <span className="tabular-nums">{percentComplete}%</span>
+        {/* Progress */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-start justify-between">
+            <span className="forge-label">PROGRESS</span>
+            <span className="forge-label">{percentComplete}%</span>
           </div>
-          <div className="w-full h-1.5 rounded-full bg-[var(--bg-elevated)]">
+          <div className="forge-progress-track">
             <div
-              className="h-1.5 rounded-full transition-all duration-500"
+              className="h-full rounded-full transition-all duration-500"
               style={{
-                width: `${Math.max(percentComplete, isNotStarted ? 0 : percentComplete)}%`,
-                minWidth: isNotStarted ? 0 : undefined,
+                width: `${Math.max(percentComplete, 0)}%`,
                 background: `linear-gradient(90deg, ${accent.color}, ${accent.light})`,
-                boxShadow: percentComplete > 0 ? `0 0 8px ${accent.color}` : 'none',
+                boxShadow: percentComplete > 0 ? accent.glow : 'none',
               }}
             />
           </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-4 gap-2">
-          <div className="flex items-center gap-3 sm:gap-4 text-xs text-[var(--text-secondary)] min-w-0">
-            <span className="shrink-0">🔥 {consistency.currentStreak} day streak</span>
-            <span className="tabular-nums truncate">
-              {completion.completedSessions}/{completion.totalSessions} sessions
-            </span>
-          </div>
-          {isNotStarted ? (
-            <span className="text-xs px-2 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--text-muted)] shrink-0">
-              Not started
-            </span>
-          ) : (
-            <button
-              type="button"
-              className="text-xs font-semibold shrink-0 hover:opacity-80 transition-opacity"
-              style={{ color: accent.color }}
-              onClick={handleNavigate}
-            >
-              View Analytics →
-            </button>
+          {!compact && (
+            <div className="flex items-center justify-between mt-1">
+              <span className="text-[10px] uppercase text-[var(--text-secondary)]">
+                Day {completion.currentDay} of {completion.totalDays}
+              </span>
+              {isNotStarted ? (
+                <span className="text-[10px] uppercase text-[var(--text-secondary)] px-2 py-0.5 rounded bg-[var(--bg-badge)]">
+                  Not started
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={goAnalytics}
+                  className="text-[10px] font-bold uppercase tracking-[1.2px] hover:opacity-80"
+                  style={{ color: accent.color }}
+                >
+                  View Analytics →
+                </button>
+              )}
+            </div>
+          )}
+          {compact && (
+            <div className="pt-2 border-t mt-2" style={{ borderColor: 'rgba(59,73,76,0.1)' }}>
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="forge-label mb-1">MASTERY SCORE</p>
+                  <p
+                    className="text-[32px] font-extrabold tracking-[-0.64px] leading-none"
+                    style={{ color: accent.color }}
+                  >
+                    {masteryScore}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="forge-label mb-1">STREAK</p>
+                  <p className="text-[var(--text-primary)] font-extrabold text-xl leading-none">
+                    {consistency.currentStreak}
+                    <span className="text-sm font-normal text-[var(--text-secondary)] ml-1">Days</span>
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

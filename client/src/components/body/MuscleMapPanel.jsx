@@ -3,17 +3,9 @@ import Model from 'react-body-highlighter';
 import { motion } from 'framer-motion';
 import { Activity } from 'lucide-react';
 
+const BODY_ACCENT = '#00ff87';
+
 function buildMuscleData(exercises, activeGuideKey) {
-  const muscleFreq = new Map();
-
-  exercises.forEach((ex) => {
-    const muscles = ex.muscles ?? [];
-    const boost = ex.guideKey === activeGuideKey ? 2 : 1;
-    muscles.forEach((m) => {
-      muscleFreq.set(m, (muscleFreq.get(m) ?? 0) + boost);
-    });
-  });
-
   return exercises.map((ex) => ({
     name: ex.name,
     muscles: ex.muscles ?? [],
@@ -41,8 +33,11 @@ export function MuscleMapPanel({ exercises = [], activeGuideKey = null, classNam
 
   if (!exercises.length) {
     return (
-      <div className={`glass-panel rounded-xl p-6 text-center ${className}`}>
-        <p className="text-sm text-muted-foreground">Rest day — recovery mode</p>
+      <div
+        className={`rounded-xl border p-5 text-center ${className}`}
+        style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
+      >
+        <p className="text-sm text-[var(--text-secondary)]">Rest day — recovery mode</p>
       </div>
     );
   }
@@ -51,21 +46,20 @@ export function MuscleMapPanel({ exercises = [], activeGuideKey = null, classNam
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`glass-panel rounded-xl p-3 sm:p-4 flex flex-col items-center ${className}`}
+      className={`rounded-xl border p-4 flex flex-col items-center ${className}`}
+      style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
     >
-      <div className="flex items-center gap-2 w-full mb-2">
-        <Activity className="w-4 h-4 text-primary shrink-0" />
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Muscles worked today
-        </p>
+      <div className="flex items-center gap-2 w-full mb-3">
+        <Activity className="w-4 h-4 shrink-0" style={{ color: BODY_ACCENT }} />
+        <p className="forge-label">Muscles worked today</p>
       </div>
 
       <div className="w-full flex justify-center overflow-hidden">
         <Model
           data={data}
           type="anterior"
-          bodyColor="hsl(var(--muted))"
-          highlightedColors={['hsl(142, 76%, 45%)', 'hsl(142, 76%, 58%)']}
+          bodyColor="#242b2d"
+          highlightedColors={[BODY_ACCENT, '#00ba62']}
           style={{ width: '100%', maxWidth: '220px', padding: '0.5rem' }}
           svgStyle={{ width: '100%', height: 'auto' }}
         />
@@ -76,7 +70,12 @@ export function MuscleMapPanel({ exercises = [], activeGuideKey = null, classNam
           {activeMuscles.slice(0, 8).map((m) => (
             <span
               key={m}
-              className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25 capitalize"
+              className="text-[10px] px-2 py-0.5 rounded-full capitalize font-semibold"
+              style={{
+                color: BODY_ACCENT,
+                background: 'rgba(0,255,135,0.1)',
+                border: '1px solid rgba(0,255,135,0.25)',
+              }}
             >
               {m.replace(/-/g, ' ')}
             </span>

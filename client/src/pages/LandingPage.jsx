@@ -1,387 +1,399 @@
 import { Link, Navigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  Sparkles, 
-  Dumbbell, 
-  Palette, 
-  BookOpen, 
-  PenTool, 
-  Code,
+import {
   ArrowRight,
-  Target,
-  TrendingUp,
-  Zap,
-  CheckCircle2,
-  Github,
-  Twitter,
-  Linkedin,
-  Mail
+  ArrowUpRight,
+  Dumbbell,
+  Brain,
+  BookOpen,
+  PenTool,
+  Code,
+  Share2,
+  Mail,
 } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { HeroSection } from '../components/landing/HeroSection';
-import { LandingCtaButtons } from '../components/landing/LandingCtaButtons';
-import { FeatureCard } from '../components/landing/FeatureCard';
-import { TestimonialCarousel } from '../components/landing/TestimonialCarousel';
-import { NewsletterForm } from '../components/landing/NewsletterForm';
-import { ThemeToggle } from '../components/landing/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 
-const features = [
+const CTA_BG =
+  'https://www.figma.com/api/mcp/asset/76848c42-8f67-43e8-bc47-71139d7231d1';
+
+const journeys = [
   {
+    title: 'Body',
+    description: 'Rebuild your machine from the cellular level up.',
+    tag: 'INTENSITY: 100',
+    color: '#00ff87',
+    rgb: '0,255,135',
     icon: Dumbbell,
-    title: 'Body Transformation',
-    description: 'Track your fitness journey with personalized workouts, nutrition plans, and progress monitoring.',
-    gradient: 'from-orange-500 to-red-500',
-    benefits: [
-      'Custom workout routines',
-      'Nutrition tracking',
-      'Progress analytics',
-      'Hydration & step logs'
-    ]
   },
   {
-    icon: Palette,
-    title: 'Dual Brand Development',
-    description: 'Build and grow your personal and professional brands simultaneously with strategic planning tools.',
-    gradient: 'from-blue-500 to-purple-500',
-    benefits: [
-      'Content planning',
-      'Brand board',
-      'Portfolio tracking',
-      'Audience insights'
-    ]
+    title: 'Mindset',
+    description: 'Develop the mental steel required for peak focus.',
+    tag: 'FLOW STATE',
+    color: '#00e5ff',
+    rgb: '0,229,255',
+    icon: Brain,
   },
   {
+    title: 'Reading',
+    description: 'Synthesize centuries of wisdom into active power.',
+    tag: 'WISDOM GAIN',
+    color: '#a78bfa',
+    rgb: '167,139,250',
     icon: BookOpen,
-    title: 'Reading Journey',
-    description: 'Expand your knowledge with curated reading lists, progress tracking, and note-taking features.',
-    gradient: 'from-green-500 to-teal-500',
-    benefits: [
-      'Book tracker',
-      'Reading streaks',
-      'Notes & summaries',
-      'Progress logs'
-    ]
   },
   {
+    title: 'Writing',
+    description: 'Clarify your vision and architect your future.',
+    tag: 'SYSTEM DESIGN',
+    color: '#f59e0b',
+    rgb: '245,158,11',
     icon: PenTool,
-    title: 'Writing Journey',
-    description: 'Hone your writing skills with daily prompts, draft management, and writing timer tools.',
-    gradient: 'from-pink-500 to-rose-500',
-    benefits: [
-      'Writing timer',
-      'Draft storage',
-      'Topic generator',
-      'Writing streaks'
-    ]
   },
   {
+    title: 'Software',
+    description: 'Master the tools of digital creation and dominance.',
+    tag: 'EXECUTION',
+    color: '#3b82f6',
+    rgb: '59,130,246',
     icon: Code,
-    title: 'Software Engineering',
-    description: 'Level up your coding skills with practice logs, project boards, and skill progression tracking.',
-    gradient: 'from-indigo-500 to-blue-500',
-    benefits: [
-      'Practice logs',
-      'Project boards',
-      'Skill map',
-      'Learning resources'
-    ]
-  }
+  },
 ];
 
-const benefits = [
+const systemPillars = [
   {
-    icon: Target,
-    title: 'Goal-Oriented',
-    description: 'Set and track goals across all your growth areas with clear milestones and progress indicators.'
+    num: '01',
+    title: 'Consistency',
+    description: 'The compound interest of the soul. Never miss twice.',
   },
   {
-    icon: TrendingUp,
-    title: 'Progress Tracking',
-    description: 'Visualize your journey with detailed analytics, charts, and insights across all domains.'
+    num: '02',
+    title: 'Intensity',
+    description: 'Work at your absolute capacity. Threshold pushing.',
   },
   {
-    icon: Zap,
-    title: 'Gamification',
-    description: 'Stay motivated with XP points, daily streaks, badges, achievements, and level progression.'
+    num: '03',
+    title: 'Results',
+    description: 'Tangible output. Verified by the forge protocol.',
   },
-  {
-    icon: CheckCircle2,
-    title: 'Daily Habits',
-    description: 'Build lasting habits with daily tasks, reminders, and completion tracking.'
-  }
 ];
 
-const testimonials = [
-  {
-    name: 'Sarah Johnson',
-    role: 'Fitness Enthusiast',
-    content: 'I\'ve transformed my body and built consistent habits in just 60 days. The gamification keeps me motivated every single day!',
-    rating: 5
-  },
-  {
-    name: 'Michael Chen',
-    role: 'Software Developer',
-    content: 'The software engineering tracking helped me stay consistent with my coding practice. I\'ve completed 3 projects since starting!',
-    rating: 5
-  },
-  {
-    name: 'Emily Rodriguez',
-    role: 'Content Creator',
-    content: 'Managing both my personal and professional brand has never been easier. The dual brand features are a game-changer.',
-    rating: 5
-  },
-  {
-    name: 'David Kim',
-    role: 'Writer & Reader',
-    content: 'I\'ve read 12 books and written 30+ articles since joining. The reading and writing journeys keep me accountable.',
-    rating: 5
-  }
-];
+function MasteryRing() {
+  const size = 320;
+  const stroke = 12;
+  const r = (size - stroke) / 2 - 8;
+  const c = 2 * Math.PI * r;
+  const progress = 0.884;
+  const offset = c * (1 - progress);
+
+  return (
+    <div className="relative size-[240px] sm:size-[280px] lg:size-[320px] shrink-0">
+      <svg
+        className="size-full -rotate-90"
+        viewBox={`0 0 ${size} ${size}`}
+        aria-hidden
+      >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="#3b494c"
+          strokeWidth={stroke}
+          opacity={0.4}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="url(#masteryGrad)"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
+          style={{ filter: 'drop-shadow(0 0 12px #00e5ff)' }}
+        />
+        <defs>
+          <linearGradient id="masteryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#00e5ff" />
+            <stop offset="100%" stopColor="#00ff87" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <p className="text-[12px] font-bold tracking-[1.2px] text-[#bac9cc] uppercase">
+          MASTERY SCORE
+        </p>
+        <p className="text-[40px] sm:text-[48px] font-extrabold text-white tracking-[-0.96px] leading-none mt-1">
+          88.4
+        </p>
+        <p className="mt-4 flex items-center gap-1 text-[12px] font-bold tracking-[1.2px] text-[#00ff87]">
+          <ArrowUpRight className="w-3.5 h-3.5" />
+          +12.2%
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export function LandingPage() {
   const { user, loading } = useAuth();
 
-  // Redirect authenticated users to dashboard
   if (!loading && user) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return (
-    <div className="min-h-screen mesh-gradient-bg overflow-x-hidden">
-      <nav className="sticky top-0 z-50 glass-nav">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 sm:gap-2.5"
+    <div
+      className="min-h-screen overflow-x-hidden text-white"
+      style={{
+        backgroundColor: '#0a0a0a',
+        backgroundImage:
+          'radial-gradient(ellipse 40% 30% at 0% 0%, rgba(0,153,102,0.15), transparent 50%), radial-gradient(ellipse 40% 30% at 100% 100%, rgba(0,127,153,0.15), transparent 50%)',
+      }}
+    >
+      {/* Nav — Figma TopNavBar */}
+      <header
+        className="sticky top-0 z-50 border-b backdrop-blur-[12px]"
+        style={{
+          backgroundColor: 'rgba(13,21,22,0.8)',
+          borderColor: '#3b494c',
+        }}
+      >
+        <nav className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6">
+          <Link
+            to="/"
+            className="text-2xl font-black tracking-[-1.2px] text-[#c3f5ff]"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary via-accent to-secondary flex items-center justify-center shadow-lg">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
-            </div>
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              Forge90
-            </span>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 sm:gap-3 md:gap-4"
+            Forge90
+          </Link>
+
+          <div className="hidden md:flex items-center gap-8">
+            <a
+              href="#journeys"
+              className="border-b-2 border-[#c3f5ff] pb-1.5 text-base font-bold text-[#c3f5ff]"
+            >
+              Journeys
+            </a>
+            <a
+              href="#mastery"
+              className="text-base font-normal text-[#bac9cc] hover:text-white transition-colors"
+            >
+              Mastery
+            </a>
+            <a
+              href="#legacy"
+              className="text-base font-normal text-[#bac9cc] hover:text-white transition-colors"
+            >
+              Legacy
+            </a>
+          </div>
+
+          <Link
+            to="/signup"
+            className="rounded-lg bg-[#00e5ff] px-4 sm:px-6 py-2 text-sm sm:text-base font-bold text-[#00363d] hover:opacity-90 transition-opacity"
           >
-            <ThemeToggle />
-            <Link to="/signin" className="hidden sm:block">
-              <Button variant="ghost" size="sm" className="hover:bg-white hover:text-black text-xs sm:text-sm transition-colors">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button size="sm" className="bg-gradient-to-r from-primary via-accent to-secondary text-white hover:shadow-lg transition-all text-xs sm:text-sm px-3 sm:px-4">
-                <span className="hidden sm:inline">Get Started</span>
-                <span className="sm:hidden">Start</span>
-                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1.5 sm:ml-2" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </nav>
+            Launch App
+          </Link>
+        </nav>
+      </header>
 
-      {/* Hero Section */}
-      <HeroSection />
-
-      {/* Features Section */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 relative">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10 sm:mb-16"
-        >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent px-2">
-            Five Pillars of Growth
-          </h2>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
-            Comprehensive development across all areas of your life
+      {/* Hero */}
+      <section className="relative flex min-h-[70vh] sm:min-h-[80vh] items-center justify-center px-6 py-24 sm:py-32">
+        <div className="mx-auto flex max-w-[896px] flex-col items-center gap-6 text-center">
+          <h1 className="text-4xl sm:text-5xl lg:text-[48px] font-extrabold uppercase tracking-[-0.96px] leading-[1.1] text-white">
+            FORGE YOUR LEGACY.
+          </h1>
+          <p className="max-w-[672px] text-base sm:text-lg text-[#bac9cc] leading-[1.6]">
+            A 90-day mastery protocol for the driven. Five journeys. One outcome:
+            Excellence.
           </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-6xl mx-auto px-1 sm:px-0">
-          {features.map((feature, index) => (
-            <FeatureCard
-              key={feature.title}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              gradient={feature.gradient}
-              delay={index * 0.1}
-              benefits={feature.benefits}
-            />
-          ))}
+          <div className="pt-4">
+            <Link
+              to="/signup"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-[#00ff87] bg-[#141414] px-8 sm:px-[42px] py-[18px] text-lg font-bold text-[#00ff87] shadow-[0_0_10px_rgba(0,255,135,0.2)] hover:bg-[rgba(0,255,135,0.08)] transition-colors"
+            >
+              Enter the Forge
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-muted/30">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10 sm:mb-16"
-        >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent px-2">
-            Why Choose Us?
+      {/* The Journeys */}
+      <section
+        id="journeys"
+        className="mx-auto max-w-[1440px] px-4 sm:px-6 pb-16 sm:pb-24"
+      >
+        <div className="mb-8 sm:mb-16">
+          <h2 className="text-2xl font-bold tracking-[-0.48px] text-white">
+            The Journeys
           </h2>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
-            Everything you need to track and accelerate your growth
-          </p>
-        </motion.div>
+          <div className="mt-2 h-1 w-24 rounded-full bg-[#c3f5ff]" />
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 max-w-6xl mx-auto">
-          {benefits.map((benefit, index) => {
-            const Icon = benefit.icon;
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          {journeys.map((j) => {
+            const Icon = j.icon;
             return (
-              <motion.div
-                key={benefit.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -3 }}
-                className="text-center p-3.5 sm:p-5 md:p-6 bg-card/80 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-border/50 shadow-md sm:shadow-lg hover:shadow-xl transition-all w-full"
+              <div
+                key={j.title}
+                className="flex min-h-[280px] lg:min-h-[320px] flex-col justify-between rounded-2xl border border-[#222] bg-[#141414] p-8"
               >
-                <div className="inline-flex items-center justify-center w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-primary/10 mb-2.5 sm:mb-4">
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-primary" />
+                <div>
+                  <div
+                    className="flex size-12 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: `rgba(${j.rgb}, 0.1)` }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: j.color }} />
+                  </div>
+                  <h3 className="mt-4 text-2xl font-bold tracking-[-0.48px] text-white">
+                    {j.title}
+                  </h3>
+                  <p className="mt-2 text-base leading-6 text-[#bac9cc]">
+                    {j.description}
+                  </p>
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg font-bold mb-1.5 sm:mb-2">{benefit.title}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{benefit.description}</p>
-              </motion.div>
+                <p
+                  className="mt-6 text-xs font-bold tracking-[1.2px] uppercase"
+                  style={{ color: j.color }}
+                >
+                  {j.tag}
+                </p>
+              </div>
             );
           })}
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10 sm:mb-16"
-        >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent px-2">
-            Loved by Thousands
-          </h2>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
-            See what our community is saying about their transformation journey
-          </p>
-        </motion.div>
+      {/* Discipline as a Service */}
+      <section
+        id="mastery"
+        className="bg-[#080f11] py-16 sm:py-24"
+      >
+        <div className="mx-auto flex max-w-[1440px] flex-col lg:flex-row items-center gap-12 lg:gap-16 px-4 sm:px-6">
+          <div className="flex-1 min-w-0 space-y-4">
+            <p className="text-xs font-bold tracking-[1.2px] uppercase text-[#c3f5ff]">
+              THE SYSTEM
+            </p>
+            <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold tracking-[-0.96px] leading-[1.1] text-white">
+              Discipline as a Service.
+            </h2>
+            <p className="max-w-xl text-base sm:text-lg leading-[1.6] text-[#bac9cc]">
+              Our proprietary Mastery Score tracks your 90-day trajectory across
+              three critical vectors. There is no guesswork—only data-driven
+              evolution.
+            </p>
 
-        <TestimonialCarousel testimonials={testimonials} />
-      </section>
-
-      {/* CTA Section with Newsletter */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-16 text-center border border-primary/20"
-        >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-            Ready to Begin Your Journey?
-          </h2>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
-            Join thousands of others who are transforming their lives one day at a time
-          </p>
-          
-          <div className="mb-6 sm:mb-8">
-            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">Stay updated with tips and updates</p>
-            <NewsletterForm />
+            <div className="flex flex-col gap-8 pt-6">
+              {systemPillars.map((p) => (
+                <div key={p.num} className="flex gap-6 items-start">
+                  <div className="flex size-12 shrink-0 items-center justify-center border border-[#3b494c] text-base font-bold text-[#c3f5ff]">
+                    {p.num}
+                  </div>
+                  <div>
+                    <h4 className="text-xl sm:text-2xl font-bold tracking-[-0.48px] text-white">
+                      {p.title}
+                    </h4>
+                    <p className="mt-1 text-base text-[#bac9cc] leading-6">
+                      {p.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <LandingCtaButtons
-            primaryLabel="Create Free Account"
-            align="center"
+          <div className="flex flex-1 items-center justify-center">
+            <MasteryRing />
+          </div>
+        </div>
+      </section>
+
+      {/* Ready to Transmute */}
+      <section
+        id="legacy"
+        className="relative overflow-hidden px-4 sm:px-6 py-24 sm:py-32"
+      >
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <img
+            src={CTA_BG}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
           />
-        </motion.div>
+          <div className="absolute inset-0 bg-[#0a0a0a]/60" />
+        </div>
+
+        <div className="relative mx-auto flex max-w-[896px] flex-col items-center gap-8 text-center">
+          <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold tracking-[-0.96px] leading-[1.1] text-white">
+            Ready to Transmute?
+          </h2>
+          <p className="text-base sm:text-lg text-[#bac9cc] leading-[1.6]">
+            The next 90 days will pass regardless. Who will you be at the end of
+            them?
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-2">
+            <Link
+              to="/signup"
+              className="rounded-xl bg-[#c3f5ff] px-10 py-5 text-lg font-bold text-[#00363d] hover:opacity-90 transition-opacity"
+            >
+              Begin Journey
+            </Link>
+            <a
+              href="#journeys"
+              className="rounded-xl border border-[#849396] px-10 py-5 text-lg font-bold text-white hover:border-white transition-colors"
+            >
+              View Protocol
+            </a>
+          </div>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer className="container mx-auto px-4 sm:px-6 py-10 sm:py-12 border-t border-border">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8 text-center sm:text-left">
-          {/* Brand */}
-          <div className="flex flex-col items-center sm:items-start">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary via-accent to-secondary flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-                Forge90
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Transform your life in 90 days across five core domains.
+      <footer
+        className="border-t bg-[#0d1516] py-10 sm:py-12"
+        style={{ borderColor: '#3b494c' }}
+      >
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-2xl font-black tracking-[-0.48px] text-[#c3f5ff]">
+              Forge90
             </p>
-            <div className="flex items-center justify-center sm:justify-start gap-3">
-              <a href="#" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Twitter">
-                <Twitter className="w-5 h-5 text-muted-foreground hover:text-blue-500 transition-colors" />
-              </a>
-              <a href="#" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="LinkedIn">
-                <Linkedin className="w-5 h-5 text-muted-foreground hover:text-blue-500 transition-colors" />
-              </a>
-              <a href="#" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="GitHub">
-                <Github className="w-5 h-5 text-muted-foreground hover:text-blue-500 transition-colors" />
-              </a>
-              <a href="#" className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Email">
-                <Mail className="w-5 h-5 text-muted-foreground hover:text-blue-500 transition-colors" />
-              </a>
-            </div>
+            <p className="mt-2 text-xs font-bold tracking-[1.2px] text-[#bac9cc]">
+              © {new Date().getFullYear()} Forge90. Discipline is Freedom.
+            </p>
           </div>
 
-          {/* Product */}
-          <div>
-            <h3 className="font-semibold mb-4">Product</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Features</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Pricing</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Roadmap</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Updates</Link></li>
-            </ul>
+          <div className="flex flex-wrap gap-6 sm:gap-8">
+            {['Privacy Policy', 'Terms of Service', 'Community', 'Support'].map(
+              (label) => (
+                <span
+                  key={label}
+                  className="text-xs font-bold tracking-[1.2px] text-[#bac9cc] cursor-default"
+                >
+                  {label}
+                </span>
+              )
+            )}
           </div>
 
-          {/* Company */}
-          <div>
-            <h3 className="font-semibold mb-4">Company</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">About</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Blog</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Careers</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Contact</Link></li>
-            </ul>
+          <div className="flex gap-6">
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex size-10 items-center justify-center rounded-full border border-[#3b494c] text-[#bac9cc] hover:text-white hover:border-[#bac9cc] transition-colors"
+              aria-label="Share"
+            >
+              <Share2 className="w-4 h-4" />
+            </a>
+            <a
+              href="mailto:support@forge90.app"
+              className="flex size-10 items-center justify-center rounded-full border border-[#3b494c] text-[#bac9cc] hover:text-white hover:border-[#bac9cc] transition-colors"
+              aria-label="Contact"
+            >
+              <Mail className="w-4 h-4" />
+            </a>
           </div>
-
-          {/* Legal */}
-          <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Privacy</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Terms</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Security</Link></li>
-              <li><Link to="/signup" className="hover:text-blue-500 transition-colors">Cookie Policy</Link></li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="pt-6 sm:pt-8 border-t border-border flex flex-col md:flex-row items-center justify-center md:justify-between gap-3 sm:gap-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            © 2025 Forge90. All rights reserved.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Made with ❤️ for your transformation journey
-          </p>
         </div>
       </footer>
     </div>

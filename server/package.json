@@ -13,6 +13,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx src/prisma/seed.ts",
+    "check:env": "node scripts/check-env.mjs",
     "test": "jest",
     "test:watch": "jest --watch"
   },

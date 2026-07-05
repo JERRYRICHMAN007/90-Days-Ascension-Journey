@@ -45,8 +45,12 @@ export const supabaseAdmin: SupabaseClient = createClient(
     }
   } catch (err: any) {
     console.error('❌ Supabase connection error:', err.message);
-    if (err.message?.includes('ENOTFOUND')) {
-      console.error('   → Cannot resolve Supabase hostname. Check your SUPABASE_URL in .env');
+    if (err.message?.includes('ENOTFOUND') || err.cause?.code === 'ENOTFOUND') {
+      const host = process.env.SUPABASE_URL?.replace('https://', '').replace(/\/$/, '');
+      console.error(`   → Host "${host}" does not exist (project deleted, wrong ID, or paused).`);
+      console.error('   → Open https://supabase.com/dashboard → restore or create a project.');
+      console.error('   → Update SUPABASE_URL, keys, and DATABASE_URL in server/.env');
+      console.error('   → Run: node scripts/check-env.mjs');
     } else if (err.message?.includes('ECONNREFUSED')) {
       console.error('   → Cannot connect to Supabase. Check if project is active in dashboard.');
     }

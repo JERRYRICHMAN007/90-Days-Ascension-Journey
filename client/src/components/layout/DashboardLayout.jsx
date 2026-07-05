@@ -20,20 +20,26 @@ export function DashboardLayout({ children, className }) {
     JOURNEY_PATHS.some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`)) ||
     location.pathname.startsWith('/journey/') ||
     location.pathname.startsWith('/discipline/');
+  const isDashboard = location.pathname === '/dashboard';
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div className="flex min-h-screen overflow-x-hidden text-[var(--text-primary)]" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <Sidebar />
-      <div className="flex-1 flex flex-col relative z-0 min-w-0 overflow-x-hidden">
+      <div className="flex-1 flex flex-col relative z-0 min-w-0 overflow-x-hidden md:pl-[280px]">
         <TopNav />
         <main
           className={cn(
             'flex-1 relative z-0 overflow-x-hidden w-full',
-            isJourneyPage ? 'px-0 py-0 pb-20 md:pb-0' : 'px-6 py-8 pb-24 md:pb-10',
+            isJourneyPage ? 'px-0 py-0 pb-20 md:pb-0' : 'px-5 py-8 pb-28 md:px-6 md:pb-10 lg:px-12',
             className
           )}
         >
-          <div className={cn(isJourneyPage ? 'w-full' : 'w-full max-w-5xl mx-auto space-y-6')}>
+          <div
+            className={cn(
+              isJourneyPage ? 'w-full' : 'w-full mx-auto',
+              isDashboard ? 'max-w-[1440px]' : 'max-w-5xl space-y-6'
+            )}
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}

@@ -7,6 +7,7 @@ export function FlowCircuit({
   footer,
   className = '',
   accentColor = 'var(--neon-green)',
+  forceScroll = false,
 }) {
   const items = Children.toArray(children).filter(Boolean);
 
@@ -22,11 +23,21 @@ export function FlowCircuit({
         {label}
       </p>
 
-      <div className="flex flex-wrap xl:flex-nowrap items-center justify-start xl:justify-between gap-y-3 gap-x-1 sm:gap-x-2 w-full min-w-0 overflow-x-auto xl:overflow-visible pb-2 xl:pb-0 snap-x xl:snap-none -mx-1 px-1 scrollbar-hide">
+      <div
+        className={
+          forceScroll
+            ? 'flex flex-nowrap items-stretch gap-3 w-full min-w-0 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide -mx-1 px-1'
+            : 'flex flex-wrap xl:flex-nowrap items-center justify-start xl:justify-between gap-y-3 gap-x-1 sm:gap-x-2 w-full min-w-0 overflow-x-auto xl:overflow-visible pb-2 xl:pb-0 snap-x xl:snap-none -mx-1 px-1 scrollbar-hide'
+        }
+      >
         {items.map((child, idx) => (
           <div
             key={idx}
-            className="flex items-center gap-1 sm:gap-2 snap-start xl:flex-1 xl:justify-center xl:min-w-0 shrink-0"
+            className={
+              forceScroll
+                ? 'flex items-center gap-2 snap-start shrink-0'
+                : 'flex items-center gap-1 sm:gap-2 snap-start xl:flex-1 xl:justify-center xl:min-w-0 shrink-0'
+            }
           >
             {child}
             {idx < items.length - 1 && (
