@@ -3,7 +3,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Dumbbell,
-  Brain,
+  Palette,
   BookOpen,
   PenTool,
   Code,
@@ -25,12 +25,12 @@ const journeys = [
     icon: Dumbbell,
   },
   {
-    title: 'Mindset',
-    description: 'Develop the mental steel required for peak focus.',
-    tag: 'FLOW STATE',
+    title: 'Dual Brand',
+    description: 'Build _richman.oo7 + _ryxen.oo7 — revenue that compounds over 184 days.',
+    tag: 'REVENUE ENGINE',
     color: '#00e5ff',
     rgb: '0,229,255',
-    icon: Brain,
+    icon: Palette,
   },
   {
     title: 'Reading',
@@ -50,7 +50,7 @@ const journeys = [
   },
   {
     title: 'Software',
-    description: 'Master the tools of digital creation and dominance.',
+    description: 'Ship Comfort by Day 184 — frontend, backend, then production.',
     tag: 'EXECUTION',
     color: '#3b82f6',
     rgb: '59,130,246',
@@ -164,7 +164,7 @@ export function LandingPage() {
             to="/"
             className="text-2xl font-black tracking-[-1.2px] text-[#c3f5ff]"
           >
-            Forge90
+            Forge184
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -204,7 +204,7 @@ export function LandingPage() {
             FORGE YOUR LEGACY.
           </h1>
           <p className="max-w-[672px] text-base sm:text-lg text-[#bac9cc] leading-[1.6]">
-            A 90-day mastery protocol for the driven. Five journeys. One outcome:
+            A 184-day mastery protocol for the driven. Five journeys. One outcome:
             Excellence.
           </p>
           <div className="pt-4">
@@ -279,7 +279,7 @@ export function LandingPage() {
               Discipline as a Service.
             </h2>
             <p className="max-w-xl text-base sm:text-lg leading-[1.6] text-[#bac9cc]">
-              Our proprietary Mastery Score tracks your 90-day trajectory across
+              Our proprietary Mastery Score tracks your 184-day trajectory across
               three critical vectors. There is no guesswork—only data-driven
               evolution.
             </p>
@@ -328,7 +328,7 @@ export function LandingPage() {
             Ready to Transmute?
           </h2>
           <p className="text-base sm:text-lg text-[#bac9cc] leading-[1.6]">
-            The next 90 days will pass regardless. Who will you be at the end of
+            The next 184 days will pass regardless. Who will you be at the end of
             them?
           </p>
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-2">
@@ -356,10 +356,10 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-2xl font-black tracking-[-0.48px] text-[#c3f5ff]">
-              Forge90
+              Forge184
             </p>
             <p className="mt-2 text-xs font-bold tracking-[1.2px] text-[#bac9cc]">
-              © {new Date().getFullYear()} Forge90. Discipline is Freedom.
+              © {new Date().getFullYear()} Forge184. Discipline is Freedom.
             </p>
           </div>
 
@@ -387,7 +387,7 @@ export function LandingPage() {
               <Share2 className="w-4 h-4" />
             </a>
             <a
-              href="mailto:support@forge90.app"
+              href="mailto:support@forge184.app"
               className="flex size-10 items-center justify-center rounded-full border border-[#3b494c] text-[#bac9cc] hover:text-white hover:border-[#bac9cc] transition-colors"
               aria-label="Contact"
             >

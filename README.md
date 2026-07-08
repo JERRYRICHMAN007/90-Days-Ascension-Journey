@@ -1,11 +1,11 @@
-# Forge90
+# Forge184
 
 One unified app: React UI + Express API.
 
 ## Project structure
 
 ```
-90-Days-Ascension-Journey/
+Forge184/
 ├── package.json       # Root — run everything from here
 ├── client/            # React + Vite (UI)
 ├── server/            # Express + Prisma (API)

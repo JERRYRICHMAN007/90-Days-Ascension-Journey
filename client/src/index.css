@@ -468,6 +468,15 @@ p, span, div, h1, h2, h3, h4, h5, h6 {
   }
 }
 
+@keyframes ring-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px #00e5ff); }
+  50%       { filter: drop-shadow(0 0 24px #00e5ff) drop-shadow(0 0 40px #00ff87); }
+}
+
+.mastery-ring-hover:hover {
+  animation: ring-pulse 2s ease-in-out infinite;
+}
+
 .float-animation {
   animation: float 3s ease-in-out infinite;
 }

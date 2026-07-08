@@ -1,4 +1,4 @@
-/** Shared framer-motion presets for Forge90 */
+/** Shared framer-motion presets for Forge184 */
 
 export const fadeUp = {
   initial: { opacity: 0, y: 16 },

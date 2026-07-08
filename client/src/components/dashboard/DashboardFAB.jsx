@@ -11,7 +11,7 @@ import {
 function findNextJourneyPath() {
   const phase = getCurrentPhaseStatus();
   const currentDay = getCurrentDayNumber();
-  if (phase !== 'phase1' && phase !== 'phase2' || !currentDay) {
+  if (phase !== 'phase1' && phase !== 'phase2' && phase !== 'phase3' || !currentDay) {
     return '/dashboard';
   }
 

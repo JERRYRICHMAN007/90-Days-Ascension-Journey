@@ -32,7 +32,7 @@ import { Card } from '../ui/card';
 import { useGamification } from '../../hooks/useGamification';
 import { useAuth } from '../../contexts/AuthContext';
 import { getCurrentDayNumber, getCurrentPhaseStatus, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow, isDayPast, getWeekNumber } from '../../utils/dates';
-import { getCurrentPhase, getPhaseDayNumber, getPhaseDescription, formatPhaseDayNumber, isDisciplineAvailable } from '../../utils/phases';
+import { getCurrentPhase, getPhaseDescription, formatPhaseDayNumber, isDisciplineAvailable, getPhaseDaysRemaining } from '../../utils/phases';
 import { calculateSessionBasedProgress, isDayFullyComplete, markSessionComplete, isSessionComplete, cleanInvalidProgress, toggleDayComplete } from '../../utils/progressTracking';
 import { hasScheduledActivities, getNoActivityMessage } from '../../utils/daySchedule';
 import { SessionCompletionButton } from '../SessionCompletionButton';
@@ -85,7 +85,7 @@ export function JourneyDetailV2({
   // Get what user is working on today
   const getTodayFocus = () => {
     if (isPreparationPhase) {
-      return 'Preparing for your journey';
+      return 'Onboarding — soft start';
     }
     if (currentDay) {
       if (isTomorrow(currentDay.dayNumber)) {
@@ -127,7 +127,7 @@ export function JourneyDetailV2({
   // This ensures all journeys show "Progress to Level 1" when starting
   const currentDayForLevelCheck = getCurrentDayNumber();
   const phaseForLevelCheck = getCurrentPhaseStatus();
-  const isDay0 = currentDayForLevelCheck === 0 || currentDayForLevelCheck === null || phaseForLevelCheck === 'preparation';
+  const isDay0 = currentDayForLevelCheck === 0 || currentDayForLevelCheck === null || phaseForLevelCheck === 'onboarding';
   
   // If XP is 0 OR we're on Day 0/preparation, ALWAYS force Level 1
   // This prevents showing incorrect levels from old data
@@ -159,12 +159,8 @@ export function JourneyDetailV2({
   const currentPhase = getCurrentPhase();
   const currentDayNumber = getCurrentDayNumber();
   
-  // Day 0 = Tuesday Jun 30, 2026; Day 1 = Wednesday Jul 1, 2026 (Week 1 starts)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  // No preparation phase - journey starts directly on Day 1
-  const isPreparationPhase = false;
+  // Onboarding: July 9–17, 2026 (soft start before Day 1 on July 18)
+  const isPreparationPhase = getCurrentPhaseStatus() === 'onboarding';
   
   // Always get preparation data so Day 0 is always available
   const preparationData = getJourneyPreparation(journeyId);
@@ -688,7 +684,7 @@ export function JourneyDetailV2({
       return null;
     }
     
-    // Don't show next day if we're already at the last day (90)
+    // Don't show next day if we're already at the last day
     if (nextDayNumber > journey.totalDays) {
       return null;
     }
@@ -958,9 +954,8 @@ export function JourneyDetailV2({
               <div className="text-sm space-y-1">
                 {(() => {
                   const phase = getCurrentPhase(currentDay.dayNumber);
-                  const phaseDay = getPhaseDayNumber(currentDay.dayNumber);
                   const phaseDesc = getPhaseDescription(phase);
-                  const phaseDaysRemaining = phase === 1 ? (90 - phaseDay) : phase === 2 ? (180 - phaseDay) : null;
+                  const phaseDaysRemaining = getPhaseDaysRemaining(currentDay.dayNumber);
                   
                   if (!phase) return null;
                   
@@ -1224,7 +1219,7 @@ export function JourneyDetailV2({
               {/* Days List */}
               <Card className="p-2.5 sm:p-3 md:p-4">
                 <h3 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 sm:mb-2.5 md:mb-3">
-                  {isPreparationPhase ? 'Preparation' : `Week ${selectedWeek}`}
+                  {isPreparationPhase ? 'Onboarding' : `Week ${selectedWeek}`}
                 </h3>
                 <div className="space-y-1.5 sm:space-y-2">
                 {/* Day 0 - Preparation Button - Always Available */}

@@ -97,7 +97,7 @@ export function SignUpForm() {
     <AuthLayout
       mode="signup"
       title="Start Your Journey"
-      subtitle="Create an account to begin your 90-day transformation."
+      subtitle="Create an account to begin your 184-day transformation."
       footer={
         <p className="text-center text-xs text-[var(--text-secondary)] leading-relaxed">
           By creating an account, you agree to our Terms of Service and Privacy Policy.

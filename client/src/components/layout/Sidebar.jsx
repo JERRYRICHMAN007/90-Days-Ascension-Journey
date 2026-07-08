@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 import { figmaSidebarNavItems, figmaSidebarFooterItems } from './navItems';
 
-import { getCurrentDayNumber } from '../../utils/dates';
+import { getCurrentDayNumber, getCurrentPhaseStatus, JOURNEY_CONSTANTS } from '../../utils/dates';
 
 
 
@@ -60,7 +60,7 @@ export function Sidebar() {
 
           <span className="text-[24px] font-extrabold text-[#00daf3] tracking-[-1.2px] leading-none">
 
-            Forge90
+            Forge184
 
           </span>
 
@@ -107,10 +107,10 @@ export function Sidebar() {
             <p className="text-[10px] text-[#bac9cc]">
 
               {currentDay != null && currentDay > 0
-
-                ? `Day ${currentDay} of 90`
-
-                : 'Preparation phase'}
+                ? `Day ${currentDay} of ${JOURNEY_CONSTANTS.TOTAL_DAYS}`
+                : getCurrentPhaseStatus() === 'onboarding'
+                  ? 'Onboarding'
+                  : 'Before the forge'}
 
             </p>
 

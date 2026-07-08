@@ -1,11 +1,15 @@
+export const FORGE_BRAND = "Forge184";
+
+export const JOURNEY_TOTAL_DAYS = 184;
+
 export const journeys = [
   {
     id: "body-transformation",
     title: "Body Transformation",
     icon: "💪",
     timeBlock: "Time: 5:00-5:45 AM (Monday-Friday)",
-    description: "Upper Body → Lower Body → Core → Functional → Mobility",
-    totalDays: 90,
+    description: "184-day physical discipline — the foundation that never stops",
+    totalDays: JOURNEY_TOTAL_DAYS,
     color: "#667eea",
   },
   {
@@ -13,8 +17,8 @@ export const journeys = [
     title: "Dual Brand",
     icon: "🎨",
     timeBlock: "Time: 4:00-5:00 AM (Daily except Saturday)",
-    description: "_richman.oo7 (Personal) + _ryxen.oo7 (Company) Brand Building",
-    totalDays: 90,
+    description: "_richman.oo7 + _ryxen.oo7 — revenue and audience compound over 184 days",
+    totalDays: JOURNEY_TOTAL_DAYS,
     color: "#f093fb",
   },
   {
@@ -22,35 +26,39 @@ export const journeys = [
     title: "Reading",
     icon: "📚",
     timeBlock: "Time: 9:15-10:00 PM (Daily except Friday)",
-    description: "Monthly book rotation — Successful Habits → System Building → Growth",
-    totalDays: 90,
+    description: "6 books over 6 months — knowledge that feeds every other journey",
+    totalDays: JOURNEY_TOTAL_DAYS,
     color: "#4facfe",
   },
   {
     id: "writers",
-    title: "Writer's Journey",
+    title: "Writing",
     icon: "✍️",
     timeBlock: "Time: 10:00-10:30 PM (Daily except Friday)",
-    description: "Learning → Execution → Reflection",
-    totalDays: 84, // 12 weeks * 7 days
+    description: "184-day distribution engine — content and audience that compound",
+    totalDays: JOURNEY_TOTAL_DAYS,
     color: "#43e97b",
   },
   {
     id: "software-engineering",
     title: "Software Engineering",
     icon: "💻",
-    timeBlock: "Time: 4:00-5:00 PM (Daily except Sunday) — Mobile Mon-Wed, Frontend Thu-Fri, Backend Sat",
-    description: "Mobile → Frontend → Backend → WordPress",
-    totalDays: 180,
+    timeBlock: "Time: 4:00-5:00 PM (Daily except Sunday)",
+    description: "Phase 1: Frontend · Phase 2: Backend + APIs · Phase 3: Ship Comfort",
+    totalDays: JOURNEY_TOTAL_DAYS,
     color: "#fa709a",
   },
 ];
 
-// OFFICIAL START DATE: Day 1 = Wednesday, July 1, 2026
-// Day 0 = Tuesday, June 30, 2026 - Preparation/Setup Day (before Week 1)
-// Calendar weeks run Sunday → Saturday (matches workout outline)
+// Onboarding: July 9–17, 2026 (9 days soft start)
+// Day 1 = Saturday, July 18, 2026 — The Real Deal
+// Day 184 = Sunday, January 18, 2027
+// Calendar weeks run Sunday → Saturday
 
-export const JOURNEY_START_DATE = "2026-07-01"; // Wednesday = Day 1
+export const ONBOARDING_START_DATE = "2026-07-09";
+export const ONBOARDING_END_DATE = "2026-07-17";
+export const JOURNEY_START_DATE = "2026-07-18";
+export const JOURNEY_END_DATE = "2027-01-18";
 
 export function formatLocalDateString(date) {
   const y = date.getFullYear();
@@ -161,7 +169,10 @@ export function getWeekTheme(weekNum) {
     10: "Excellence - Pursuing perfection in execution",
     11: "Leadership - Guiding and inspiring others",
     12: "Transformation - Complete evolution and change",
-    13: "Celebration - Reflecting on achievements and next steps",
+    14: "Leverage Phase - Systematize income and ship Comfort",
+    15: "Scale Phase - Brand at full execution, MVP in progress",
+    16: "Completion Phase - Ship Comfort, transform body, publish writing",
+    17: "Legacy Phase - Income systemized, arc complete",
   };
   return themes[weekNum] || "Week Theme";
 }

@@ -1,6 +1,7 @@
 import { getExecutionTasks } from '../dualBrandExecutionPlan.js';
 import {
   JOURNEY_START_DATE,
+  JOURNEY_TOTAL_DAYS,
   generateWeeks,
   getDateStringForDayNumber,
   getCalendarWeekDayNumbers,
@@ -51,11 +52,11 @@ function getDualBrandReflection(weekNum, dayIndex) {
 // Dual Brand Journey - Complete 13 weeks
 export const dualBrandWeeks = generateWeeks(
   JOURNEY_START_DATE,
-  getCalendarWeekCount(90)
+  getCalendarWeekCount(JOURNEY_TOTAL_DAYS)
 ).map((week, idx) => {
     const days = [];
 
-    for (const dayNumber of getCalendarWeekDayNumbers(week.startDate, 90)) {
+    for (const dayNumber of getCalendarWeekDayNumbers(week.startDate, JOURNEY_TOTAL_DAYS)) {
       const dayDateString = getDateStringForDayNumber(dayNumber);
       const [year, month, day] = dayDateString.split("-").map(Number);
       const dayDate = new Date(year, month - 1, day);
@@ -2321,7 +2322,7 @@ function getDualBrandProject(weekNum, dayIndex) {
       {
         title: "DUAL BRAND ASCENSION COMPLETE",
         description:
-          "Congratulations! You have completed the 90-day Dual Brand Ascension Journey",
+          "Congratulations! You have completed the 184-day Dual Brand Forge184 Journey",
         requirements: [
           "Reflect on journey",
           "Celebrate success",

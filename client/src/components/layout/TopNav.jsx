@@ -47,7 +47,7 @@ export function TopNav() {
                 onClick={() => navigate('/dashboard')}
                 className="md:hidden text-[24px] font-extrabold text-[#00daf3] tracking-[-1.2px] leading-none hover:opacity-80"
               >
-                Forge90
+                Forge184
               </button>
               <p className="hidden md:block text-[12px] font-bold uppercase tracking-[1.2px] text-[#bac9cc] truncate">
                 SYSTEM STATUS: OPTIMAL
@@ -59,7 +59,7 @@ export function TopNav() {
               onClick={() => navigate('/dashboard')}
               className="text-xl md:text-2xl font-extrabold text-[var(--neon-cyan-alt)] tracking-[-1.2px] hover:opacity-80"
             >
-              Forge90
+              Forge184
             </button>
           )}
         </div>

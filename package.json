@@ -1,8 +1,8 @@
 {
-  "name": "forge90",
+  "name": "forge184",
   "private": true,
   "version": "1.0.0",
-  "description": "Forge90 — unified web app (React client + Express API)",
+  "description": "Forge184 — unified web app (React client + Express API)",
   "workspaces": [
     "client",
     "server"
@@ -17,7 +17,8 @@
     "install:all": "npm install"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "supabase": "^2.109.1"
   },
   "engines": {
     "node": ">=20"

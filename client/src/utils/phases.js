@@ -1,26 +1,26 @@
 /**
- * Phase System for Forge90
- * 
- * Day 0 = Tuesday, June 30, 2026 (Preparation)
- * Phase 1 (Days 1-90): Mobile Engineering + Frontend Engineering only
- * Phase 2 (Days 91-180): Backend Engineering + WordPress
- * 
- * Start Date: Wednesday, July 1, 2026
+ * Phase System for Forge184 — Software Engineering
+ *
+ * Onboarding: July 9–17, 2026
+ * Phase 1 (Days 1–60): Frontend foundations
+ * Phase 2 (Days 61–120): Backend + APIs
+ * Phase 3 (Days 121–184): Build and ship Comfort (transport app)
+ *
+ * Start Date: Saturday, July 18, 2026
  */
 
-// Use local date constructors to avoid timezone issues
-// Month is 0-indexed: 0 = January, 1 = February, 2 = March, etc.
 export const PHASE_CONSTANTS = {
-  DAY_0_START: new Date(2026, 5, 30), // Day 0 - Tuesday, June 30, 2026
-  START_DATE: new Date(2026, 6, 1), // Day 1 - Wednesday, July 1, 2026
-  PHASE_1_DAYS: 90,
-  PHASE_2_DAYS: 90,
-  TOTAL_PHASES: 2,
+  ONBOARDING_START: new Date(2026, 6, 9),
+  START_DATE: new Date(2026, 6, 18),
+  PHASE_1_DAYS: 60,
+  PHASE_2_DAYS: 60,
+  PHASE_3_DAYS: 64,
+  TOTAL_DAYS: 184,
+  TOTAL_PHASES: 3,
 };
 
 /**
- * Get current phase number (1 or 2)
- * @param {number} dayNumber - Current day number (1-180)
+ * @param {number} dayNumber - Current day number (1–184)
  * @returns {number | null}
  */
 export function getCurrentPhase(dayNumber) {
@@ -33,12 +33,14 @@ export function getCurrentPhase(dayNumber) {
   if (dayNumber <= PHASE_CONSTANTS.PHASE_1_DAYS + PHASE_CONSTANTS.PHASE_2_DAYS) {
     return 2;
   }
+  if (dayNumber <= PHASE_CONSTANTS.TOTAL_DAYS) {
+    return 3;
+  }
   return null;
 }
 
 /**
- * Get phase day number (1-90 within current phase)
- * @param {number} dayNumber - Current day number (1-180)
+ * @param {number} dayNumber - Current day number (1–184)
  * @returns {number | null}
  */
 export function getPhaseDayNumber(dayNumber) {
@@ -52,14 +54,15 @@ export function getPhaseDayNumber(dayNumber) {
   if (phase === 1) {
     return dayNumber;
   }
-  // Phase 2: dayNumber 91 = phase day 1, dayNumber 92 = phase day 2, etc.
-  return dayNumber - PHASE_CONSTANTS.PHASE_1_DAYS;
+  if (phase === 2) {
+    return dayNumber - PHASE_CONSTANTS.PHASE_1_DAYS;
+  }
+  return dayNumber - PHASE_CONSTANTS.PHASE_1_DAYS - PHASE_CONSTANTS.PHASE_2_DAYS;
 }
 
 /**
- * Check if a discipline is available in current phase
- * @param {string} discipline - Discipline name (Mobile, Frontend, Backend, WordPress)
- * @param {number} dayNumber - Current day number
+ * @param {string} discipline
+ * @param {number} dayNumber
  * @returns {boolean}
  */
 export function isDisciplineAvailable(discipline, dayNumber) {
@@ -67,38 +70,41 @@ export function isDisciplineAvailable(discipline, dayNumber) {
   if (!phase) {
     return false;
   }
-  
-  // Phase 1: Only Mobile and Frontend
+
   if (phase === 1) {
-    return discipline === 'Mobile' || discipline === 'Frontend';
+    return discipline === 'Frontend' || discipline === 'Mobile';
   }
-  
-  // Phase 2: Only Backend and WordPress
+
   if (phase === 2) {
-    return discipline === 'Backend' || discipline === 'WordPress';
+    return discipline === 'Backend' || discipline === 'APIs';
   }
-  
+
+  if (phase === 3) {
+    return discipline === 'Comfort' || discipline === 'Backend' || discipline === 'Frontend';
+  }
+
   return false;
 }
 
 /**
- * Get phase description
- * @param {number} phase - Phase number (1 or 2)
+ * @param {number} phase - Phase number (1, 2, or 3)
  * @returns {string}
  */
 export function getPhaseDescription(phase) {
   if (phase === 1) {
-    return 'Mobile Engineering + Frontend Engineering';
+    return 'Frontend Foundations';
   }
   if (phase === 2) {
-    return 'Backend Engineering + WordPress';
+    return 'Backend + APIs';
+  }
+  if (phase === 3) {
+    return 'Build & Ship Comfort';
   }
   return 'Unknown Phase';
 }
 
 /**
- * Get days remaining in current phase
- * @param {number} dayNumber - Current day number
+ * @param {number} dayNumber
  * @returns {number | null}
  */
 export function getPhaseDaysRemaining(dayNumber) {
@@ -110,48 +116,57 @@ export function getPhaseDaysRemaining(dayNumber) {
   if (!phaseDay) {
     return null;
   }
-  return PHASE_CONSTANTS.PHASE_1_DAYS - phaseDay;
+  const phaseLength =
+    phase === 1
+      ? PHASE_CONSTANTS.PHASE_1_DAYS
+      : phase === 2
+        ? PHASE_CONSTANTS.PHASE_2_DAYS
+        : PHASE_CONSTANTS.PHASE_3_DAYS;
+  return phaseLength - phaseDay;
 }
 
 /**
- * Format phase day number with "Day X of 90 (Phase Y)"
- * @param {number} dayNumber - Current day number
+ * @param {number} dayNumber
  * @returns {string}
  */
 export function formatPhaseDayNumber(dayNumber) {
   const phase = getCurrentPhase(dayNumber);
   const phaseDay = getPhaseDayNumber(dayNumber);
-  
+
   if (!phase || !phaseDay) {
     return 'Before Journey Start';
   }
-  
-  return `Day ${phaseDay} of 90 (Phase ${phase})`;
+
+  const phaseLength =
+    phase === 1
+      ? PHASE_CONSTANTS.PHASE_1_DAYS
+      : phase === 2
+        ? PHASE_CONSTANTS.PHASE_2_DAYS
+        : PHASE_CONSTANTS.PHASE_3_DAYS;
+
+  return `Day ${phaseDay} of ${phaseLength} (Phase ${phase})`;
 }
 
 /**
- * Get date for a specific day number
- * @param {number} dayNumber - Day number (1-180)
+ * @param {number} dayNumber - Day number (1–184)
  * @returns {Date | null}
  */
 export function getDateForDay(dayNumber) {
-  if (!dayNumber || dayNumber < 1 || dayNumber > 180) {
+  if (!dayNumber || dayNumber < 1 || dayNumber > PHASE_CONSTANTS.TOTAL_DAYS) {
     return null;
   }
-  
-  // Use local date components to avoid timezone issues
+
   const startDate = new Date(PHASE_CONSTANTS.START_DATE);
   const startLocal = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-  
+
   const targetDate = new Date(startLocal);
   targetDate.setDate(startLocal.getDate() + dayNumber - 1);
-  
+
   return targetDate;
 }
 
 /**
- * Check if we're in Phase 1
- * @param {number} dayNumber - Current day number
+ * @param {number} dayNumber
  * @returns {boolean}
  */
 export function isPhase1(dayNumber) {
@@ -159,12 +174,17 @@ export function isPhase1(dayNumber) {
 }
 
 /**
- * Check if we're in Phase 2
- * @param {number} dayNumber - Current day number
+ * @param {number} dayNumber
  * @returns {boolean}
  */
 export function isPhase2(dayNumber) {
   return getCurrentPhase(dayNumber) === 2;
 }
 
-
+/**
+ * @param {number} dayNumber
+ * @returns {boolean}
+ */
+export function isPhase3(dayNumber) {
+  return getCurrentPhase(dayNumber) === 3;
+}

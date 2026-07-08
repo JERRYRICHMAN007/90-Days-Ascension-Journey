@@ -1,5 +1,6 @@
 import {
   JOURNEY_START_DATE,
+  JOURNEY_TOTAL_DAYS,
   generateWeeks,
   getDateStringForDayNumber,
   getCalendarWeekDayNumbers,
@@ -159,11 +160,11 @@ function getReadingReflection(weekNum, dayIndex, dayNumber) {
 // Reading Journey - Complete 13 weeks
 export const readingWeeks = generateWeeks(
   JOURNEY_START_DATE,
-  getCalendarWeekCount(90)
+  getCalendarWeekCount(JOURNEY_TOTAL_DAYS)
 ).map((week, idx) => {
   const days = [];
 
-  for (const dayNumber of getCalendarWeekDayNumbers(week.startDate, 90)) {
+  for (const dayNumber of getCalendarWeekDayNumbers(week.startDate, JOURNEY_TOTAL_DAYS)) {
     const dayDateString = getDateStringForDayNumber(dayNumber);
     const [year, month, day] = dayDateString.split("-").map(Number);
     const dayDate = new Date(year, month - 1, day);

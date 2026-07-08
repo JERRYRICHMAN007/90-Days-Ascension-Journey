@@ -1,6 +1,6 @@
-# Forge90 Environment Setup Guide
+# Forge184 Environment Setup Guide
 
-This document covers environment variable configuration for both frontend and backend of Forge90.
+This document covers environment variable configuration for both frontend and backend of Forge184.
 
 ## Quick Reference
 

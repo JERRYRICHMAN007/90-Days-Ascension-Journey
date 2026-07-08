@@ -1,5 +1,5 @@
 {
-  "name": "@forge90/client",
+  "name": "@forge184/client",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -24,7 +24,7 @@
     "react-body-highlighter": "^2.0.5",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
-    "recharts": "^3.9.0",
+    "recharts": "^2.12.7",
     "tailwind-merge": "^3.4.0",
     "three": "^0.169.0"
   },

@@ -33,12 +33,12 @@ async function runPostAuthSync() {
   try {
     await hydrateFromBackend();
   } catch (e) {
-    console.error("Forge90: hydration failed, continuing without sync", e);
+    console.error("Forge184: hydration failed, continuing without sync", e);
   }
   try {
     await flushQueue();
   } catch (e) {
-    console.error("Forge90: queue flush failed", e);
+    console.error("Forge184: queue flush failed", e);
   }
 }
 

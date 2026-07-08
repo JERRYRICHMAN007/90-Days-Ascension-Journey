@@ -236,11 +236,14 @@ export const READING_TOOL_RESOURCES = [
   },
 ].map(normalizeResource);
 
-/** Map day number (1–90) to the active monthly book for the 90-day journey. */
+/** Map day number (1–184) to the active monthly book for the 6-month arc. */
 export function getBookForDayNumber(dayNumber) {
-  if (dayNumber <= 30) return READING_BOOKS_BY_MONTH[0];
-  if (dayNumber <= 60) return READING_BOOKS_BY_MONTH[1];
-  return READING_BOOKS_BY_MONTH[2];
+  if (dayNumber <= 31) return READING_BOOKS_BY_MONTH[0];
+  if (dayNumber <= 62) return READING_BOOKS_BY_MONTH[1];
+  if (dayNumber <= 92) return READING_BOOKS_BY_MONTH[2];
+  if (dayNumber <= 123) return READING_BOOKS_BY_MONTH[3];
+  if (dayNumber <= 154) return READING_BOOKS_BY_MONTH[4];
+  return READING_BOOKS_BY_MONTH[5];
 }
 
 export function getBookDisplayTitle(book) {

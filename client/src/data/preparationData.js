@@ -1,12 +1,11 @@
 /**
- * Day 0 Preparation Content for All Journeys
- * This is shown when the user is preparing before the journey starts
+ * Onboarding content for all journeys (Jul 9–17, 2026 soft start)
  */
 
 export const journeyPreparationData = {
   'body-transformation': {
     title: 'Body Transformation Preparation',
-    subtitle: 'Prepare your body, mind, and environment for 90 days of transformation',
+    subtitle: 'Prepare your body, mind, and environment for 184 days of transformation',
     icon: '💪',
     sections: [
       {
@@ -37,7 +36,7 @@ export const journeyPreparationData = {
         icon: '🧠',
         tasks: [
           'Define your specific body transformation goals',
-          'Set realistic expectations for 90 days',
+          'Set realistic expectations for 184 days',
           'Prepare mentally for consistency over intensity',
           'Write down your "why" for this journey',
           'Set up a progress tracking system (photos, measurements)'
@@ -121,7 +120,7 @@ export const journeyPreparationData = {
   },
   'reading': {
     title: 'Reading Journey Preparation',
-    subtitle: 'Prepare your reading environment and resources for 90 days of learning',
+    subtitle: 'Prepare your reading environment and resources for 184 days of learning',
     icon: '📚',
     sections: [
       {
@@ -235,7 +234,7 @@ export const journeyPreparationData = {
   },
   'software-engineering': {
     title: 'Software Engineering Preparation',
-    subtitle: 'Prepare your development environment and tools for 90 days of coding mastery',
+    subtitle: 'Prepare your development environment and tools for 184 days — ship Comfort by Day 184',
     icon: '💻',
     sections: [
       {

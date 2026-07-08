@@ -5,6 +5,7 @@ import { getJourneyCardsConfig } from "../utils/journeyTheme.js";
 import {
   getCurrentPhaseStatus,
   getCurrentDayNumber,
+  JOURNEY_CONSTANTS,
 } from "../utils/dates";
 import { cleanInvalidProgress, resetAllProgress } from "../utils/progressTracking";
 import { STORAGE_KEYS } from "../utils/storageKeys.js";
@@ -68,7 +69,7 @@ export function HomePage() {
     const forceReset = localStorage.getItem('force_reset_all') === 'true';
     const alreadyReset = localStorage.getItem('day0_reset_completed') === 'true';
 
-    if ((currentDay === 0 || phase === 'preparation' || forceReset) && (!alreadyReset || forceReset)) {
+    if ((currentDay === 0 || phase === 'onboarding' || forceReset) && (!alreadyReset || forceReset)) {
       const storedXp = localStorage.getItem(STORAGE_KEYS.XP);
       const storedCompletions = localStorage.getItem('sessionCompletions');
       const shouldReset =
@@ -81,7 +82,7 @@ export function HomePage() {
         localStorage.setItem('day0_reset_completed', 'true');
         localStorage.removeItem('force_reset_all');
       }
-    } else if (phase !== 'preparation' && currentDay !== 0) {
+    } else if (phase !== 'onboarding' && currentDay !== 0) {
       localStorage.removeItem('day0_reset_completed');
       localStorage.removeItem('force_reset_all');
     }
@@ -117,10 +118,10 @@ export function HomePage() {
     const dayNumber = getCurrentDayNumber();
 
     let sub = 'Your transformation awaits';
-    if ((phase === 'phase1' || phase === 'phase2') && dayNumber) {
-      sub = `Day ${dayNumber} of 90 — Keep forging.`;
-    } else if (phase === 'preparation') {
-      sub = 'Prepare for your transformation';
+    if ((phase === 'phase1' || phase === 'phase2' || phase === 'phase3') && dayNumber) {
+      sub = `Day ${dayNumber} of ${JOURNEY_CONSTANTS.TOTAL_DAYS} — Keep forging.`;
+    } else if (phase === 'onboarding') {
+      sub = 'Onboarding — build the habit of showing up';
     } else if (phase === 'after') {
       sub = 'Journey complete — you forged it.';
     }
@@ -134,7 +135,8 @@ export function HomePage() {
   }, [progressTick]);
 
   const showLiveSession =
-    (currentPhase === 'phase1' || currentPhase === 'phase2') && currentDay != null;
+    (currentPhase === 'phase1' || currentPhase === 'phase2' || currentPhase === 'phase3') &&
+    currentDay != null;
 
   return (
     <>

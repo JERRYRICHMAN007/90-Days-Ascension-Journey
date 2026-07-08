@@ -31,7 +31,7 @@ export async function sendPasswordResetEmail(
   const msg = {
     to: email,
     from: FROM_EMAIL,
-    subject: 'Reset Your Password - Forge90',
+    subject: 'Reset Your Password - Forge184',
     html: `
       <!DOCTYPE html>
       <html>
@@ -54,7 +54,7 @@ export async function sendPasswordResetEmail(
             <p>This link will expire in 1 hour.</p>
             <p>If you didn't request this, please ignore this email.</p>
             <div class="footer">
-              <p>Best regards,<br>The Forge90 Team</p>
+              <p>Best regards,<br>The Forge184 Team</p>
             </div>
           </div>
         </body>
@@ -71,7 +71,7 @@ export async function sendPasswordResetEmail(
       If you didn't request this, please ignore this email.
       
       Best regards,
-      The Forge90 Team
+      The Forge184 Team
     `,
   };
 
@@ -99,7 +99,7 @@ export async function sendVerificationEmail(
   const msg = {
     to: email,
     from: FROM_EMAIL,
-    subject: 'Verify Your Email - Forge90',
+    subject: 'Verify Your Email - Forge184',
     html: `
       <!DOCTYPE html>
       <html>

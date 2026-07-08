@@ -1,5 +1,6 @@
 import {
   JOURNEY_START_DATE,
+  JOURNEY_TOTAL_DAYS,
   generateWeeks,
   getDateStringForDayNumber,
   getCalendarWeekDayNumbers,
@@ -19,14 +20,14 @@ function getWriterContentDayIndex(dayIndex) {
   return dayIndex;
 }
 
-// Writer's Journey - Complete 12 weeks (84 days, 7 days per week)
+// Writing Journey — full 184-day arc
 export const writersWeeks = generateWeeks(
   JOURNEY_START_DATE,
-  getCalendarWeekCount(84)
+  getCalendarWeekCount(JOURNEY_TOTAL_DAYS)
 ).map((week, idx) => {
   const days = [];
 
-  for (const dayNumber of getCalendarWeekDayNumbers(week.startDate, 84)) {
+  for (const dayNumber of getCalendarWeekDayNumbers(week.startDate, JOURNEY_TOTAL_DAYS)) {
     const dayDateString = getDateStringForDayNumber(dayNumber);
     const [year, month, day] = dayDateString.split("-").map(Number);
     const dayDate = new Date(year, month - 1, day);

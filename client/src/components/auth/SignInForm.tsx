@@ -152,7 +152,7 @@ export function SignInForm() {
     <AuthLayout
       mode="signin"
       title="Welcome Back"
-      subtitle="Sign in to continue your Forge90 journey."
+      subtitle="Sign in to continue your Forge184 journey."
       footer={
         <p className="text-center text-xs text-[var(--text-secondary)] leading-relaxed">
           By signing in, you agree to our Terms of Service and Privacy Policy.

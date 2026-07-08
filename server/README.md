@@ -1,6 +1,6 @@
-# Forge90 Backend API
+# Forge184 Backend API
 
-Backend API for the Forge90 application with authentication, file uploads, and user management.
+Backend API for the Forge184 application with authentication, file uploads, and user management.
 
 ## Tech Stack
 

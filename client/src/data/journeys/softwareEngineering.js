@@ -1,5 +1,6 @@
 import {
   JOURNEY_START_DATE,
+  JOURNEY_TOTAL_DAYS,
   generateWeeks,
   getDateStringForDayNumber,
   getCalendarWeekDayNumbers,
@@ -13,17 +14,16 @@ import {
 } from './writers.js';
 import { SE_CORE_RESOURCES } from './journeyCuratedResources.js';
 
-// Software Engineering Journey - Full 13-Week Journey
-// July 1, 2026 - September 28, 2026 (90 days)
-// Official Ascension Phase - Day 1 = July 1, 2026 (Wednesday)
+// Software Engineering Journey — Forge184 (184 days, 3 phases)
+// Day 1 = July 18, 2026 · Day 184 = January 18, 2027
 export const softwareEngineeringWeeks = generateWeeks(
   JOURNEY_START_DATE,
-  getCalendarWeekCount(180)
+  getCalendarWeekCount(JOURNEY_TOTAL_DAYS)
 ).map((week, idx) => {
     const days = [];
     const weekNum = idx + 1;
 
-    for (const dayNumber of getCalendarWeekDayNumbers(week.startDate, 180)) {
+    for (const dayNumber of getCalendarWeekDayNumbers(week.startDate, JOURNEY_TOTAL_DAYS)) {
       const dayDateString = getDateStringForDayNumber(dayNumber);
       const [year, month, day] = dayDateString.split("-").map(Number);
       const dayDate = new Date(year, month - 1, day);
@@ -6987,7 +6987,7 @@ function getSoftwareEngineeringSocialPosting(weekNum, dayIndex) {
   const posts = {
     1: {
       0: {
-        text: "Day 1 of my 90-day software engineering journey complete! 🚀 Just built my first semantic HTML5 page from scratch. Learning the foundations that will power everything else. #WebDev #HTML5 #90DayChallenge #CodeNewbie",
+        text: "Day 1 of my 184-day software engineering journey complete! 🚀 Just built my first semantic HTML5 page from scratch. Learning the foundations that will power everything else. #WebDev #HTML5 #Forge184 #CodeNewbie",
         platforms: ["Twitter/X", "LinkedIn", "Dev.to", "GitHub"],
         include: [
           "Screenshot of your HTML page in browser",
@@ -7014,7 +7014,7 @@ function getSoftwareEngineeringSocialPosting(weekNum, dayIndex) {
   return {
     text: `Day ${
       dayIndex + 1
-    } of my 90-day software engineering journey! Progress update coming soon. #WebDev #90DayChallenge`,
+    } of my 184-day software engineering journey! Progress update coming soon. #WebDev #Forge184`,
     platforms: ["Twitter/X", "LinkedIn", "GitHub"],
   };
 }

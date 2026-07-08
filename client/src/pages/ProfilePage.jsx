@@ -108,7 +108,7 @@ export function ProfilePage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl sm:text-3xl font-bold">Profile</h1>
-        <p className="text-muted-foreground text-sm mt-1">Your Forge90 identity and stats</p>
+        <p className="text-muted-foreground text-sm mt-1">Your Forge184 identity and stats</p>
       </motion.div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Personal Details */}
@@ -217,7 +217,7 @@ export function ProfilePage() {
               
               <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-border">
                 <p className="text-sm text-muted-foreground">
-                  Showcase your achievements and badges to demonstrate your progress and accomplishments in your Forge90 journey.
+                  Showcase your achievements and badges to demonstrate your progress and accomplishments in your Forge184 journey.
                 </p>
               </div>
 

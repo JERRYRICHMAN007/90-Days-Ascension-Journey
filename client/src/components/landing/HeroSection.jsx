@@ -88,7 +88,7 @@ export function HeroSection() {
                   Transform Your Life
                 </span>
                 <br />
-                <span className="text-foreground">in Just 90 Days</span>
+                <span className="text-foreground">in 184 Days</span>
               </motion.h1>
 
               <motion.p
@@ -97,7 +97,7 @@ export function HeroSection() {
                 transition={{ delay: 0.5 }}
                 className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-xl leading-relaxed mx-auto lg:mx-0"
               >
-                Your all-in-one platform for body transformation, brand building, reading, writing, and software engineering growth. Start your Forge90 journey today.
+                Your all-in-one platform for body transformation, brand building, reading, writing, and software engineering growth. Start your Forge184 journey today.
               </motion.p>
 
               <motion.div

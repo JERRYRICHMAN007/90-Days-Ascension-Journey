@@ -16,6 +16,7 @@ import {
   computeMasteryScore,
 } from '../../utils/tracing.js';
 import { getJourneyAccent, masteryToRank } from '../../utils/journeyAccents.js';
+import MasteryScoreRing from './MasteryScoreRing.jsx';
 
 function formatChartDate(dateStr) {
   if (!dateStr) return '';
@@ -105,31 +106,21 @@ export function JourneyAnalyticsDetail({ journeyId }) {
         <div className="w-24 h-1 rounded-full mt-4" style={{ background: accent.color }} />
       </motion.div>
 
-      {/* Mastery score hero */}
+      {/* Mastery score hero — animated neon ring */}
       <div
-        className="rounded-[12px] border p-6 sm:p-8 text-center"
-        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
+        className="rounded-[12px] border p-6 sm:p-8"
+        style={{ background: '#000', borderColor: 'var(--border-subtle)' }}
       >
-        <p className="forge-label mb-2">MASTERY SCORE</p>
-        <p
-          className="text-[56px] sm:text-[64px] font-extrabold tracking-[-1.28px] tabular-nums leading-none"
-          style={{ color: accent.color, textShadow: accent.glow }}
-        >
-          {masteryScore}
-        </p>
-        <p className="text-xs text-[var(--text-secondary)] mt-3 uppercase tracking-wide">
-          {trace.completion.percentComplete}% journey complete
-        </p>
-        <div className="forge-progress-track mt-4 max-w-md mx-auto">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${trace.completion.percentComplete}%`,
-              background: `linear-gradient(90deg, ${accent.color}, ${accent.light})`,
-              boxShadow: trace.completion.percentComplete > 0 ? accent.glow : 'none',
-            }}
+        <div className="flex justify-center items-center py-8">
+          <MasteryScoreRing
+            score={masteryScore}
+            change={12.2}
+            size={280}
           />
         </div>
+        <p className="text-center text-xs text-[var(--text-secondary)] uppercase tracking-wide">
+          {trace.completion.percentComplete}% journey complete
+        </p>
       </div>
 
       {/* Streak + Quiz + XP — Figma stat grid */}

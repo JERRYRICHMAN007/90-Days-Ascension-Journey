@@ -19,14 +19,14 @@ type AuthLayoutProps = {
 const PANEL_COPY = {
   signin: {
     eyebrow: 'ACCESS PROTOCOL',
-    headline: 'Resume Your\nAscension.',
+    headline: 'Resume Your\nForge.',
     body: 'Pick up where you left off. Your streaks, mastery scores, and daily sessions are waiting.',
     bullets: ['Sync across devices', 'Track all five journeys', 'Secure session'],
   },
   signup: {
     eyebrow: 'INITIATION',
     headline: 'Enter the\nForge.',
-    body: 'Join the 90-day mastery protocol. Five journeys. One standard: excellence.',
+    body: 'Join the 184-day mastery protocol. Five journeys. One standard: excellence.',
     bullets: ['Free to start', 'Five mastery paths', 'Daily forge sessions'],
   },
 };
@@ -69,7 +69,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
           </ul>
         </div>
         <p className="text-[10px] uppercase tracking-[1.2px] text-[var(--text-secondary)]">
-          © {new Date().getFullYear()} Forge90 · Discipline is Freedom
+          © {new Date().getFullYear()} Forge184 · Discipline is Freedom
         </p>
       </aside>
 
@@ -87,7 +87,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
             to="/"
             className="text-xl font-extrabold tracking-[-1px] text-[var(--neon-cyan-alt)]"
           >
-            Forge90
+            Forge184
           </Link>
           <Link
             to="/"
@@ -105,7 +105,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
                 to="/"
                 className="text-2xl font-extrabold tracking-[-1.2px] text-[var(--neon-cyan-alt)]"
               >
-                Forge90
+                Forge184
               </Link>
             </div>
 

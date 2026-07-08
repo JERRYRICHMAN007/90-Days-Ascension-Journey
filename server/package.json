@@ -1,7 +1,7 @@
 {
-  "name": "@forge90/server",
+  "name": "@forge184/server",
   "version": "1.0.0",
-  "description": "Backend API for Forge90",
+  "description": "Backend API for Forge184",
   "main": "dist/index.js",
   "scripts": {
     "dev": "set PORT=5001&& set HOST=127.0.0.1&& tsx watch src/index.ts",
