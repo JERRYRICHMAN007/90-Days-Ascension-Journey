@@ -1,4 +1,4 @@
-# Free hosting for Aether (frontend + API on one URL)
+# Free hosting for Aether API (UI stays on Vercel)
 # https://render.com/docs/blueprint-spec
 services:
   - type: web
@@ -6,9 +6,9 @@ services:
     runtime: node
     plan: free
     region: oregon
-    # Do NOT set NODE_ENV=production for the whole service — npm then skips
-    # vite/typescript/prisma (devDependencies) and the build fails.
-    buildCommand: npm install --include=dev && npm exec -w server -- prisma generate && npm run build -w client && npm run build -w server
+    # Important: do NOT set NODE_ENV=production as a service env var (breaks npm install).
+    # Build skips broken `tsc` — prisma generate only; runtime uses tsx.
+    buildCommand: npm install --include=dev && npm run build -w server
     startCommand: npm exec -w server -- prisma migrate deploy && NODE_ENV=production npm run start -w server
     healthCheckPath: /health
     envVars:
