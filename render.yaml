@@ -6,12 +6,14 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm install && npm run build -w client && npm run build -w server && npm exec -w server -- prisma generate
-    startCommand: npm exec -w server -- prisma migrate deploy && npm run start:prod -w server
+    # Do NOT set NODE_ENV=production for the whole service — npm then skips
+    # vite/typescript/prisma (devDependencies) and the build fails.
+    buildCommand: npm install --include=dev && npm exec -w server -- prisma generate && npm run build -w client && npm run build -w server
+    startCommand: npm exec -w server -- prisma migrate deploy && NODE_ENV=production npm run start -w server
     healthCheckPath: /health
     envVars:
-      - key: NODE_ENV
-        value: production
+      - key: NODE_VERSION
+        value: "20"
       - key: DATABASE_URL
         sync: false
       - key: SUPABASE_URL
