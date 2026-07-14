@@ -37,7 +37,7 @@ const devOrigins = [
 ];
 
 const envOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim().replace(/\/$/, "")).filter(Boolean)
   : [];
 
 const isDevelopment = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
@@ -48,7 +48,8 @@ const allowedOrigins = isDevelopment
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const normalized = origin?.replace(/\/$/, "") || "";
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes(normalized)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));

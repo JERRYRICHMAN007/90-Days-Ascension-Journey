@@ -1,4 +1,3 @@
-import sharp from 'sharp';
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 
@@ -25,6 +24,10 @@ export async function processAvatarImage(
   fileKey: string,
   userId: string
 ): Promise<ProcessedImage[]> {
+  // Lazy-load so the API can boot without sharp's native binary present
+  // (Render Linux install is handled in render.yaml rebuild).
+  const sharp = (await import('sharp')).default;
+
   // Download original from S3
   const getCommand = new GetObjectCommand({
     Bucket: BUCKET,
@@ -84,4 +87,3 @@ export async function processAvatarImage(
 
   return processed;
 }
-

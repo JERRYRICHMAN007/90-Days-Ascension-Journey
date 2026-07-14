@@ -6,9 +6,9 @@ services:
     runtime: node
     plan: free
     region: oregon
-    # Important: do NOT set NODE_ENV=production as a service env var (breaks npm install).
-    # Build skips broken `tsc` — prisma generate only; runtime uses tsx.
-    buildCommand: npm install --include=dev && npm run build -w server
+    # Do NOT set NODE_ENV=production as a service env var (breaks npm install).
+    # Rebuild sharp for linux-x64 so native binaries match Render's OS.
+    buildCommand: npm install --include=dev --include=optional && npm install --os=linux --cpu=x64 sharp -w server && npm run build -w server
     startCommand: npm exec -w server -- prisma migrate deploy && NODE_ENV=production npm run start -w server
     healthCheckPath: /health
     envVars:
