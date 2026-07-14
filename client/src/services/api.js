@@ -9,8 +9,12 @@ import { STORAGE_KEYS } from '../utils/storageKeys.js';
 // Environment-aware API Base URL
 // Priority: VITE_API_BASE_URL > same-origin /v1 (unified deploy) > localhost fallback
 const getApiBaseUrl = () => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
+  // Prefer correct name; also accept misnamed VITEBASEURL if already set on Vercel
+  const fromEnv =
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITEBASEURL;
+  if (fromEnv) {
+    return String(fromEnv).replace(/\/$/, '');
   }
 
   // Unified production: API served from same host at /v1
