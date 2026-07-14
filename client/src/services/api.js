@@ -177,8 +177,19 @@ class ApiClient {
           }
         }
         
-        // Handle 404 - Not found
+        // Handle 404 - Not found (often Vercel when API backend is not configured)
         if (response.status === 404) {
+          const isVercelNotFound =
+            responseText.includes('NOT_FOUND') ||
+            responseText.toLowerCase().includes('could not be found');
+          if (
+            isVercelNotFound &&
+            (this.baseURL === '/v1' || this.baseURL.startsWith('/'))
+          ) {
+            throw new Error(
+              'Backend API is not connected. Deploy the server folder (Railway/Render) and set VITE_API_BASE_URL in Vercel to your API URL, e.g. https://your-api.railway.app/v1'
+            );
+          }
           throw new Error(data.error?.message || 'Resource not found. Please check if the server is running.');
         }
         
