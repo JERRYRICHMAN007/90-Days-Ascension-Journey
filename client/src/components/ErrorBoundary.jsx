@@ -11,7 +11,7 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Forge184 ErrorBoundary caught:', error, errorInfo);
+    console.error('Aether ErrorBoundary caught:', error, errorInfo);
     this.setState({ errorInfo });
   }
 

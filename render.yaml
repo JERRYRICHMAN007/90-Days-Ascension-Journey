@@ -1,8 +1,8 @@
-# Free hosting for Forge184 (frontend + API on one URL)
+# Free hosting for Aether (frontend + API on one URL)
 # https://render.com/docs/blueprint-spec
 services:
   - type: web
-    name: forge184
+    name: aether
     runtime: node
     plan: free
     region: oregon

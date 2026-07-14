@@ -69,7 +69,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
           </ul>
         </div>
         <p className="text-[10px] uppercase tracking-[1.2px] text-[var(--text-secondary)]">
-          © {new Date().getFullYear()} Forge184 · Discipline is Freedom
+          © {new Date().getFullYear()} Aether · Discipline is Freedom
         </p>
       </aside>
 
@@ -87,7 +87,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
             to="/"
             className="text-xl font-extrabold tracking-[-1px] text-[var(--neon-cyan-alt)]"
           >
-            Forge184
+            Aether
           </Link>
           <Link
             to="/"
@@ -105,7 +105,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
                 to="/"
                 className="text-2xl font-extrabold tracking-[-1.2px] text-[var(--neon-cyan-alt)]"
               >
-                Forge184
+                Aether
               </Link>
             </div>
 

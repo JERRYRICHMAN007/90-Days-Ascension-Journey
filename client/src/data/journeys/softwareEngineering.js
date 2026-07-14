@@ -14,7 +14,7 @@ import {
 } from './writers.js';
 import { SE_CORE_RESOURCES } from './journeyCuratedResources.js';
 
-// Software Engineering Journey — Forge184 (184 days, 3 phases)
+// Software Engineering Journey — Aether (184 days, 3 phases)
 // Day 1 = July 18, 2026 · Day 184 = January 18, 2027
 export const softwareEngineeringWeeks = generateWeeks(
   JOURNEY_START_DATE,
@@ -6987,7 +6987,7 @@ function getSoftwareEngineeringSocialPosting(weekNum, dayIndex) {
   const posts = {
     1: {
       0: {
-        text: "Day 1 of my 184-day software engineering journey complete! 🚀 Just built my first semantic HTML5 page from scratch. Learning the foundations that will power everything else. #WebDev #HTML5 #Forge184 #CodeNewbie",
+        text: "Day 1 of my 184-day software engineering journey complete! 🚀 Just built my first semantic HTML5 page from scratch. Learning the foundations that will power everything else. #WebDev #HTML5 #Aether #CodeNewbie",
         platforms: ["Twitter/X", "LinkedIn", "Dev.to", "GitHub"],
         include: [
           "Screenshot of your HTML page in browser",
@@ -7014,7 +7014,7 @@ function getSoftwareEngineeringSocialPosting(weekNum, dayIndex) {
   return {
     text: `Day ${
       dayIndex + 1
-    } of my 184-day software engineering journey! Progress update coming soon. #WebDev #Forge184`,
+    } of my 184-day software engineering journey! Progress update coming soon. #WebDev #Aether`,
     platforms: ["Twitter/X", "LinkedIn", "GitHub"],
   };
 }

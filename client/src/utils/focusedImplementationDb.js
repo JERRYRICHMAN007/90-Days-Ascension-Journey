@@ -1,5 +1,5 @@
 /** Lightweight localStorage-backed task store (replaces deleted FocusedImplementationTasks) */
-const KEY = 'Forge184_focused_tasks';
+const KEY = 'Aether_focused_tasks';
 
 function readAll() {
   try {

@@ -1,4 +1,4 @@
-export const FORGE_BRAND = "Forge184";
+export const FORGE_BRAND = "Aether";
 
 export const JOURNEY_TOTAL_DAYS = 184;
 

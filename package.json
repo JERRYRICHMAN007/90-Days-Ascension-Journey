@@ -1,8 +1,8 @@
 {
-  "name": "forge184",
+  "name": "aether",
   "private": true,
   "version": "1.0.0",
-  "description": "Forge184 — unified web app (React client + Express API)",
+  "description": "Aether — unified web app (React client + Express API)",
   "workspaces": [
     "client",
     "server"

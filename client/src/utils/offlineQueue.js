@@ -1,9 +1,9 @@
 /**
  * Offline mutation queue — flush on reconnect / after sign-in.
- * Mutations are stored in localStorage under Forge184_offline_queue.
+ * Mutations are stored in localStorage under Aether_offline_queue.
  */
 
-const QUEUE_KEY = 'Forge184_offline_queue';
+const QUEUE_KEY = 'Aether_offline_queue';
 
 function readQueue() {
   try {
@@ -44,7 +44,7 @@ export async function flushQueue() {
         await api.updateStreaks(item.payload);
       }
     } catch (error) {
-      console.warn('Forge184: offline queue item failed, will retry later', item, error);
+      console.warn('Aether: offline queue item failed, will retry later', item, error);
       remaining.push(item);
     }
   }

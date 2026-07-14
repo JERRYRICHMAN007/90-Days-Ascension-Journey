@@ -60,7 +60,7 @@ export function Sidebar() {
 
           <span className="text-[24px] font-extrabold text-[#00daf3] tracking-[-1.2px] leading-none">
 
-            Forge184
+            Aether
 
           </span>
 

@@ -17,7 +17,7 @@ function writeAll(data) {
   localStorage.setItem(STORAGE_KEYS.QUIZ_RESULTS, JSON.stringify(data));
 }
 
-/** Migrate legacy dailyQuizzes_${journeyId} arrays into Forge184QuizResults */
+/** Migrate legacy dailyQuizzes_${journeyId} arrays into AetherQuizResults */
 export function migrateLegacyQuizResults(journeyIds = []) {
   const all = readAll();
   let changed = false;

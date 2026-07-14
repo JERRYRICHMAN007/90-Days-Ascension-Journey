@@ -1,17 +1,17 @@
-/** Central localStorage keys for Forge184 */
+/** Central localStorage keys for Aether */
 export const STORAGE_KEYS = {
-  PROGRESS: 'forge184Progress',
-  XP: 'forge184XP',
-  STREAKS: 'forge184Streaks',
-  ACHIEVEMENTS: 'forge184Achievements',
-  THEME: 'forge184Theme',
-  OFFLINE_MODE: 'forge184_offline_mode',
-  QUIZ_RESULTS: 'forge184QuizResults',
-  MIGRATION_FLAG: 'forge184_storage_migrated_v1',
+  PROGRESS: 'aetherProgress',
+  XP: 'aetherXP',
+  STREAKS: 'aetherStreaks',
+  ACHIEVEMENTS: 'aetherAchievements',
+  THEME: 'aetherTheme',
+  OFFLINE_MODE: 'aether_offline_mode',
+  QUIZ_RESULTS: 'aetherQuizResults',
+  MIGRATION_FLAG: 'aether_storage_migrated_v1',
 };
 
-/** Older key names → current Forge184 keys (run once on load). */
-const LEGACY_TO_FORGE184 = {
+/** Older key names → current Aether keys (run once on load). */
+const LEGACY_TO_AETHER = {
   ascensionProgress: STORAGE_KEYS.PROGRESS,
   ascensionXP: STORAGE_KEYS.XP,
   ascensionStreaks: STORAGE_KEYS.STREAKS,
@@ -25,10 +25,17 @@ const LEGACY_TO_FORGE184 = {
   forge90Theme: STORAGE_KEYS.THEME,
   forge90_offline_mode: STORAGE_KEYS.OFFLINE_MODE,
   forge90QuizResults: STORAGE_KEYS.QUIZ_RESULTS,
+  forge184Progress: STORAGE_KEYS.PROGRESS,
+  forge184XP: STORAGE_KEYS.XP,
+  forge184Streaks: STORAGE_KEYS.STREAKS,
+  forge184Achievements: STORAGE_KEYS.ACHIEVEMENTS,
+  forge184Theme: STORAGE_KEYS.THEME,
+  forge184_offline_mode: STORAGE_KEYS.OFFLINE_MODE,
+  forge184QuizResults: STORAGE_KEYS.QUIZ_RESULTS,
 };
 
 /**
- * One-time migration: copy legacy ascension* / forge90* keys to forge184* keys, then remove old keys.
+ * One-time migration: copy legacy keys to aether* keys, then remove old keys.
  * Wrapped in try/catch — a corrupt key must not crash the app before React mounts.
  */
 export function migrateLegacyStorage() {
@@ -39,7 +46,7 @@ export function migrateLegacyStorage() {
       return;
     }
 
-    Object.entries(LEGACY_TO_FORGE184).forEach(([oldKey, newKey]) => {
+    Object.entries(LEGACY_TO_AETHER).forEach(([oldKey, newKey]) => {
       const val = localStorage.getItem(oldKey);
       if (val !== null) {
         if (localStorage.getItem(newKey) === null) {
@@ -51,7 +58,7 @@ export function migrateLegacyStorage() {
 
     localStorage.setItem(STORAGE_KEYS.MIGRATION_FLAG, 'true');
   } catch (e) {
-    console.warn('Forge184: localStorage migration failed, clearing to recover', e);
+    console.warn('Aether: localStorage migration failed, clearing to recover', e);
     try {
       localStorage.clear();
     } catch {

@@ -1,5 +1,5 @@
 /**
- * Date utilities for Forge184
+ * Date utilities for Aether
  *
  * Timeline:
  * - Onboarding: July 9–17, 2026 (9 days) — soft start, habit building

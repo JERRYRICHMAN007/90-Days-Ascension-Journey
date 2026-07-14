@@ -164,7 +164,7 @@ export function LandingPage() {
             to="/"
             className="text-2xl font-black tracking-[-1.2px] text-[#c3f5ff]"
           >
-            Forge184
+            Aether
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -356,10 +356,10 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-2xl font-black tracking-[-0.48px] text-[#c3f5ff]">
-              Forge184
+              Aether
             </p>
             <p className="mt-2 text-xs font-bold tracking-[1.2px] text-[#bac9cc]">
-              © {new Date().getFullYear()} Forge184. Discipline is Freedom.
+              © {new Date().getFullYear()} Aether. Discipline is Freedom.
             </p>
           </div>
 
@@ -387,7 +387,7 @@ export function LandingPage() {
               <Share2 className="w-4 h-4" />
             </a>
             <a
-              href="mailto:support@forge184.app"
+              href="mailto:support@aether.app"
               className="flex size-10 items-center justify-center rounded-full border border-[#3b494c] text-[#bac9cc] hover:text-white hover:border-[#bac9cc] transition-colors"
               aria-label="Contact"
             >

@@ -12,17 +12,13 @@
       </feMerge>
     </filter>
   </defs>
-  <!-- Dark rounded mark -->
   <rect width="32" height="32" rx="8" fill="#070b12"/>
-  <!-- Soft aura circle -->
   <circle cx="16" cy="15" r="10" fill="url(#aether-grad)" opacity="0.12"/>
-  <!-- Ascending A mark -->
   <path
     d="M16 6.5L22.8 24H19.9L18.55 20.2H13.45L12.1 24H9.2L16 6.5Z"
     fill="url(#aether-grad)"
     filter="url(#aether-glow)"
   />
   <path d="M14.15 18.1h3.7L16 12.9 14.15 18.1Z" fill="#070b12"/>
-  <!-- Small star / spark -->
   <circle cx="23.5" cy="8.5" r="1.1" fill="#c3f5ff" opacity="0.9"/>
 </svg>

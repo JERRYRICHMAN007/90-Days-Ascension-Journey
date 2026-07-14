@@ -1,5 +1,5 @@
 /**
- * Phase System for Forge184 — Software Engineering
+ * Phase System for Aether — Software Engineering
  *
  * Onboarding: July 9–17, 2026
  * Phase 1 (Days 1–60): Frontend foundations

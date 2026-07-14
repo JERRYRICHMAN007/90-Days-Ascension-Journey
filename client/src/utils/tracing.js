@@ -270,7 +270,7 @@ export function getJourneyTrace(journeyId) {
       },
     };
   } catch (error) {
-    console.warn(`Forge184: getJourneyTrace failed for ${journeyId}`, error);
+    console.warn(`Aether: getJourneyTrace failed for ${journeyId}`, error);
     return emptyTrace(journeyId);
   }
 }

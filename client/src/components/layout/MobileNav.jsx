@@ -93,7 +93,7 @@ export function MobileMenu({ open, onOpenChange }) {
         <SheetHeader className="px-4 py-4 border-b border-border/50 text-left">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🚀</span>
-            <SheetTitle>Forge184</SheetTitle>
+            <SheetTitle>Aether</SheetTitle>
           </div>
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">

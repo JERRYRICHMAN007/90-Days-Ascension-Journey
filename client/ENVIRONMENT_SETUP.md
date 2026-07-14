@@ -1,6 +1,6 @@
-# Forge184 Environment Setup Guide
+# Aether Environment Setup Guide
 
-This document covers environment variable configuration for both frontend and backend of Forge184.
+This document covers environment variable configuration for both frontend and backend of Aether.
 
 ## Quick Reference
 

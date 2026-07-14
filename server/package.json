@@ -1,7 +1,7 @@
 {
-  "name": "@forge184/server",
+  "name": "@aether/server",
   "version": "1.0.0",
-  "description": "Backend API for Forge184",
+  "description": "Backend API for Aether",
   "main": "dist/index.js",
   "scripts": {
     "dev": "set PORT=5001&& set HOST=127.0.0.1&& tsx watch src/index.ts",

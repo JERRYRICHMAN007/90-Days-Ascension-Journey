@@ -1,11 +1,11 @@
-# Forge184
+# Aether
 
 One unified app: React UI + Express API.
 
 ## Project structure
 
 ```
-Forge184/
+Aether/
 ├── package.json       # Root — run everything from here
 ├── client/            # React + Vite (UI)
 ├── server/            # Express + Prisma (API)

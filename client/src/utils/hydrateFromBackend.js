@@ -56,7 +56,7 @@ export async function hydrateFromBackend() {
   const currentDay = getCurrentDayNumber();
   const phase = getCurrentPhaseStatus();
   if (currentDay === 0 || phase === 'onboarding') {
-    console.log('Forge184: skipping backend hydration during onboarding');
+    console.log('Aether: skipping backend hydration during onboarding');
     return;
   }
 
@@ -73,7 +73,7 @@ export async function hydrateFromBackend() {
           mergeBackendCompletedDays(journeyId, completedDays, weeks);
         }
       } catch (error) {
-        console.warn(`Forge184: progress hydrate failed for ${journeyId}`, error);
+        console.warn(`Aether: progress hydrate failed for ${journeyId}`, error);
       }
     })
   );
@@ -88,7 +88,7 @@ export async function hydrateFromBackend() {
     const xp = normalizeXp(xpResponse?.data, localXp);
     localStorage.setItem(STORAGE_KEYS.XP, JSON.stringify(xp));
   } catch (error) {
-    console.warn('Forge184: XP hydrate failed', error);
+    console.warn('Aether: XP hydrate failed', error);
   }
 
   const localStreaks = normalizeStreaks(
@@ -101,7 +101,7 @@ export async function hydrateFromBackend() {
     const streaks = normalizeStreaks(streaksResponse?.data, localStreaks);
     localStorage.setItem(STORAGE_KEYS.STREAKS, JSON.stringify(streaks));
   } catch (error) {
-    console.warn('Forge184: streaks hydrate failed', error);
+    console.warn('Aether: streaks hydrate failed', error);
   }
 
   const localAchievements = normalizeAchievements(
@@ -120,7 +120,7 @@ export async function hydrateFromBackend() {
     });
     localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, JSON.stringify(merged));
   } catch (error) {
-    console.warn('Forge184: achievements hydrate failed', error);
+    console.warn('Aether: achievements hydrate failed', error);
   }
 
   window.dispatchEvent(new CustomEvent('gamification-hydrated'));

@@ -32,9 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Preserve critical user data before clearing
       const offlineMode = localStorage.getItem(STORAGE_KEYS.OFFLINE_MODE);
       const sessionCompletions = localStorage.getItem('sessionCompletions');
-      const forge184XP = localStorage.getItem(STORAGE_KEYS.XP);
-      const forge184Streaks = localStorage.getItem(STORAGE_KEYS.STREAKS);
-      const forge184Achievements = localStorage.getItem(STORAGE_KEYS.ACHIEVEMENTS);
+      const aetherXP = localStorage.getItem(STORAGE_KEYS.XP);
+      const aetherStreaks = localStorage.getItem(STORAGE_KEYS.STREAKS);
+      const aetherAchievements = localStorage.getItem(STORAGE_KEYS.ACHIEVEMENTS);
       const lessonProgressKeys: string[] = [];
       
       // Collect all lesson progress keys
@@ -64,14 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (sessionCompletions) {
         localStorage.setItem('sessionCompletions', sessionCompletions);
       }
-      if (forge184XP) {
-        localStorage.setItem(STORAGE_KEYS.XP, forge184XP);
+      if (aetherXP) {
+        localStorage.setItem(STORAGE_KEYS.XP, aetherXP);
       }
-      if (forge184Streaks) {
-        localStorage.setItem(STORAGE_KEYS.STREAKS, forge184Streaks);
+      if (aetherStreaks) {
+        localStorage.setItem(STORAGE_KEYS.STREAKS, aetherStreaks);
       }
-      if (forge184Achievements) {
-        localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, forge184Achievements);
+      if (aetherAchievements) {
+        localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, aetherAchievements);
       }
       Object.entries(lessonProgressData).forEach(([key, value]) => {
         localStorage.setItem(key, value);

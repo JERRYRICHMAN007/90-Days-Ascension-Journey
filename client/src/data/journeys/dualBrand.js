@@ -2322,7 +2322,7 @@ function getDualBrandProject(weekNum, dayIndex) {
       {
         title: "DUAL BRAND ASCENSION COMPLETE",
         description:
-          "Congratulations! You have completed the 184-day Dual Brand Forge184 Journey",
+          "Congratulations! You have completed the 184-day Dual Brand Aether Journey",
         requirements: [
           "Reflect on journey",
           "Celebrate success",

@@ -1,5 +1,5 @@
 /**
- * Phase Advancement Logic — Forge184
+ * Phase Advancement Logic — Aether
  *
  * Phase advancement is based on completion thresholds, not just day count.
  * Software Engineering: 3 phases (60 + 60 + 64 days).
