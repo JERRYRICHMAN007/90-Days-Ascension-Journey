@@ -30,7 +30,7 @@ export function UnifiedJourneyCard({
           tabIndex={0}
           onClick={() => navigate(theme.path)}
           onKeyDown={(e) => e.key === 'Enter' && navigate(theme.path)}
-          className="forge-card cursor-pointer relative overflow-hidden h-full flex flex-col group transition-all duration-300"
+          className="aether-card cursor-pointer relative overflow-hidden h-full flex flex-col group transition-all duration-300"
           whileHover={{ scale: 1.01, y: -2 }}
           whileTap={{ scale: 0.98 }}
           onMouseEnter={(e) => {
@@ -55,9 +55,9 @@ export function UnifiedJourneyCard({
                   <Icon className="w-5 h-5" style={{ color: accent.color }} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="forge-heading-lg text-[20px] line-clamp-1">{title}</h3>
+                  <h3 className="aether-heading-lg text-[20px] line-clamp-1">{title}</h3>
                   <span
-                    className="inline-block mt-1 forge-rank-badge"
+                    className="inline-block mt-1 aether-rank-badge"
                     style={{
                       color: accent.color,
                       border: `1px solid rgba(${accent.rgb}, 0.4)`,
@@ -71,7 +71,7 @@ export function UnifiedJourneyCard({
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <p className="forge-label">LEVEL</p>
+                <p className="aether-label">LEVEL</p>
                 <p className="text-lg font-extrabold text-[var(--text-primary)] tabular-nums leading-none mt-1">
                   {stats.level}
                 </p>
@@ -81,10 +81,10 @@ export function UnifiedJourneyCard({
 
             <div className="space-y-2 mt-auto">
               <div className="flex justify-between">
-                <span className="forge-label">PROGRESS</span>
-                <span className="forge-label">{progress.percentage}%</span>
+                <span className="aether-label">PROGRESS</span>
+                <span className="aether-label">{progress.percentage}%</span>
               </div>
-              <div className="forge-progress-track">
+              <div className="aether-progress-track">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{

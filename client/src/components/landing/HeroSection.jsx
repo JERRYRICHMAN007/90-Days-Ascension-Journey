@@ -88,7 +88,7 @@ export function HeroSection() {
                   Transform Your Life
                 </span>
                 <br />
-                <span className="text-foreground">in 184 Days</span>
+                <span className="text-foreground">in 6 Months</span>
               </motion.h1>
 
               <motion.p

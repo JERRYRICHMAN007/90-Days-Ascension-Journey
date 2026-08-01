@@ -29,7 +29,7 @@ export function ReadingTomorrowPreview({ nextDay, onPreview }) {
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: READING_ACCENT, boxShadow: 'var(--neon-glow-purple)' }}
             />
-            <p className="forge-label">Tomorrow&apos;s Preview</p>
+            <p className="aether-label">Tomorrow&apos;s Preview</p>
           </div>
           <p className="text-lg font-bold text-[var(--text-primary)] tracking-tight truncate">
             {nextDay.dailyLearning?.title || material || 'Reading Session'}

@@ -24,7 +24,7 @@ export function AnalyticsAllJourneysOverview() {
     <div className="space-y-6 max-w-[1440px] mx-auto min-w-0 w-full">
       {/* Header — Figma Frame 7 */}
       <div className="flex flex-col gap-[7px]">
-        <p className="forge-eyebrow">FLOW STATE PERFORMANCE</p>
+        <p className="aether-eyebrow">FLOW STATE PERFORMANCE</p>
         <h1 className="text-[36px] sm:text-[48px] font-extrabold text-[var(--text-primary)] tracking-[-0.96px] leading-[1.1] pb-2">
           Mission Critical Stats
         </h1>

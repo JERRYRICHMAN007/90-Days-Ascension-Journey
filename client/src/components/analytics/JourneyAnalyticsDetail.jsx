@@ -82,19 +82,19 @@ export function JourneyAnalyticsDetail({ journeyId }) {
 
       {/* Header — Figma Frame 6 */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-        <p className="forge-eyebrow mb-2" style={{ color: accent.color }}>
+        <p className="aether-eyebrow mb-2" style={{ color: accent.color }}>
           {accent.subtitle?.toUpperCase() || 'JOURNEY ANALYTICS'}
         </p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="forge-heading-xl">{trace.journeyTitle}</h1>
+            <h1 className="aether-heading-xl">{trace.journeyTitle}</h1>
             <p className="text-sm text-[var(--text-secondary)] mt-2">
               Day {trace.completion.currentDay} of {trace.completion.totalDays}
               {daysRemaining > 0 && ` · ${daysRemaining} days remaining`}
             </p>
           </div>
           <div
-            className="forge-rank-badge shrink-0"
+            className="aether-rank-badge shrink-0"
             style={{
               color: accent.color,
               border: `1px solid rgba(${accent.rgb}, 0.4)`,
@@ -106,22 +106,15 @@ export function JourneyAnalyticsDetail({ journeyId }) {
         <div className="w-24 h-1 rounded-full mt-4" style={{ background: accent.color }} />
       </motion.div>
 
-      {/* Mastery score hero — animated neon ring */}
-      <div
-        className="rounded-[12px] border p-6 sm:p-8"
-        style={{ background: '#000', borderColor: 'var(--border-subtle)' }}
-      >
-        <div className="flex justify-center items-center py-8">
-          <MasteryScoreRing
-            score={masteryScore}
-            change={12.2}
-            size={280}
-          />
-        </div>
-        <p className="text-center text-xs text-[var(--text-secondary)] uppercase tracking-wide">
-          {trace.completion.percentComplete}% journey complete
-        </p>
-      </div>
+      {/* Mastery score — responsive hero */}
+      <MasteryScoreRing
+        score={masteryScore}
+        change={12.2}
+        journeyPercent={trace.completion.percentComplete}
+        rank={displayRank}
+        dayLabel={`Day ${trace.completion.currentDay} of ${trace.completion.totalDays}${daysRemaining > 0 ? ` · ${daysRemaining} remaining` : ''}`}
+        accentColor={accent.color}
+      />
 
       {/* Streak + Quiz + XP — Figma stat grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -165,7 +158,7 @@ export function JourneyAnalyticsDetail({ journeyId }) {
           className="rounded-[12px] border p-5 sm:p-6 min-w-0 overflow-hidden"
           style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
         >
-          <p className="forge-label mb-4">14-Day Activity</p>
+          <p className="aether-label mb-4">14-Day Activity</p>
           <div className="h-56 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barGap={2}>
@@ -219,7 +212,7 @@ export function JourneyAnalyticsDetail({ journeyId }) {
           className="rounded-[12px] border p-5"
           style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
         >
-          <p className="forge-label mb-2">Sessions</p>
+          <p className="aether-label mb-2">Sessions</p>
           <p className="text-2xl font-extrabold text-[var(--text-primary)] tabular-nums">
             {trace.completion.completedSessions}
             <span className="text-base font-normal text-[var(--text-secondary)]">
@@ -235,7 +228,7 @@ export function JourneyAnalyticsDetail({ journeyId }) {
           className="rounded-[12px] border p-5"
           style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
         >
-          <p className="forge-label mb-2">Days Complete</p>
+          <p className="aether-label mb-2">Days Complete</p>
           <p className="text-2xl font-extrabold text-[var(--text-primary)] tabular-nums">
             {trace.completion.daysFullyComplete}
             <span className="text-base font-normal text-[var(--text-secondary)]">
@@ -256,7 +249,7 @@ export function JourneyAnalyticsDetail({ journeyId }) {
         >
           <div className="flex items-center gap-2 mb-4">
             <Code className="w-4 h-4" style={{ color: accent.color }} />
-            <p className="forge-label">Active Disciplines</p>
+            <p className="aether-label">Active Disciplines</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {['Mobile', 'Frontend', 'Backend', 'WordPress'].map((d) => {
@@ -299,7 +292,7 @@ function StatCard({ label, value, suffix = '', icon: Icon, accent, highlight = f
       }}
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="forge-label text-[10px]">{label}</p>
+        <p className="aether-label text-[10px]">{label}</p>
         <Icon className="w-4 h-4 shrink-0 opacity-70" style={{ color: accent.color }} />
       </div>
       <p className="text-2xl sm:text-[32px] font-extrabold tabular-nums leading-none tracking-tight text-[var(--text-primary)]">

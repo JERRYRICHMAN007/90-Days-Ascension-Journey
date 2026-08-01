@@ -16,7 +16,8 @@
     "check:env": "node scripts/check-env.mjs",
     "test": "jest",
     "test:watch": "jest --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:ai": "tsc -p tsconfig.domain-ai.json --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",

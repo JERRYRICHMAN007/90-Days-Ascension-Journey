@@ -151,7 +151,7 @@ if (isProduction) {
 // Error handling
 app.use(errorHandler);
 
-app.listen(Number(PORT), HOST, () => {
+const server = app.listen(Number(PORT), HOST, () => {
   console.log(`🚀 Server running on http://${HOST}:${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`🔗 API Base: http://${HOST}:${PORT}/v1`);
@@ -175,4 +175,15 @@ app.listen(Number(PORT), HOST, () => {
       }
     }
   })();
+});
+
+server.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`\n⛔ Port ${PORT} is already in use.`);
+    console.error("   Another API server is still running (likely a second 'npm run dev').");
+    console.error("   Stop the other instance, or run only ONE 'npm run dev' from the project root.");
+    console.error(`   Windows: netstat -ano | findstr :${PORT}  then  taskkill /PID <pid> /F\n`);
+    process.exit(1);
+  }
+  throw err;
 });

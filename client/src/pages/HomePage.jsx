@@ -5,7 +5,7 @@ import { getJourneyCardsConfig } from "../utils/journeyTheme.js";
 import {
   getCurrentPhaseStatus,
   getCurrentDayNumber,
-  JOURNEY_CONSTANTS,
+  getJourneyTotalDays,
 } from "../utils/dates";
 import { cleanInvalidProgress, resetAllProgress } from "../utils/progressTracking";
 import { STORAGE_KEYS } from "../utils/storageKeys.js";
@@ -46,9 +46,11 @@ export function HomePage() {
     const handleProgressUpdate = () => setProgressTick((t) => t + 1);
     window.addEventListener('progress-updated', handleProgressUpdate);
     window.addEventListener('session-completed', handleProgressUpdate);
+    window.addEventListener('journey-start-updated', handleProgressUpdate);
     return () => {
       window.removeEventListener('progress-updated', handleProgressUpdate);
       window.removeEventListener('session-completed', handleProgressUpdate);
+      window.removeEventListener('journey-start-updated', handleProgressUpdate);
     };
   }, []);
 
@@ -101,7 +103,7 @@ export function HomePage() {
 
   const getUserName = () => {
     if (user?.name) return user.name.split(' ')[0];
-    return 'Forge Master';
+    return 'Aether Initiate';
   };
 
   const { todayDate, currentPhase, currentDay, subtitle } = useMemo(() => {
@@ -119,11 +121,11 @@ export function HomePage() {
 
     let sub = 'Your transformation awaits';
     if ((phase === 'phase1' || phase === 'phase2' || phase === 'phase3') && dayNumber) {
-      sub = `Day ${dayNumber} of ${JOURNEY_CONSTANTS.TOTAL_DAYS} — Keep forging.`;
+      sub = `Day ${dayNumber} of ${getJourneyTotalDays()} — Keep ascending.`;
     } else if (phase === 'onboarding') {
       sub = 'Onboarding — build the habit of showing up';
     } else if (phase === 'after') {
-      sub = 'Journey complete — you forged it.';
+      sub = 'Journey complete — you rose through Aether.';
     }
 
     return {

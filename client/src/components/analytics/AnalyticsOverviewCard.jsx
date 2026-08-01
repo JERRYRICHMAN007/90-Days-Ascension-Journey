@@ -109,7 +109,7 @@ export function AnalyticsOverviewCard({ journeyId, index = 0 }) {
           <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-[-0.48px] leading-[28.8px] pt-5">
             {accent.label}
           </h3>
-          <div className="forge-label leading-[12px] mt-1">
+          <div className="aether-label leading-[12px] mt-1">
             <p>{taglineA}</p>
             {taglineB && <p>{taglineB}</p>}
           </div>
@@ -117,7 +117,7 @@ export function AnalyticsOverviewCard({ journeyId, index = 0 }) {
           {/* Mastery score + streak */}
           <div className="flex flex-col gap-6 pt-7">
             <div className="flex flex-col gap-2">
-              <div className="forge-label leading-[12px]">
+              <div className="aether-label leading-[12px]">
                 <p>MASTERY</p>
                 <p>SCORE</p>
               </div>
@@ -129,7 +129,7 @@ export function AnalyticsOverviewCard({ journeyId, index = 0 }) {
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <p className="forge-label leading-[12px]">STREAK</p>
+              <p className="aether-label leading-[12px]">STREAK</p>
               <p className="flex items-baseline gap-1.5">
                 <span className="text-[32px] font-extrabold text-[var(--text-primary)] tracking-[-0.64px] leading-none tabular-nums">
                   {trace.consistency.currentStreak}
@@ -146,9 +146,9 @@ export function AnalyticsOverviewCard({ journeyId, index = 0 }) {
           style={{ borderColor: 'rgba(59,73,76,0.1)' }}
         >
           <div className="flex items-end justify-between">
-            <span className="forge-label leading-[12px]">COMPLETION</span>
+            <span className="aether-label leading-[12px]">COMPLETION</span>
             <span
-              className="forge-label leading-[12px]"
+              className="aether-label leading-[12px]"
               style={{ color: accent.color }}
             >
               {percentComplete}%

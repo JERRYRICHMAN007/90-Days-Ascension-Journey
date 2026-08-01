@@ -14,7 +14,7 @@ function BrandStreamCard({ label, subtitle, task, icon: Icon, streamTag }) {
   return (
     <div className="flex flex-col min-w-0 h-full">
       <div className="mb-3">
-        <p className="forge-label" style={{ color: BRAND_ACCENT }}>
+        <p className="aether-label" style={{ color: BRAND_ACCENT }}>
           {streamTag}
         </p>
         <p className="text-sm font-bold text-[var(--text-primary)] mt-1 tracking-tight">{label}</p>
@@ -69,7 +69,7 @@ function BrandStreamCard({ label, subtitle, task, icon: Icon, streamTag }) {
               boxShadow: BRAND_GLOW,
             }}
           >
-            <p className="forge-label" style={{ color: BRAND_ACCENT }}>
+            <p className="aether-label" style={{ color: BRAND_ACCENT }}>
               {streamTag}
             </p>
             <p className="text-xs text-[var(--text-primary)] leading-relaxed text-left">{task}</p>
@@ -120,7 +120,7 @@ export function DualBrandFlowHero({
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: BRAND_ACCENT, boxShadow: BRAND_GLOW }}
             />
-            <p className="forge-label">{focusLabel}</p>
+            <p className="aether-label">{focusLabel}</p>
           </div>
           {focus && (
             <h2 className="text-2xl sm:text-[32px] font-extrabold text-[var(--text-primary)] tracking-[-0.64px] leading-tight">
@@ -170,7 +170,7 @@ export function DualBrandFlowHero({
               className="rounded-xl border p-4 sm:p-5"
               style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
             >
-              <p className="forge-label mb-2" style={{ color: BRAND_ACCENT }}>
+              <p className="aether-label mb-2" style={{ color: BRAND_ACCENT }}>
                 Expected Outcome
               </p>
               <p className="text-sm text-[var(--text-primary)] leading-relaxed">{outcome}</p>

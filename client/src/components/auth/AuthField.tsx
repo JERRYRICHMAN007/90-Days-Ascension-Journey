@@ -16,11 +16,11 @@ export function AuthField({
   ...props
 }: AuthFieldProps) {
   return (
-    <div className="space-y-2">
-      <label className="forge-label block">{label}</label>
+    <div className="space-y-2 aether-auth-field">
+      <label className="aether-label block">{label}</label>
       <div className="relative">
         {icon && (
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] pointer-events-none">
+          <span className="aether-auth-field-icon absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none [&_svg]:stroke-[2.5]">
             {icon}
           </span>
         )}
@@ -32,7 +32,9 @@ export function AuthField({
           style={{ borderColor: error ? '#ef4444' : 'var(--border-subtle)' }}
         />
         {trailing && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</span>
+          <span className="aether-auth-field-trailing absolute right-3 top-1/2 -translate-y-1/2 [&_svg]:stroke-[2.5]">
+            {trailing}
+          </span>
         )}
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}

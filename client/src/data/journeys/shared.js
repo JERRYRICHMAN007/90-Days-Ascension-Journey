@@ -1,6 +1,10 @@
-export const FORGE_BRAND = "Aether";
+export const AETHER_BRAND = "Aether";
+/** @deprecated use AETHER_BRAND */
+export const FORGE_BRAND = AETHER_BRAND;
 
+/** Day templates in content files (UI length is 6 months from user start). */
 export const JOURNEY_TOTAL_DAYS = 184;
+export const JOURNEY_DURATION_MONTHS = 6;
 
 export const journeys = [
   {
@@ -8,7 +12,7 @@ export const journeys = [
     title: "Body Transformation",
     icon: "💪",
     timeBlock: "Time: 5:00-5:45 AM (Monday-Friday)",
-    description: "184-day physical discipline — the foundation that never stops",
+    description: "6-month physical discipline — the foundation that never stops",
     totalDays: JOURNEY_TOTAL_DAYS,
     color: "#667eea",
   },
@@ -17,7 +21,7 @@ export const journeys = [
     title: "Dual Brand",
     icon: "🎨",
     timeBlock: "Time: 4:00-5:00 AM (Daily except Saturday)",
-    description: "_richman.oo7 + _ryxen.oo7 — revenue and audience compound over 184 days",
+    description: "_richman.oo7 + _ryxen.oo7 — revenue and audience compound over 6 months",
     totalDays: JOURNEY_TOTAL_DAYS,
     color: "#f093fb",
   },
@@ -35,7 +39,7 @@ export const journeys = [
     title: "Writing",
     icon: "✍️",
     timeBlock: "Time: 10:00-10:30 PM (Daily except Friday)",
-    description: "184-day distribution engine — content and audience that compound",
+    description: "6-month distribution engine — content and audience that compound",
     totalDays: JOURNEY_TOTAL_DAYS,
     color: "#43e97b",
   },
@@ -50,11 +54,7 @@ export const journeys = [
   },
 ];
 
-// Onboarding: July 9–17, 2026 (9 days soft start)
-// Day 1 = Saturday, July 18, 2026 — The Real Deal
-// Day 184 = Sunday, January 18, 2027
-// Calendar weeks run Sunday → Saturday
-
+// Default content calendar anchor (overridden in the app by the user's start date)
 export const ONBOARDING_START_DATE = "2026-07-09";
 export const ONBOARDING_END_DATE = "2026-07-17";
 export const JOURNEY_START_DATE = "2026-07-18";

@@ -6987,7 +6987,7 @@ function getSoftwareEngineeringSocialPosting(weekNum, dayIndex) {
   const posts = {
     1: {
       0: {
-        text: "Day 1 of my 184-day software engineering journey complete! 🚀 Just built my first semantic HTML5 page from scratch. Learning the foundations that will power everything else. #WebDev #HTML5 #Aether #CodeNewbie",
+        text: "Day 1 of my 6-month software engineering journey complete! 🚀 Just built my first semantic HTML5 page from scratch. Learning the foundations that will power everything else. #WebDev #HTML5 #Aether #CodeNewbie",
         platforms: ["Twitter/X", "LinkedIn", "Dev.to", "GitHub"],
         include: [
           "Screenshot of your HTML page in browser",
@@ -7014,7 +7014,7 @@ function getSoftwareEngineeringSocialPosting(weekNum, dayIndex) {
   return {
     text: `Day ${
       dayIndex + 1
-    } of my 184-day software engineering journey! Progress update coming soon. #WebDev #Aether`,
+    } of my 6-month software engineering journey! Progress update coming soon. #WebDev #Aether`,
     platforms: ["Twitter/X", "LinkedIn", "GitHub"],
   };
 }

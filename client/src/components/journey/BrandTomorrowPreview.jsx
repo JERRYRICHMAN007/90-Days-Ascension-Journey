@@ -26,7 +26,7 @@ export function BrandTomorrowPreview({ nextDay, onPreview }) {
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: BRAND_ACCENT, boxShadow: 'var(--neon-glow-cyan)' }}
             />
-            <p className="forge-label">Tomorrow&apos;s Preview</p>
+            <p className="aether-label">Tomorrow&apos;s Preview</p>
           </div>
           <p className="text-lg font-bold text-[var(--text-primary)] tracking-tight truncate">
             {nextDay.focus || 'Dual Brand'}

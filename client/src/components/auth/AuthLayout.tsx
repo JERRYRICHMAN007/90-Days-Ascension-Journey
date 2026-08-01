@@ -18,16 +18,16 @@ type AuthLayoutProps = {
 
 const PANEL_COPY = {
   signin: {
-    eyebrow: 'ACCESS PROTOCOL',
-    headline: 'Resume Your\nForge.',
+    eyebrow: 'RETURN TO PATH',
+    headline: 'Resume Your\nAscension.',
     body: 'Pick up where you left off. Your streaks, mastery scores, and daily sessions are waiting.',
     bullets: ['Sync across devices', 'Track all five journeys', 'Secure session'],
   },
   signup: {
-    eyebrow: 'INITIATION',
-    headline: 'Enter the\nForge.',
-    body: 'Join the 184-day mastery protocol. Five journeys. One standard: excellence.',
-    bullets: ['Free to start', 'Five mastery paths', 'Daily forge sessions'],
+    eyebrow: 'BEGIN',
+    headline: 'Enter\nAether.',
+    body: 'Join the 6-month mastery protocol. Five journeys. One standard: excellence.',
+    bullets: ['Free to start', 'Five mastery paths', 'Daily protocol sessions'],
   },
 };
 
@@ -49,7 +49,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
             <ArrowLeft className="w-4 h-4" />
             Back to home
           </Link>
-          <p className="forge-eyebrow mb-4">{panel.eyebrow}</p>
+          <p className="aether-eyebrow mb-4">{panel.eyebrow}</p>
           <h1 className="text-[48px] xl:text-[56px] font-extrabold text-[var(--text-primary)] tracking-[-0.96px] leading-[1.05] whitespace-pre-line">
             {panel.headline}
           </h1>
@@ -117,7 +117,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
               }}
             >
               <div className="mb-6 sm:mb-8">
-                <p className="forge-eyebrow mb-2 lg:hidden">
+                <p className="aether-eyebrow mb-2 lg:hidden">
                   {mode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'}
                 </p>
                 <h2 className="text-2xl sm:text-[32px] font-extrabold text-[var(--text-primary)] tracking-[-0.64px] leading-tight">

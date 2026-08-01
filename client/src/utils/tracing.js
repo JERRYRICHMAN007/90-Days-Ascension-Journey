@@ -1,6 +1,6 @@
 import { getJourneyData } from '../data/journeys/index.js';
 import { getDateStringForDayNumber } from '../data/journeys/shared.js';
-import { getCurrentDayNumber } from './dates.js';
+import { getCurrentDayNumber, getJourneyTotalDays } from './dates.js';
 import {
   calculateSessionBasedProgress,
   getJourneyCompletions,
@@ -170,7 +170,7 @@ function emptyTrace(journeyId) {
       completedSessions: 0,
       percentComplete: 0,
       daysFullyComplete: 0,
-      totalDays: 90,
+      totalDays: getJourneyTotalDays(),
       currentDay: 0,
     },
     consistency: {
@@ -200,7 +200,7 @@ export function getJourneyTrace(journeyId) {
     migrateLegacyQuizResults(JOURNEY_IDS);
 
     const { journey, weeks } = getJourneyData(journeyId);
-    const totalDays = journey?.totalDays ?? 90;
+    const totalDays = getJourneyTotalDays();
     const calendarDay = getCurrentDayNumber();
     const currentDay =
       calendarDay === null || calendarDay === 0

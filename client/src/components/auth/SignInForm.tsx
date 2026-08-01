@@ -54,10 +54,14 @@ function PasswordToggle({
     <button
       type="button"
       onClick={onToggle}
-      className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-1"
+      className="aether-auth-eye-toggle p-1 opacity-100 hover:opacity-80 transition-opacity"
       aria-label={visible ? 'Hide password' : 'Show password'}
     >
-      {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      {visible ? (
+        <EyeOff className="w-5 h-5" strokeWidth={2.75} absoluteStrokeWidth />
+      ) : (
+        <Eye className="w-5 h-5" strokeWidth={2.75} absoluteStrokeWidth />
+      )}
     </button>
   );
 }
@@ -182,7 +186,7 @@ export function SignInForm() {
           required
           autoComplete="email"
           placeholder="you@example.com"
-          icon={<Mail className="w-4 h-4" />}
+          icon={<Mail className="w-4 h-4" strokeWidth={2.5} />}
         />
 
         <AuthField
@@ -193,7 +197,7 @@ export function SignInForm() {
           required
           autoComplete="current-password"
           placeholder="Enter your password"
-          icon={<Lock className="w-4 h-4" />}
+          icon={<Lock className="w-4 h-4" strokeWidth={2.5} />}
           trailing={
             <PasswordToggle
               visible={showPassword}
@@ -225,25 +229,15 @@ export function SignInForm() {
 
         <AuthSubmitButton loading={loading}>Sign In</AuthSubmitButton>
 
-        <div className="relative py-2">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t" style={{ borderColor: 'var(--border-subtle)' }} />
-          </div>
-          <div className="relative flex justify-center">
-            <span
-              className="px-3 text-xs text-[var(--text-secondary)]"
-              style={{ background: 'var(--bg-card)' }}
-            >
-              Don&apos;t have an account?
-            </span>
-          </div>
-        </div>
-
-        <Link to="/signup" className="block">
-          <AuthSubmitButton type="button" variant="outline">
+        <p className="text-center text-sm text-[var(--text-secondary)] pt-1">
+          Don&apos;t have an account?{' '}
+          <Link
+            to="/signup"
+            className="font-semibold text-[var(--neon-cyan)] hover:text-[var(--neon-cyan-alt)] transition-colors"
+          >
             Create Account
-          </AuthSubmitButton>
-        </Link>
+          </Link>
+        </p>
       </form>
     </AuthLayout>
   );

@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   OFFLINE_MODE: 'aether_offline_mode',
   QUIZ_RESULTS: 'aetherQuizResults',
   MIGRATION_FLAG: 'aether_storage_migrated_v1',
+  JOURNEY_START: 'aetherJourneyStartDate',
 };
 
 /** Older key names → current Aether keys (run once on load). */

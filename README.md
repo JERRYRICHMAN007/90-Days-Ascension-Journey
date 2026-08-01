@@ -9,6 +9,7 @@ Aether/
 ├── package.json       # Root — run everything from here
 ├── client/            # React + Vite (UI)
 ├── server/            # Express + Prisma (API)
+├── docs/              # Guides, project notes, Aether OS V2 specs
 └── README.md
 ```
 
@@ -63,6 +64,7 @@ You can still deploy UI (Vercel) and API (Railway) separately. Set `VITE_API_BAS
 
 ## Documentation
 
-- [Environment setup](./ENVIRONMENT_SETUP.md)
+- [Docs index](./docs/README.md)
+- [Environment setup](./docs/guides/ENVIRONMENT_SETUP.md)
 - [Client README](./client/README.md)
 - [Server README](./server/README.md)

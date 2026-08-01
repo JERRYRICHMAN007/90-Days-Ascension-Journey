@@ -12,7 +12,7 @@
   - Note: Backend scripts were not in git, so they need to be recreated if needed
 
 ### 2. Documentation Consolidation
-- Root level: `README.md`, `ENVIRONMENT_SETUP.md`, `PROJECT_STRUCTURE.md`
+- Root level: `README.md`; guides and structure docs live under `docs/guides/` and `docs/project/`
 - Each subdirectory has its own `README.md`
 - Removed redundant documentation files
 
@@ -31,9 +31,10 @@
 ├── 90DaysAJ-backend/      # Node.js backend
 │   ├── scripts/          # Utility scripts (organized)
 │   └── src/              # Source code
-├── ENVIRONMENT_SETUP.md  # Environment config guide
-├── README.md            # Main documentation
-└── PROJECT_STRUCTURE.md  # Structure documentation
+├── docs/
+│   ├── guides/ENVIRONMENT_SETUP.md
+│   └── project/PROJECT_STRUCTURE.md
+└── README.md            # Main documentation
 ```
 
 ## ⚠️ Items That May Need Attention

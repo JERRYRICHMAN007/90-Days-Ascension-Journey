@@ -49,7 +49,7 @@ export function JourneyTraceCard({ journeyId, index = 0, compact = false }) {
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') navigate(`/analytics/${journeyId}`);
         }}
-        className="forge-card flex flex-col gap-6 overflow-hidden cursor-pointer transition-all duration-300 hover:bg-[var(--bg-card-hover)] min-h-[160px]"
+        className="aether-card flex flex-col gap-6 overflow-hidden cursor-pointer transition-all duration-300 hover:bg-[var(--bg-card-hover)] min-h-[160px]"
         style={{
           borderColor: 'var(--border-subtle)',
         }}
@@ -75,15 +75,15 @@ export function JourneyTraceCard({ journeyId, index = 0, compact = false }) {
               <span className="text-lg leading-none" aria-hidden>{accent.icon}</span>
             </div>
             <div className="min-w-0">
-              <h3 className="forge-heading-lg truncate">{accent.fullLabel}</h3>
-              <p className="forge-label mt-2 flex items-center gap-2">
+              <h3 className="aether-heading-lg truncate">{accent.fullLabel}</h3>
+              <p className="aether-label mt-2 flex items-center gap-2">
                 <span aria-hidden>🔥</span>
                 {consistency.currentStreak} DAY STREAK
               </p>
             </div>
           </div>
           <div
-            className="forge-rank-badge shrink-0"
+            className="aether-rank-badge shrink-0"
             style={{
               color: accent.color,
               border: `1px solid rgba(${accent.rgb}, 0.4)`,
@@ -96,10 +96,10 @@ export function JourneyTraceCard({ journeyId, index = 0, compact = false }) {
         {/* Progress */}
         <div className="flex flex-col gap-2">
           <div className="flex items-start justify-between">
-            <span className="forge-label">PROGRESS</span>
-            <span className="forge-label">{percentComplete}%</span>
+            <span className="aether-label">PROGRESS</span>
+            <span className="aether-label">{percentComplete}%</span>
           </div>
-          <div className="forge-progress-track">
+          <div className="aether-progress-track">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{
@@ -134,7 +134,7 @@ export function JourneyTraceCard({ journeyId, index = 0, compact = false }) {
             <div className="pt-2 border-t mt-2" style={{ borderColor: 'rgba(59,73,76,0.1)' }}>
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="forge-label mb-1">MASTERY SCORE</p>
+                  <p className="aether-label mb-1">MASTERY SCORE</p>
                   <p
                     className="text-[32px] font-extrabold tracking-[-0.64px] leading-none"
                     style={{ color: accent.color }}
@@ -143,7 +143,7 @@ export function JourneyTraceCard({ journeyId, index = 0, compact = false }) {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="forge-label mb-1">STREAK</p>
+                  <p className="aether-label mb-1">STREAK</p>
                   <p className="text-[var(--text-primary)] font-extrabold text-xl leading-none">
                     {consistency.currentStreak}
                     <span className="text-sm font-normal text-[var(--text-secondary)] ml-1">Days</span>

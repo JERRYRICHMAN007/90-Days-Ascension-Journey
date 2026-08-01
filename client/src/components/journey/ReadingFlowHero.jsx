@@ -58,7 +58,7 @@ function ExtraSessionCard({ session }) {
           style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
         >
           <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="forge-label" style={{ color: READING_ACCENT }}>
+            <span className="aether-label" style={{ color: READING_ACCENT }}>
               {session.type}
             </span>
             <span
@@ -86,7 +86,7 @@ function ExtraSessionCard({ session }) {
           className="w-full h-full rounded-xl p-4 flex flex-col justify-center gap-2 overflow-y-auto border min-h-[140px]"
           style={{ background: 'var(--bg-elevated)', borderColor: READING_ACCENT, boxShadow: READING_GLOW }}
         >
-          <p className="forge-label" style={{ color: READING_ACCENT }}>{session.type}</p>
+          <p className="aether-label" style={{ color: READING_ACCENT }}>{session.type}</p>
           <p className="text-xs text-[var(--text-primary)] leading-relaxed text-left">{materialText}</p>
           {bibleData?.link && (
             <a
@@ -163,7 +163,7 @@ export function ReadingFlowHero({
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: READING_ACCENT, boxShadow: READING_GLOW }}
             />
-            <p className="forge-label">{focusLabel}</p>
+            <p className="aether-label">{focusLabel}</p>
           </div>
           <h2 className="text-2xl sm:text-[32px] font-extrabold text-[var(--text-primary)] tracking-[-0.64px] leading-tight">
             {dailyLearning?.title || `Reading Focus${theme ? `: ${theme}` : ''}`}
@@ -184,7 +184,7 @@ export function ReadingFlowHero({
             <div className="flex gap-4 sm:gap-5">
               <BookCover title={displayTitle} author={displayAuthor} />
               <div className="min-w-0 flex-1 flex flex-col justify-center">
-                <p className="forge-label mb-2" style={{ color: READING_ACCENT }}>
+                <p className="aether-label mb-2" style={{ color: READING_ACCENT }}>
                   {primarySession?.type || 'Book'}
                 </p>
                 <h3 className="text-lg sm:text-xl font-bold text-[var(--text-primary)] leading-snug tracking-tight">
@@ -230,7 +230,7 @@ export function ReadingFlowHero({
                 <Clock className="w-4 h-4" style={{ color: READING_ACCENT }} />
               </div>
               <div>
-                <p className="forge-label">Evening Session</p>
+                <p className="aether-label">Evening Session</p>
                 <p
                   className="text-xl sm:text-2xl font-extrabold tabular-nums tracking-tight leading-none mt-1"
                   style={{ color: READING_ACCENT }}
@@ -256,12 +256,12 @@ export function ReadingFlowHero({
           {/* Reading progress tracker */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="forge-label">Reading Progress</span>
-              <span className="forge-label" style={{ color: READING_ACCENT }}>
+              <span className="aether-label">Reading Progress</span>
+              <span className="aether-label" style={{ color: READING_ACCENT }}>
                 {progress.percentComplete ?? 0}%
               </span>
             </div>
-            <div className="forge-progress-track">
+            <div className="aether-progress-track">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{

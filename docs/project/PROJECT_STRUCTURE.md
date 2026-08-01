@@ -26,7 +26,10 @@ This document describes the organized structure of the 90 Days Ascension Journey
 │   ├── package.json
 │   └── README.md
 │
-├── ENVIRONMENT_SETUP.md        # Environment configuration guide
+├── docs/
+│   ├── guides/                 # ENVIRONMENT_SETUP, deployment, quick fixes
+│   ├── project/                # Structure & organization notes
+│   └── aether-os-v2/           # Product & AI architecture specs
 ├── README.md                   # Main project documentation
 └── .gitignore                  # Git ignore rules
 ```

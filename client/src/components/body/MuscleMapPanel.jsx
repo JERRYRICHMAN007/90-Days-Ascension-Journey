@@ -51,7 +51,7 @@ export function MuscleMapPanel({ exercises = [], activeGuideKey = null, classNam
     >
       <div className="flex items-center gap-2 w-full mb-3">
         <Activity className="w-4 h-4 shrink-0" style={{ color: BODY_ACCENT }} />
-        <p className="forge-label">Muscles worked today</p>
+        <p className="aether-label">Muscles worked today</p>
       </div>
 
       <div className="w-full flex justify-center overflow-hidden">

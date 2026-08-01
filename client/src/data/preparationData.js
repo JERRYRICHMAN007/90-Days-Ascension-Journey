@@ -5,7 +5,7 @@
 export const journeyPreparationData = {
   'body-transformation': {
     title: 'Body Transformation Preparation',
-    subtitle: 'Prepare your body, mind, and environment for 184 days of transformation',
+    subtitle: 'Prepare your body, mind, and environment for 6 months of transformation',
     icon: '💪',
     sections: [
       {
@@ -36,7 +36,7 @@ export const journeyPreparationData = {
         icon: '🧠',
         tasks: [
           'Define your specific body transformation goals',
-          'Set realistic expectations for 184 days',
+          'Set realistic expectations for 6 months',
           'Prepare mentally for consistency over intensity',
           'Write down your "why" for this journey',
           'Set up a progress tracking system (photos, measurements)'
@@ -120,7 +120,7 @@ export const journeyPreparationData = {
   },
   'reading': {
     title: 'Reading Journey Preparation',
-    subtitle: 'Prepare your reading environment and resources for 184 days of learning',
+    subtitle: 'Prepare your reading environment and resources for 6 months of learning',
     icon: '📚',
     sections: [
       {
@@ -234,7 +234,7 @@ export const journeyPreparationData = {
   },
   'software-engineering': {
     title: 'Software Engineering Preparation',
-    subtitle: 'Prepare your development environment and tools for 184 days — ship Comfort by Day 184',
+    subtitle: 'Prepare your development environment and tools for 6 months — ship Comfort by the end',
     icon: '💻',
     sections: [
       {

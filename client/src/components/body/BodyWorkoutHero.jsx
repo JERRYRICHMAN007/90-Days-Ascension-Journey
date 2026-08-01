@@ -42,7 +42,7 @@ export function BodyWorkoutHero({
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: BODY_ACCENT, boxShadow: BODY_GLOW }}
             />
-            <p className="forge-label">{focusLabel}</p>
+            <p className="aether-label">{focusLabel}</p>
           </div>
           <h2 className="text-2xl sm:text-[32px] font-extrabold text-[var(--text-primary)] tracking-[-0.64px] leading-tight">
             {focus}
@@ -125,7 +125,7 @@ export function BodyWorkoutHero({
                   className="rounded-xl p-4 border"
                   style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
                 >
-                  <p className="forge-label mb-2" style={{ color: BODY_ACCENT }}>
+                  <p className="aether-label mb-2" style={{ color: BODY_ACCENT }}>
                     Nutrition
                   </p>
                   <p className="text-sm text-[var(--text-primary)] leading-relaxed">{nutrition}</p>
@@ -136,7 +136,7 @@ export function BodyWorkoutHero({
                   className="rounded-xl p-4 border"
                   style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
                 >
-                  <p className="forge-label mb-2" style={{ color: BODY_ACCENT }}>
+                  <p className="aether-label mb-2" style={{ color: BODY_ACCENT }}>
                     Mindset
                   </p>
                   <p className="text-sm text-[var(--text-secondary)] italic leading-relaxed">

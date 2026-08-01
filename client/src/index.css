@@ -154,7 +154,7 @@ h1, h2, h3 {
 }
 
 /* Figma typography utilities */
-.forge-label {
+.aether-label {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1.2px;
@@ -163,7 +163,32 @@ h1, h2, h3 {
   line-height: 12px;
 }
 
-.forge-eyebrow {
+/* Auth field icons: thicker strokes + high contrast */
+.aether-auth-field-icon,
+.aether-auth-field-trailing,
+.aether-auth-field-trailing button {
+  color: #e8f0f2;
+}
+
+.aether-auth-field-icon svg,
+.aether-auth-field-trailing svg {
+  stroke: currentColor;
+  stroke-width: 2.5;
+}
+
+/* Keep autofill fields dark so icons stay visible (Chrome paints a light bg by default) */
+.aether-auth-field input:-webkit-autofill,
+.aether-auth-field input:-webkit-autofill:hover,
+.aether-auth-field input:-webkit-autofill:focus,
+.aether-auth-field input:autofill {
+  -webkit-text-fill-color: var(--text-primary) !important;
+  caret-color: var(--text-primary);
+  box-shadow: 0 0 0 1000px var(--bg-elevated) inset !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-elevated) inset !important;
+  transition: background-color 99999s ease-out;
+}
+
+.aether-eyebrow {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 2.4px;
@@ -172,7 +197,7 @@ h1, h2, h3 {
   line-height: 12px;
 }
 
-.forge-heading-xl {
+.aether-heading-xl {
   font-size: 36px;
   font-weight: 800;
   letter-spacing: -0.72px;
@@ -180,7 +205,7 @@ h1, h2, h3 {
   color: var(--text-primary);
 }
 
-.forge-heading-lg {
+.aether-heading-lg {
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.48px;
@@ -188,28 +213,28 @@ h1, h2, h3 {
   color: var(--text-primary);
 }
 
-.forge-subtitle {
+.aether-subtitle {
   font-size: 18px;
   font-weight: 400;
   line-height: 1.6;
   color: var(--text-accent);
 }
 
-.forge-card {
+.aether-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-card);
   padding: 25px;
 }
 
-.forge-progress-track {
+.aether-progress-track {
   height: var(--progress-height);
   background: var(--progress-track);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
-.forge-rank-badge {
+.aether-rank-badge {
   background: var(--bg-badge);
   border-radius: var(--radius-badge);
   padding: 5px 9px;
@@ -473,7 +498,20 @@ p, span, div, h1, h2, h3, h4, h5, h6 {
   50%       { filter: drop-shadow(0 0 24px #00e5ff) drop-shadow(0 0 40px #00ff87); }
 }
 
+@keyframes mastery-idle-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.35)); }
+  50% { filter: drop-shadow(0 0 14px rgba(0, 255, 135, 0.45)); }
+}
+
 .mastery-ring-hover:hover {
+  animation: ring-pulse 2s ease-in-out infinite;
+}
+
+.mastery-ring-idle .mastery-ring-arc {
+  animation: mastery-idle-glow 3.2s ease-in-out infinite;
+}
+
+.mastery-hero .mastery-ring-shell:hover .mastery-ring-arc {
   animation: ring-pulse 2s ease-in-out infinite;
 }
 

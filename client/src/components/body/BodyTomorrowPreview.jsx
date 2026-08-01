@@ -26,7 +26,7 @@ export function BodyTomorrowPreview({ nextDay, onPreview }) {
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: BODY_ACCENT, boxShadow: 'var(--neon-glow-green)' }}
             />
-            <p className="forge-label">Tomorrow&apos;s Preview</p>
+            <p className="aether-label">Tomorrow&apos;s Preview</p>
           </div>
           <p className="text-lg font-bold text-[var(--text-primary)] tracking-tight truncate">
             {nextDay.focus || (isRest ? 'Rest & Recovery' : 'Workout')}

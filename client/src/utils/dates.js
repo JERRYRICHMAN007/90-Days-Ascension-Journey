@@ -1,383 +1,286 @@
 /**
  * Date utilities for Aether
  *
- * Timeline:
- * - Onboarding: July 9–17, 2026 (9 days) — soft start, habit building
- * - Day 1: July 18, 2026 — The Real Deal begins
- * - Day 184: January 18, 2027 — Arc completion
- * - Phase 1 (Days 1–60), Phase 2 (Days 61–120), Phase 3 (Days 121–184)
+ * Journey length = 6 calendar months from the user’s start date (Day 1).
+ * Start date is stored in localStorage and can be changed in Settings.
  */
 
 import { getCalendarWeekNumber } from '../data/journeys/shared.js';
+import { STORAGE_KEYS } from './storageKeys.js';
 
-const onboardingStartDate = new Date(2026, 6, 9); // July 9, 2026
-const day1Date = new Date(2026, 6, 18); // July 18, 2026 — Day 1
+/** Default Day 1 if the user has not chosen a start date yet */
+export const DEFAULT_JOURNEY_START = '2026-07-18';
+export const JOURNEY_DURATION_MONTHS = 6;
 
+/** Content library still spans this many day templates (UI length is dynamic). */
+export const CONTENT_TOTAL_DAYS = 184;
+
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
+export function formatYmd(date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+export function parseYmd(ymd) {
+  const [y, m, d] = String(ymd).split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+export function startOfLocalDay(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+export function addMonths(date, months) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+/** Inclusive day count between two local dates */
+export function daysInclusive(start, end) {
+  const a = startOfLocalDay(start);
+  const b = startOfLocalDay(end);
+  const ms = b.getTime() - a.getTime();
+  return Math.floor(ms / (1000 * 60 * 60 * 24)) + 1;
+}
+
+export function getStoredJourneyStartDate() {
+  try {
+    if (typeof window !== 'undefined') {
+      const v = localStorage.getItem(STORAGE_KEYS.JOURNEY_START);
+      if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+        return v;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_JOURNEY_START;
+}
+
+/**
+ * Persist Day 1 (YYYY-MM-DD). Dispatches `journey-start-updated`.
+ */
+export function setJourneyStartDate(ymd) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
+    throw new Error('Start date must be YYYY-MM-DD');
+  }
+  localStorage.setItem(STORAGE_KEYS.JOURNEY_START, ymd);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('journey-start-updated', { detail: { startDate: ymd } })
+    );
+  }
+  return ymd;
+}
+
+export function getJourneyStartDate() {
+  return parseYmd(getStoredJourneyStartDate());
+}
+
+/** End of the 6-month arc (same calendar day + 6 months) */
+export function getJourneyEndDate() {
+  return addMonths(getJourneyStartDate(), JOURNEY_DURATION_MONTHS);
+}
+
+export function getJourneyTotalDays() {
+  return daysInclusive(getJourneyStartDate(), getJourneyEndDate());
+}
+
+function phaseBoundaries() {
+  const start = getJourneyStartDate();
+  const total = getJourneyTotalDays();
+  const p1 = Math.floor(total / 3);
+  const p2 = Math.floor((total * 2) / 3);
+  const phase1End = new Date(start);
+  phase1End.setDate(start.getDate() + p1 - 1);
+  const phase2End = new Date(start);
+  phase2End.setDate(start.getDate() + p2 - 1);
+  const phase3End = getJourneyEndDate();
+  return { start, phase1End, phase2End, phase3End, total, p1, p2 };
+}
+
+/**
+ * Live constants — getters so TOTAL_DAYS / dates follow the user’s start.
+ */
 export const JOURNEY_CONSTANTS = {
-  ONBOARDING_START: onboardingStartDate,
-  ONBOARDING_END: new Date(2026, 6, 17), // July 17, 2026
-  ONBOARDING_DAYS: 9,
-  ASCENSION_START: day1Date,
-  PHASE_1_END: new Date(2026, day1Date.getMonth(), day1Date.getDate() + 59), // Day 60
-  PHASE_2_END: new Date(2026, day1Date.getMonth(), day1Date.getDate() + 119), // Day 120
-  PHASE_3_END: new Date(2027, 0, 18), // January 18, 2027 — Day 184
-  TOTAL_DAYS: 184,
-  PHASE_1_DAYS: 60,
-  PHASE_2_DAYS: 60,
-  PHASE_3_DAYS: 64,
+  DURATION_MONTHS: JOURNEY_DURATION_MONTHS,
+  ONBOARDING_DAYS: 0,
+  get ONBOARDING_START() {
+    return getJourneyStartDate();
+  },
+  get ONBOARDING_END() {
+    const d = getJourneyStartDate();
+    d.setDate(d.getDate() - 1);
+    return d;
+  },
+  get ASCENSION_START() {
+    return getJourneyStartDate();
+  },
+  get PHASE_1_END() {
+    return phaseBoundaries().phase1End;
+  },
+  get PHASE_2_END() {
+    return phaseBoundaries().phase2End;
+  },
+  get PHASE_3_END() {
+    return getJourneyEndDate();
+  },
+  get TOTAL_DAYS() {
+    return getJourneyTotalDays();
+  },
+  get PHASE_1_DAYS() {
+    return phaseBoundaries().p1;
+  },
+  get PHASE_2_DAYS() {
+    return phaseBoundaries().p2 - phaseBoundaries().p1;
+  },
+  get PHASE_3_DAYS() {
+    const { total, p2 } = phaseBoundaries();
+    return total - p2;
+  },
 };
 
 /**
- * Get the current phase status of the journey
  * @returns {'before' | 'onboarding' | 'phase1' | 'phase2' | 'phase3' | 'after'}
  */
 export function getCurrentPhaseStatus() {
-  const today = new Date();
-  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const today = startOfLocalDay();
+  const { start, phase1End, phase2End, phase3End } = phaseBoundaries();
 
-  const onboardingStart = new Date(JOURNEY_CONSTANTS.ONBOARDING_START);
-  const onboardingStartLocal = new Date(
-    onboardingStart.getFullYear(),
-    onboardingStart.getMonth(),
-    onboardingStart.getDate()
-  );
-
-  const onboardingEnd = new Date(JOURNEY_CONSTANTS.ONBOARDING_END);
-  const onboardingEndLocal = new Date(
-    onboardingEnd.getFullYear(),
-    onboardingEnd.getMonth(),
-    onboardingEnd.getDate(),
-    23,
-    59,
-    59,
-    999
-  );
-
-  const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  const ascensionLocal = new Date(
-    ascensionStart.getFullYear(),
-    ascensionStart.getMonth(),
-    ascensionStart.getDate()
-  );
-
-  const phase1End = new Date(JOURNEY_CONSTANTS.PHASE_1_END);
-  const phase1EndLocal = new Date(
-    phase1End.getFullYear(),
-    phase1End.getMonth(),
-    phase1End.getDate(),
-    23,
-    59,
-    59,
-    999
-  );
-
-  const phase2End = new Date(JOURNEY_CONSTANTS.PHASE_2_END);
-  const phase2EndLocal = new Date(
-    phase2End.getFullYear(),
-    phase2End.getMonth(),
-    phase2End.getDate(),
-    23,
-    59,
-    59,
-    999
-  );
-
-  const phase3End = new Date(JOURNEY_CONSTANTS.PHASE_3_END);
-  const phase3EndLocal = new Date(
-    phase3End.getFullYear(),
-    phase3End.getMonth(),
-    phase3End.getDate(),
-    23,
-    59,
-    59,
-    999
-  );
-
-  if (todayLocal < onboardingStartLocal) {
-    return 'before';
-  }
-  if (todayLocal >= onboardingStartLocal && todayLocal <= onboardingEndLocal) {
-    return 'onboarding';
-  }
-  if (todayLocal >= ascensionLocal && todayLocal <= phase1EndLocal) {
-    return 'phase1';
-  }
-  if (todayLocal > phase1EndLocal && todayLocal <= phase2EndLocal) {
-    return 'phase2';
-  }
-  if (todayLocal > phase2EndLocal && todayLocal <= phase3EndLocal) {
-    return 'phase3';
-  }
-  return 'after';
+  if (today < start) return 'before';
+  if (today > phase3End) return 'after';
+  if (today <= phase1End) return 'phase1';
+  if (today <= phase2End) return 'phase2';
+  return 'phase3';
 }
 
-/** @deprecated Use 'onboarding' — kept for compatibility */
+/** @deprecated — custom start dates have no separate onboarding window */
 export function isPreparationPhase() {
-  return getCurrentPhaseStatus() === 'onboarding';
-}
-
-/**
- * Onboarding day number (1–9) during Jul 9–17, otherwise null
- * @returns {number | null}
- */
-export function getOnboardingDayNumber() {
-  if (getCurrentPhaseStatus() !== 'onboarding') {
-    return null;
-  }
-
-  const today = new Date();
-  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const onboardingStart = new Date(JOURNEY_CONSTANTS.ONBOARDING_START);
-  const startLocal = new Date(
-    onboardingStart.getFullYear(),
-    onboardingStart.getMonth(),
-    onboardingStart.getDate()
-  );
-
-  const diffDays = Math.floor((todayLocal - startLocal) / (1000 * 60 * 60 * 24));
-  return diffDays + 1;
-}
-
-/**
- * Calculate the current day number (0–184)
- * Day 0 = onboarding period (Jul 9–17)
- * Day 1 = July 18, 2026
- * @returns {number | null}
- */
-export function getCurrentDayNumber() {
-  const phaseStatus = getCurrentPhaseStatus();
-
-  if (phaseStatus === 'before') {
-    return null;
-  }
-
-  if (phaseStatus === 'onboarding') {
-    return 0;
-  }
-
-  if (phaseStatus === 'after') {
-    return null;
-  }
-
-  const today = new Date();
-  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  const startLocal = new Date(
-    ascensionStart.getFullYear(),
-    ascensionStart.getMonth(),
-    ascensionStart.getDate()
-  );
-
-  const diffTime = todayLocal - startLocal;
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const dayNumber = diffDays + 1;
-
-  if (dayNumber < 1 || dayNumber > JOURNEY_CONSTANTS.TOTAL_DAYS) {
-    return null;
-  }
-
-  return dayNumber;
-}
-
-/**
- * Get the date for a specific day number (0–184)
- * Day 0 = onboarding period anchor (July 9, 2026)
- * Day 1 = July 18, 2026
- * @param {number} dayNumber
- * @returns {Date | null}
- */
-export function getDateForDay(dayNumber) {
-  if (dayNumber === 0) {
-    const onboarding = new Date(JOURNEY_CONSTANTS.ONBOARDING_START);
-    return new Date(onboarding.getFullYear(), onboarding.getMonth(), onboarding.getDate());
-  }
-
-  if (dayNumber < 1 || dayNumber > JOURNEY_CONSTANTS.TOTAL_DAYS) {
-    return null;
-  }
-
-  const ascensionStart = new Date(JOURNEY_CONSTANTS.ASCENSION_START);
-  const startLocal = new Date(
-    ascensionStart.getFullYear(),
-    ascensionStart.getMonth(),
-    ascensionStart.getDate()
-  );
-
-  const targetDate = new Date(startLocal);
-  targetDate.setDate(startLocal.getDate() + dayNumber - 1);
-
-  return targetDate;
-}
-
-/**
- * Get arc month (1–6) for a journey day
- * @param {number} dayNumber - Day number (1–184)
- * @returns {number}
- */
-export function getArcMonth(dayNumber) {
-  if (!dayNumber || dayNumber < 1) return 0;
-  if (dayNumber <= 31) return 1;
-  if (dayNumber <= 62) return 2;
-  if (dayNumber <= 92) return 3;
-  if (dayNumber <= 123) return 4;
-  if (dayNumber <= 154) return 5;
-  return 6;
-}
-
-/**
- * @param {number} dayNumber
- * @returns {boolean}
- */
-export function isTestingWeek(dayNumber) {
   return false;
 }
 
+export function getOnboardingDayNumber() {
+  return null;
+}
+
 /**
- * @param {number} dayNumber
- * @returns {boolean}
+ * Current journey day (1 … TOTAL_DAYS), or null if before/after the arc.
  */
+export function getCurrentDayNumber() {
+  const phaseStatus = getCurrentPhaseStatus();
+  if (phaseStatus === 'before' || phaseStatus === 'after') {
+    return null;
+  }
+
+  const today = startOfLocalDay();
+  const start = getJourneyStartDate();
+  const total = getJourneyTotalDays();
+  const dayNumber =
+    Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  if (dayNumber < 1 || dayNumber > total) {
+    return null;
+  }
+  return dayNumber;
+}
+
+export function getDateForDay(dayNumber) {
+  if (!dayNumber || dayNumber < 1 || dayNumber > getJourneyTotalDays()) {
+    return null;
+  }
+  const start = getJourneyStartDate();
+  const target = new Date(start);
+  target.setDate(start.getDate() + dayNumber - 1);
+  return target;
+}
+
+export function getArcMonth(dayNumber) {
+  if (!dayNumber || dayNumber < 1) return 0;
+  const total = getJourneyTotalDays();
+  const bucket = Math.ceil((dayNumber / total) * 6);
+  return Math.min(6, Math.max(1, bucket));
+}
+
+export function isTestingWeek() {
+  return false;
+}
+
 export function isActualContentDay(dayNumber) {
   return dayNumber >= 1;
 }
 
-/**
- * @param {number} dayNumber
- * @returns {string}
- */
 export function formatDayNumber(dayNumber) {
-  if (dayNumber === 0) {
-    const onboardingDay = getOnboardingDayNumber();
-    if (onboardingDay) {
-      return `Onboarding Day ${onboardingDay} of ${JOURNEY_CONSTANTS.ONBOARDING_DAYS}`;
-    }
-    return 'Onboarding — Soft Start';
-  }
   if (!dayNumber || dayNumber < 1) {
     return 'Before Journey Start';
   }
-  return `Day ${dayNumber} of ${JOURNEY_CONSTANTS.TOTAL_DAYS}`;
+  return `Day ${dayNumber} of ${getJourneyTotalDays()}`;
 }
 
-/**
- * @returns {number | null}
- */
 export function getDaysRemaining() {
   const currentDay = getCurrentDayNumber();
   if (currentDay === null) {
+    const today = startOfLocalDay();
+    if (today < getJourneyStartDate()) {
+      return getJourneyTotalDays();
+    }
     return null;
   }
-  if (currentDay === 0) {
-    return JOURNEY_CONSTANTS.TOTAL_DAYS;
-  }
-  return JOURNEY_CONSTANTS.TOTAL_DAYS - currentDay;
+  return getJourneyTotalDays() - currentDay;
 }
 
-/**
- * @returns {number}
- */
+/** Whole months roughly remaining (for UI copy). */
+export function getMonthsRemainingLabel() {
+  const end = getJourneyEndDate();
+  const today = startOfLocalDay();
+  if (today > end) return 'Complete';
+  if (today < getJourneyStartDate()) return `${JOURNEY_DURATION_MONTHS} months`;
+  const ms = end.getTime() - today.getTime();
+  const days = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+  const months = Math.max(0, Math.round(days / 30.44));
+  if (months <= 0) return `${days} day${days === 1 ? '' : 's'} left`;
+  return `~${months} month${months === 1 ? '' : 's'} left`;
+}
+
 export function getJourneyProgress() {
-  return 0;
+  const day = getCurrentDayNumber();
+  if (!day) return 0;
+  return Math.round((day / getJourneyTotalDays()) * 100);
 }
 
-/**
- * @param {Date | string} date
- * @returns {boolean}
- */
 export function isInJourney(date) {
-  const checkDate = typeof date === 'string' ? new Date(date) : date;
-  const checkLocal = new Date(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
-
-  const onboardingStart = new Date(JOURNEY_CONSTANTS.ONBOARDING_START);
-  const startLocal = new Date(
-    onboardingStart.getFullYear(),
-    onboardingStart.getMonth(),
-    onboardingStart.getDate()
-  );
-
-  const phase3End = new Date(JOURNEY_CONSTANTS.PHASE_3_END);
-  const endLocal = new Date(
-    phase3End.getFullYear(),
-    phase3End.getMonth(),
-    phase3End.getDate(),
-    23,
-    59,
-    59,
-    999
-  );
-
-  return checkLocal >= startLocal && checkLocal <= endLocal;
+  const checkLocal = startOfLocalDay(typeof date === 'string' ? parseYmd(date) : date);
+  const start = getJourneyStartDate();
+  const end = getJourneyEndDate();
+  return checkLocal >= start && checkLocal <= end;
 }
 
-/**
- * @param {number} dayNumber
- * @returns {number}
- */
 export function getWeekNumber(dayNumber) {
   return getCalendarWeekNumber(dayNumber);
 }
 
-/**
- * @param {number} dayNumber
- * @returns {boolean}
- */
 export function isDayAccessible(dayNumber) {
-  if (dayNumber === 0) {
-    return true;
-  }
-  return dayNumber >= 1 && dayNumber <= JOURNEY_CONSTANTS.TOTAL_DAYS;
+  return dayNumber >= 1 && dayNumber <= getJourneyTotalDays();
 }
 
-/**
- * @param {number} dayNumber
- * @returns {boolean}
- */
 export function canCompleteDay(dayNumber) {
-  if (dayNumber === 0) {
-    return false;
-  }
-  return dayNumber >= 1 && dayNumber <= JOURNEY_CONSTANTS.TOTAL_DAYS;
+  return dayNumber >= 1 && dayNumber <= getJourneyTotalDays();
 }
 
-/**
- * @param {number} dayNumber
- * @returns {boolean}
- */
 export function isDayPast(dayNumber) {
-  const today = new Date();
-  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const today = startOfLocalDay();
   const dayDate = getDateForDay(dayNumber);
   if (!dayDate) return false;
-  const dayLocal = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
-  return dayLocal < todayLocal;
+  return startOfLocalDay(dayDate) < today;
 }
 
-/**
- * @param {number} dayNumber
- * @returns {boolean}
- */
 export function isTomorrow(dayNumber) {
-  const phaseStatus = getCurrentPhaseStatus();
   const currentDayNumber = getCurrentDayNumber();
-
-  if (phaseStatus === 'before') {
-    return dayNumber === 0;
-  }
-
-  if (phaseStatus === 'onboarding') {
+  if (getCurrentPhaseStatus() === 'before') {
     return dayNumber === 1;
   }
-
-  if (dayNumber < 1) {
-    return false;
-  }
-
-  if (
-    (phaseStatus === 'phase1' || phaseStatus === 'phase2' || phaseStatus === 'phase3') &&
-    currentDayNumber
-  ) {
-    return dayNumber === currentDayNumber + 1;
-  }
-
-  return false;
+  if (!currentDayNumber || dayNumber < 1) return false;
+  return dayNumber === currentDayNumber + 1;
 }
