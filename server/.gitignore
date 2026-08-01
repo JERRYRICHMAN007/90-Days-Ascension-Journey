@@ -60,8 +60,6 @@ docker-compose.override.yml
 *.temp
 .cache/
 
-# MongoDB connection strings (if any)
-*connection*
-*config*.json
-*secrets*.json
+# Local dev auth store (no Supabase)
+.dev-auth-users.json
 

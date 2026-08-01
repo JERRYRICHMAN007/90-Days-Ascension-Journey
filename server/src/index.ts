@@ -11,8 +11,15 @@ import { progressRoutes } from "./routes/progress";
 import { taskRoutes } from "./routes/tasks";
 import { gamificationRoutes } from "./routes/gamification";
 import { achievementRoutes } from "./routes/achievements";
+import { isDevAuthEnabled, isSupabaseConfigured, ensureJwtSecrets } from "./lib/supabaseConfig";
 
 dotenv.config();
+
+if (isDevAuthEnabled()) {
+  ensureJwtSecrets();
+  console.log('⚡ Local dev auth enabled (Supabase not configured)');
+  console.log('   Sign up or sign in — accounts are stored in server/.dev-auth-users.json');
+}
 
 const app = express();
 // Use 5001 by default to avoid conflicts and permission issues
@@ -70,8 +77,20 @@ app.get("/health", (req, res) => {
 
 // Supabase connection test endpoint
 app.get("/v1/health/supabase", async (req, res) => {
+  if (!isSupabaseConfigured()) {
+    return res.json({
+      status: "ok",
+      services: {
+        supabase_auth: isDevAuthEnabled() ? "dev_auth_fallback" : "not_configured",
+        database: "not_configured",
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   try {
-    const { supabaseAdmin } = await import('./lib/supabase');
+    const { getSupabaseAdmin } = await import('./lib/supabase');
+    const supabaseAdmin = getSupabaseAdmin();
     
     // Test Supabase Auth connection
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers({

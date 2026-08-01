@@ -10,7 +10,7 @@ import {
   signOutUser,
   sendPasswordResetEmail,
   updateUserPassword,
-} from '../services/supabaseAuth';
+} from '../services/authProvider';
 
 const router = Router();
 

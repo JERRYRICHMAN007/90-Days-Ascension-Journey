@@ -110,7 +110,13 @@ export function SignInForm() {
     } catch (err: any) {
       let errorMessage = err.message || 'Invalid email or password';
 
-      if (
+      if (errorMessage === 'Request failed') {
+        errorMessage =
+          'Cannot connect to server. Run `npm run dev` from the Aether project root so the API starts on port 5001.';
+      } else if (errorMessage.includes('Invalid credentials')) {
+        errorMessage =
+          'Invalid email or password. If this is your first time locally, create an account on the Sign Up page.';
+      } else if (
         errorMessage.includes('SERVICE_UNAVAILABLE') ||
         errorMessage.includes('service unavailable') ||
         errorMessage.includes('SUPABASE_UNAVAILABLE') ||
@@ -119,7 +125,8 @@ export function SignInForm() {
         errorMessage.includes('NetworkError') ||
         errorMessage.includes('ERR_NETWORK') ||
         errorMessage.includes('Network request failed') ||
-        errorMessage.includes('Cannot connect to server')
+        errorMessage.includes('Cannot connect to server') ||
+        errorMessage === 'Request failed'
       ) {
         const existingAccessToken = localStorage.getItem('accessToken');
         const existingRefreshToken = localStorage.getItem('refreshToken');

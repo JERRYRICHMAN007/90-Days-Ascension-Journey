@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '../services/supabaseAuth';
+import { verifyAccessToken } from '../services/authProvider';
 import { AppError } from './errorHandler';
 
 export interface AuthRequest extends Request {

@@ -240,7 +240,6 @@ class ApiClient {
         
         if (isAuthOperation) {
           if (isProduction) {
-            // In production, provide helpful debugging info
             console.error('❌ Authentication failed - Backend connection issue');
             console.error('   API URL:', this.baseURL);
             console.error('   Endpoint:', endpoint);

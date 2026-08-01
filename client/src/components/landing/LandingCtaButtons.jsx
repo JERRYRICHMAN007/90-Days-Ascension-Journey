@@ -10,8 +10,8 @@ const secondaryBtnClass =
   'w-full sm:w-auto h-10 px-5 text-sm sm:h-11 sm:px-6 md:h-12 md:px-7 md:text-base border-2 hover:bg-white hover:text-black hover:border-white transition-colors';
 
 export function LandingCtaButtons({
-  primaryLabel = 'Start Your Journey Free',
-  secondaryLabel = 'Sign In',
+  primaryLabel = 'Sign In',
+  secondaryLabel = 'Create Account',
   className,
   align = 'center',
 }) {
@@ -24,13 +24,13 @@ export function LandingCtaButtons({
         className
       )}
     >
-      <Link to="/signup" className="w-full sm:w-auto flex justify-center">
+      <Link to="/signin" className="w-full sm:w-auto flex justify-center">
         <Button size="lg" className={primaryBtnClass}>
           {primaryLabel}
           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform shrink-0" />
         </Button>
       </Link>
-      <Link to="/signin" className="w-full sm:w-auto flex justify-center">
+      <Link to="/signup" className="w-full sm:w-auto flex justify-center">
         <Button size="lg" variant="outline" className={secondaryBtnClass}>
           {secondaryLabel}
         </Button>

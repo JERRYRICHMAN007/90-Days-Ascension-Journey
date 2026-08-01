@@ -15,6 +15,9 @@ import { AchievementsPage } from "./pages/AchievementsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { LandingPage } from "./pages/LandingPage";
+import { JourneysPage } from "./pages/JourneysPage";
+import { MasteryPage } from "./pages/MasteryPage";
+import { LegacyPage } from "./pages/LegacyPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { SignInForm } from "./components/auth/SignInForm";
 import { SignUpForm } from "./components/auth/SignUpForm";
@@ -80,8 +83,13 @@ function App() {
             >
               <Routes>
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/journeys" element={<JourneysPage />} />
+                <Route path="/mastery" element={<MasteryPage />} />
+                <Route path="/legacy" element={<LegacyPage />} />
                 <Route path="/signin" element={<SignInForm />} />
                 <Route path="/signup" element={<SignUpForm />} />
+                <Route path="/login" element={<Navigate to="/signin" replace />} />
+                <Route path="/register" element={<Navigate to="/signup" replace />} />
                 <Route path="/forgot-password" element={<ForgotPasswordForm />} />
                 <Route path="/reset-password" element={<ResetPasswordForm />} />
 

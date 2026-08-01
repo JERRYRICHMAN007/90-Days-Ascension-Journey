@@ -136,9 +136,10 @@
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -148,16 +149,18 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-h1, h2, h3 {
-  letter-spacing: -0.02em;
+h1, h2, h3, .font-display {
+  font-family: 'Syne', 'Space Grotesk', system-ui, sans-serif;
+  letter-spacing: -0.03em;
   color: var(--text-primary);
 }
 
 /* Figma typography utilities */
 .aether-label {
-  font-size: 12px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.2px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-secondary);
   line-height: 12px;
@@ -189,9 +192,10 @@ h1, h2, h3 {
 }
 
 .aether-eyebrow {
-  font-size: 12px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 2.4px;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--neon-green-alt);
   line-height: 12px;

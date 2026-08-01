@@ -1,75 +1,54 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import { isSupabaseConfigured } from './supabaseConfig';
 
-// Load environment variables first
 dotenv.config();
 
-// Validate required environment variables
-if (!process.env.SUPABASE_URL) {
-  throw new Error('SUPABASE_URL is required in .env file');
-}
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('SUPABASE_SERVICE_ROLE_KEY is required in .env file');
-}
-if (!process.env.SUPABASE_ANON_KEY) {
-  throw new Error('SUPABASE_ANON_KEY is required in .env file');
+let supabaseAdminInstance: SupabaseClient | null = null;
+
+function requireSupabaseConfig(): void {
+  if (!isSupabaseConfigured()) {
+    throw new Error(
+      'Supabase is not configured. Set SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_ANON_KEY in server/.env — or use local dev auth (server starts automatically without Supabase in development).'
+    );
+  }
+  if (!process.env.SUPABASE_URL!.startsWith('https://')) {
+    throw new Error('SUPABASE_URL must start with https://');
+  }
 }
 
-// Validate Supabase URL format
-if (!process.env.SUPABASE_URL.startsWith('https://')) {
-  throw new Error('SUPABASE_URL must start with https://');
+export function getSupabaseAdmin(): SupabaseClient {
+  requireSupabaseConfig();
+  if (!supabaseAdminInstance) {
+    supabaseAdminInstance = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+  }
+  return supabaseAdminInstance;
 }
 
-// Initialize Supabase client for server-side operations
-// Uses service role key for admin operations (bypasses RLS)
-export const supabaseAdmin: SupabaseClient = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
+/** @deprecated Use getSupabaseAdmin() — kept for gradual migration */
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    return (getSupabaseAdmin() as any)[prop];
+  },
+});
+
+export const createSupabaseClient = (accessToken?: string): SupabaseClient => {
+  requireSupabaseConfig();
+  const client = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
-  }
-);
-
-// Test Supabase connection on startup
-(async () => {
-  try {
-    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1 });
-    if (error) {
-      console.error('❌ Supabase connection test failed:', error.message);
-    } else {
-      console.log('✅ Supabase Auth connected successfully');
-      console.log(`   URL: ${process.env.SUPABASE_URL}`);
-    }
-  } catch (err: any) {
-    console.error('❌ Supabase connection error:', err.message);
-    if (err.message?.includes('ENOTFOUND') || err.cause?.code === 'ENOTFOUND') {
-      const host = process.env.SUPABASE_URL?.replace('https://', '').replace(/\/$/, '');
-      console.error(`   → Host "${host}" does not exist (project deleted, wrong ID, or paused).`);
-      console.error('   → Open https://supabase.com/dashboard → restore or create a project.');
-      console.error('   → Update SUPABASE_URL, keys, and DATABASE_URL in server/.env');
-      console.error('   → Run: node scripts/check-env.mjs');
-    } else if (err.message?.includes('ECONNREFUSED')) {
-      console.error('   → Cannot connect to Supabase. Check if project is active in dashboard.');
-    }
-  }
-})();
-
-// Initialize Supabase client for user operations (respects RLS)
-// This can be used when you need to make requests on behalf of a user
-export const createSupabaseClient = (accessToken?: string): SupabaseClient => {
-  const client = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  );
+  });
 
   if (accessToken) {
     client.auth.setSession({
@@ -81,5 +60,21 @@ export const createSupabaseClient = (accessToken?: string): SupabaseClient => {
   return client;
 };
 
-export default supabaseAdmin;
+if (isSupabaseConfigured()) {
+  (async () => {
+    try {
+      const admin = getSupabaseAdmin();
+      const { error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });
+      if (error) {
+        console.error('❌ Supabase connection test failed:', error.message);
+      } else {
+        console.log('✅ Supabase Auth connected successfully');
+        console.log(`   URL: ${process.env.SUPABASE_URL}`);
+      }
+    } catch (err: any) {
+      console.error('❌ Supabase connection error:', err.message);
+    }
+  })();
+}
 
+export default supabaseAdmin;

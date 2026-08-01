@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 
 const MESH_BG = {
@@ -33,15 +34,19 @@ const PANEL_COPY = {
 
 export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayoutProps) {
   const panel = PANEL_COPY[mode];
+  const isSignup = mode === 'signup';
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row" style={MESH_BG}>
-      {/* Desktop brand panel */}
       <aside
         className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between p-12 xl:p-16 border-r"
         style={{ borderColor: 'var(--border-subtle)' }}
       >
-        <div>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-16"
@@ -50,32 +55,36 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
             Back to home
           </Link>
           <p className="aether-eyebrow mb-4">{panel.eyebrow}</p>
-          <h1 className="text-[48px] xl:text-[56px] font-extrabold text-[var(--text-primary)] tracking-[-0.96px] leading-[1.05] whitespace-pre-line">
+          <h1 className="font-display text-[48px] xl:text-[56px] font-extrabold text-[var(--text-primary)] tracking-[-0.04em] leading-[1.05] whitespace-pre-line">
             {panel.headline}
           </h1>
           <p className="mt-6 text-base text-[var(--text-secondary)] leading-relaxed max-w-md">
             {panel.body}
           </p>
           <ul className="mt-8 space-y-3">
-            {panel.bullets.map((item) => (
-              <li key={item} className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+            {panel.bullets.map((item, i) => (
+              <motion.li
+                key={item}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + i * 0.08 }}
+                className="flex items-center gap-3 text-sm text-[var(--text-secondary)]"
+              >
                 <span
                   className="size-1.5 rounded-full shrink-0"
                   style={{ background: 'var(--neon-green)', boxShadow: 'var(--neon-glow-green)' }}
                 />
                 {item}
-              </li>
+              </motion.li>
             ))}
           </ul>
-        </div>
+        </motion.div>
         <p className="text-[10px] uppercase tracking-[1.2px] text-[var(--text-secondary)]">
           © {new Date().getFullYear()} Aether · Discipline is Freedom
         </p>
       </aside>
 
-      {/* Form column — mobile + desktop */}
       <main className="flex-1 flex flex-col min-h-screen lg:min-h-0">
-        {/* Mobile header */}
         <header
           className="lg:hidden sticky top-0 z-10 flex items-center justify-between h-16 px-5 border-b backdrop-blur-[12px]"
           style={{
@@ -97,10 +106,13 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
           </Link>
         </header>
 
-        <div className="flex-1 flex items-center justify-center px-5 py-10 sm:px-8 sm:py-12">
+        <div
+          className={`flex-1 flex items-center justify-center px-5 sm:px-8 ${
+            isSignup ? 'py-6 sm:py-8' : 'py-10 sm:py-12'
+          }`}
+        >
           <div className="w-full max-w-[440px]">
-            {/* Desktop form header (logo above card on lg when no side panel duplicate) */}
-            <div className="hidden lg:block mb-8">
+            <div className="hidden lg:block mb-6">
               <Link
                 to="/"
                 className="text-2xl font-extrabold tracking-[-1.2px] text-[var(--neon-cyan-alt)]"
@@ -109,27 +121,36 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
               </Link>
             </div>
 
-            <div
-              className="rounded-[12px] border p-6 sm:p-8"
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className={`rounded-[12px] border ${isSignup ? 'p-5 sm:p-6' : 'p-6 sm:p-8'}`}
               style={{
                 background: 'var(--bg-card)',
                 borderColor: 'var(--border-subtle)',
               }}
             >
-              <div className="mb-6 sm:mb-8">
-                <p className="aether-eyebrow mb-2 lg:hidden">
+              <div className={isSignup ? 'mb-4' : 'mb-6 sm:mb-8'}>
+                <p className="aether-eyebrow mb-1.5 lg:hidden">
                   {mode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'}
                 </p>
-                <h2 className="text-2xl sm:text-[32px] font-extrabold text-[var(--text-primary)] tracking-[-0.64px] leading-tight">
+                <h2
+                  className={`font-display font-extrabold text-[var(--text-primary)] tracking-[-0.04em] leading-tight ${
+                    isSignup ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-[32px]'
+                  }`}
+                >
                   {title}
                 </h2>
-                <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">{subtitle}</p>
+                <p className="mt-1 text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+                  {subtitle}
+                </p>
               </div>
 
               {children}
-            </div>
+            </motion.div>
 
-            {footer && <div className="mt-6">{footer}</div>}
+            {footer && <div className="mt-4">{footer}</div>}
           </div>
         </div>
       </main>
