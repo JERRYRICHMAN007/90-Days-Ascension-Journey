@@ -10,6 +10,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Aether — Master Dashboard</title>
     <meta name="description" content="Aether — your 6-month transformation platform for fitness, brand, reading, writing, and software engineering." />
+    <script>
+      (function () {
+        try {
+          var key = 'aetherTheme';
+          var saved = localStorage.getItem(key);
+          var theme = saved || 'dark';
+          document.documentElement.setAttribute('data-theme', theme);
+          if (theme !== 'light') document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

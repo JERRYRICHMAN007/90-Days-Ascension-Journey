@@ -42,7 +42,7 @@ export function LegacyPage() {
           >
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
               <Link
-                to="/signin"
+                to="/signup"
                 className="block rounded-xl bg-[#c3f5ff] px-10 py-5 text-lg font-bold text-[#00363d] hover:opacity-90 hover:shadow-[0_0_32px_rgba(195,245,255,0.25)] transition-all duration-300 text-center"
               >
                 Begin Journey

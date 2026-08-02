@@ -115,7 +115,13 @@ export function SignInForm() {
           'Cannot connect to server. Run `npm run dev` from the Aether project root so the API starts on port 5001.';
       } else if (errorMessage.includes('Invalid credentials')) {
         errorMessage =
-          'Invalid email or password. If this is your first time locally, create an account on the Sign Up page.';
+          'Wrong password for this email. On localhost, open Sign Up, use the same email and a new password (8+ chars, upper, lower, number) — that resets your local password.';
+      } else if (
+        errorMessage.includes('No local account') ||
+        errorMessage.includes('USER_NOT_FOUND')
+      ) {
+        errorMessage =
+          'No local account for this email yet. Use Sign Up to create one (localhost only).';
       } else if (
         errorMessage.includes('SERVICE_UNAVAILABLE') ||
         errorMessage.includes('service unavailable') ||

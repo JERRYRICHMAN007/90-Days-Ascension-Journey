@@ -34,7 +34,8 @@ if (!match) {
   console.error('❌ SUPABASE_URL must be https://YOUR-PROJECT-REF.supabase.co');
   ok = false;
 } else {
-  const host = `${match[1]}.supabase.co`;
+  const projectRef = match[1];
+  const host = `${projectRef}.supabase.co`;
   try {
     await dns.lookup(host);
     console.log(`✅ DNS resolves: ${host}`);
@@ -43,6 +44,18 @@ if (!match) {
     console.error('   → Project deleted, wrong ref, or still restoring after pause.');
     console.error('   → Open https://supabase.com/dashboard and use Settings → API for the correct URL.');
     ok = false;
+  }
+
+  const dbUrl = process.env.DATABASE_URL?.trim();
+  if (dbUrl?.includes('pooler.supabase.com')) {
+    const expectedTenant = `postgres.${projectRef}`;
+    if (!dbUrl.includes(expectedTenant)) {
+      console.error(`❌ DATABASE_URL pooler user should be "${expectedTenant}"`);
+      console.error('   → Copy a fresh URI from Supabase → Settings → Database (Session pooler).');
+      ok = false;
+    } else {
+      console.log(`✅ DATABASE_URL matches project ref ${projectRef}`);
+    }
   }
 }
 

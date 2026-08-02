@@ -190,7 +190,7 @@ export function HomePage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">
           {journeyCards.map((journey, index) => (
             <DashboardMasteryCard
               key={journey.id}

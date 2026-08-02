@@ -73,9 +73,22 @@ export async function devSignUpUser(
   ensureJwtSecrets();
   const normalizedEmail = email.toLowerCase().trim();
   const users = loadUsers();
+  const existingIndex = users.findIndex((u) => u.email === normalizedEmail);
 
-  if (users.some((u) => u.email === normalizedEmail)) {
-    throw new AppError(400, 'Email already registered', 'EMAIL_EXISTS');
+  // Local dev: re-signup with same email updates password (no Supabase lock-out)
+  if (existingIndex >= 0) {
+    const existing = users[existingIndex];
+    existing.passwordHash = await argon2.hash(password);
+    if (metadata?.name?.trim()) {
+      existing.name = metadata.name.trim();
+    }
+    saveUsers(users);
+    console.log(`🔐 Dev auth: updated password for ${normalizedEmail}`);
+    return {
+      accessToken: signAccessToken(existing.id),
+      refreshToken: signRefreshToken(existing.id),
+      user: toAuthUser(existing),
+    };
   }
 
   const user: DevAuthUser = {
@@ -105,12 +118,20 @@ export async function devSignInUser(
   const user = loadUsers().find((u) => u.email === normalizedEmail);
 
   if (!user) {
-    throw new AppError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
+    throw new AppError(
+      401,
+      'No local account for this email. Sign up first, or use Sign Up again with this email to set your password.',
+      'USER_NOT_FOUND'
+    );
   }
 
   const valid = await argon2.verify(user.passwordHash, password);
   if (!valid) {
-    throw new AppError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
+    throw new AppError(
+      401,
+      'Invalid credentials',
+      'INVALID_CREDENTIALS'
+    );
   }
 
   return {

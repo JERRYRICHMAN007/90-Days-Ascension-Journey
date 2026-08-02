@@ -109,7 +109,7 @@ export function SignUpForm() {
     <AuthLayout
       mode="signup"
       title="Start Your Journey"
-      subtitle="Create your account — takes under a minute."
+      subtitle="Create your account — takes under a minute. On localhost, signing up again with the same email resets your password."
       footer={
         <p className="text-center text-[10px] text-[var(--text-secondary)] leading-relaxed">
           By creating an account, you agree to our Terms of Service and Privacy Policy.

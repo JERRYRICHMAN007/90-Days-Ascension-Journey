@@ -9,7 +9,7 @@ services:
     # Do NOT set NODE_ENV=production as a service env var (breaks npm install).
     # Rebuild sharp for linux-x64 so native binaries match Render's OS.
     buildCommand: npm install --include=dev --include=optional && npm install --os=linux --cpu=x64 sharp -w server && npm run build -w server
-    startCommand: npm exec -w server -- prisma migrate deploy && NODE_ENV=production npm run start -w server
+    startCommand: npm run start:prod -w server
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION

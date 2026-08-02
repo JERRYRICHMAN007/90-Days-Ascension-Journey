@@ -4,9 +4,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 
 const MESH_BG = {
-  backgroundColor: '#0a0a0a',
-  backgroundImage:
-    'radial-gradient(ellipse 50% 40% at 20% 30%, rgba(0,255,135,0.12), transparent 55%), radial-gradient(ellipse 45% 35% at 80% 70%, rgba(0,229,255,0.1), transparent 55%)',
+  backgroundColor: 'var(--bg-primary)',
+  backgroundImage: 'var(--aether-mesh-bg)',
 };
 
 type AuthLayoutProps = {
@@ -27,7 +26,7 @@ const PANEL_COPY = {
   signup: {
     eyebrow: 'BEGIN',
     headline: 'Enter\nAether.',
-    body: 'Join the 6-month mastery protocol. Five journeys. One standard: excellence.',
+    body: 'Join the 6-month mastery protocol. Five journeys. One standard: excellence—for everyone.',
     bullets: ['Free to start', 'Five mastery paths', 'Daily protocol sessions'],
   },
 };

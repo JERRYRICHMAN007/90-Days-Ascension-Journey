@@ -31,12 +31,12 @@ export function AnalyticsAllJourneysOverview() {
         <div className="w-24 h-1 rounded-full bg-[var(--neon-green-alt)]" />
       </div>
 
-      {/* 5-card bento grid */}
+      {/* Journey stats grid — 2–3 columns, compact cards */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6 pt-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 pt-6"
       >
         {journeyIds.map((id, i) => (
           <AnalyticsOverviewCard key={id} journeyId={id} index={i} />

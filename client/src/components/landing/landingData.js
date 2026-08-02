@@ -62,9 +62,8 @@ export const systemPillars = [
 ];
 
 export const LANDING_MESH_BG = {
-  backgroundColor: '#0a0a0a',
-  backgroundImage:
-    'radial-gradient(ellipse 40% 30% at 0% 0%, rgba(0,153,102,0.15), transparent 50%), radial-gradient(ellipse 40% 30% at 100% 100%, rgba(0,127,153,0.15), transparent 50%)',
+  backgroundColor: 'var(--bg-primary)',
+  backgroundImage: 'var(--aether-mesh-bg)',
 };
 
 export const NAV_ITEMS = [

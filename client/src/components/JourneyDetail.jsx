@@ -20,7 +20,11 @@ import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { JourneyDetailV2 } from "./journey/JourneyDetailV2";
-import { getCurrentPhaseStatus, getCurrentDayNumber, getWeekNumber } from "../utils/dates";
+import { getCurrentPhaseStatus, getWeekNumber } from "../utils/dates";
+import {
+  hasJourneyStartDate,
+  getCurrentDayNumber as getJourneyCurrentDay,
+} from "../utils/journeyPlanning.js";
 import { calculateSessionBasedProgress, isDayFullyComplete, toggleDayComplete } from "../utils/progressTracking";
 import "./JourneyDetail.css";
 
@@ -39,19 +43,36 @@ function JourneyDetail({ journeyId: propJourneyId }) {
   // Initialize with first available week/day, or default to 1
   const firstWeek = weeks && weeks.length > 0 ? weeks[0] : null;
   const firstDay = firstWeek?.days && firstWeek.days.length > 0 ? firstWeek.days.find(d => d && d.dayNumber === 1) || firstWeek.days[0] : null;
+  const journeyConfigured = hasJourneyStartDate(journeyId);
   const currentPhaseStatus = getCurrentPhaseStatus();
-  // Get current day number - defaults to present day
-  const currentDayNumber = getCurrentDayNumber();
-  // Default to current day number, but skip Day 0 - always start from Day 1
-  // If currentDayNumber is 0 or null, default to Day 1
-  const defaultDay = (currentDayNumber !== null && currentDayNumber > 0) ? currentDayNumber : 1;
-  // Calculate default week: Day 1-7 = Week 1, Day 8-14 = Week 2, etc.
-  const defaultWeek = defaultDay === 0 ? 1 : getWeekNumber(defaultDay);
+  const currentDayNumber = journeyConfigured ? getJourneyCurrentDay(journeyId) : null;
+  const defaultDay =
+    journeyConfigured && currentDayNumber !== null && currentDayNumber > 0
+      ? currentDayNumber
+      : journeyConfigured
+        ? 1
+        : null;
+  const defaultWeek = defaultDay ? getWeekNumber(defaultDay) : 1;
   const [selectedWeek, setSelectedWeek] = useState(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [activeSection, setActiveSection] = useState(null); // 'quiz' or 'assessment'
+
+  useEffect(() => {
+    const onJourneyStart = (e) => {
+      if (e.detail?.journeyId !== journeyId) return;
+      if (e.detail?.reset) {
+        setSelectedWeek(1);
+        setSelectedDay(null);
+        return;
+      }
+      setSelectedWeek(1);
+      setSelectedDay(1);
+    };
+    window.addEventListener('journey-start-updated', onJourneyStart);
+    return () => window.removeEventListener('journey-start-updated', onJourneyStart);
+  }, [journeyId]);
 
   if (!journey) {
     return <div>Journey not found</div>;

@@ -24,9 +24,9 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-[672px] text-base sm:text-lg text-[#bac9cc] leading-[1.6]"
+            className="max-w-[672px] text-base sm:text-lg text-[var(--text-secondary)] leading-[1.6]"
           >
-            A 6-month mastery protocol for the driven.
+            A 6-month mastery protocol for anyone ready to grow.
             <br />
             Five journeys. One outcome: Excellence.
           </motion.p>
@@ -38,7 +38,7 @@ export function LandingPage() {
           >
             <Link
               to="/signin"
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-[#00ff87] bg-[#141414]/90 px-8 sm:px-[42px] py-[18px] text-lg font-bold text-[#00ff87] shadow-[0_0_10px_rgba(0,255,135,0.2)] hover:bg-[rgba(0,255,135,0.08)] hover:shadow-[0_0_24px_rgba(0,255,135,0.3)] backdrop-blur-sm transition-all duration-300"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-[var(--neon-purple)]/50 bg-[var(--bg-card)]/90 px-8 sm:px-[42px] py-[18px] text-lg font-bold text-[var(--neon-purple)] shadow-[0_0_16px_rgba(196,181,253,0.15)] hover:bg-[var(--neon-purple)]/10 hover:shadow-[0_0_28px_rgba(196,181,253,0.25)] backdrop-blur-sm transition-all duration-300"
             >
               Enter Aether
               <ArrowRight className="w-4 h-4" />
@@ -61,7 +61,7 @@ export function LandingPage() {
               >
                 <Link
                   to={to}
-                  className="block rounded-xl border-2 border-[#c3f5ff]/35 bg-[#0d1516]/95 backdrop-blur-md px-6 py-5 text-center font-display text-base font-bold text-white shadow-[0_4px_24px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-[#00e5ff] hover:text-[#c3f5ff] hover:shadow-[0_0_28px_rgba(0,229,255,0.25),0_4px_24px_rgba(0,0,0,0.45)] transition-all duration-300"
+                  className="block rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]/80 backdrop-blur-md px-6 py-5 text-center font-display text-base font-bold text-[var(--text-primary)] hover:border-[var(--neon-purple)]/50 hover:text-[var(--neon-purple)] hover:shadow-[0_0_20px_rgba(196,181,253,0.12)] transition-all duration-300"
                 >
                   {label}
                 </Link>

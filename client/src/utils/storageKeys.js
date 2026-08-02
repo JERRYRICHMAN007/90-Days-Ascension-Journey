@@ -9,6 +9,10 @@ export const STORAGE_KEYS = {
   QUIZ_RESULTS: 'aetherQuizResults',
   MIGRATION_FLAG: 'aether_storage_migrated_v1',
   JOURNEY_START: 'aetherJourneyStartDate',
+  /** Per-journey start dates: { [journeyId]: 'YYYY-MM-DD' } */
+  JOURNEY_STARTS: 'aetherJourneyStarts',
+  /** Per-journey availability: { [journeyId]: { enabled, availableDays, hoursPerDay } } */
+  JOURNEY_AVAILABILITY: 'aetherJourneyAvailability',
 };
 
 /** Older key names → current Aether keys (run once on load). */

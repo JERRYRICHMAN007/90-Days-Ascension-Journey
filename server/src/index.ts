@@ -177,10 +177,15 @@ const server = app.listen(Number(PORT), HOST, () => {
   console.log(`🏥 Health Check: http://${HOST}:${PORT}/health`);
   console.log(`🔍 Supabase Test: http://${HOST}:${PORT}/v1/health/supabase`);
   
-  // Test database connection on startup
+  // Test database connection on startup (skip when DATABASE_URL is not set)
   (async () => {
     try {
-      const { prisma } = await import('./prisma/client');
+      const { getPrisma } = await import('./prisma/client');
+      const prisma = getPrisma();
+      if (!prisma) {
+        console.log('ℹ️  Database skipped (DATABASE_URL not set). Local dev auth is active.');
+        return;
+      }
       await prisma.$connect();
       await prisma.$queryRaw`SELECT 1`;
       console.log('✅ Database (Prisma) connected successfully');

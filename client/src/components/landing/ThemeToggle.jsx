@@ -3,15 +3,10 @@ import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
-  
-  // Determine if we're in dark mode
-  const isDark = theme === 'dark';
+  const { isDark, toggleTheme } = useTheme();
 
   const handleToggle = () => {
-    // Toggle between light and dark
-    const newTheme = isDark ? 'light' : 'dark';
-    toggleTheme(newTheme);
+    toggleTheme();
   };
 
   return (
@@ -27,9 +22,9 @@ export function ThemeToggle() {
         <motion.div
           layout
           transition={{
-            type: "spring",
+            type: 'spring',
             stiffness: 500,
-            damping: 30
+            damping: 30,
           }}
           className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg ${
             isDark ? 'translate-x-6' : 'translate-x-0'
@@ -45,4 +40,3 @@ export function ThemeToggle() {
     </div>
   );
 }
-

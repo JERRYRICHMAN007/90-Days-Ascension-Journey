@@ -49,7 +49,7 @@ export function MobileNav() {
               to={item.path}
               className={cn(
                 'flex flex-1 flex-col items-center justify-center gap-1 min-h-[44px] px-1 touch-manipulation transition-colors',
-                active ? 'text-[#00e478]' : 'text-[#bac9cc]'
+                active ? 'text-[var(--neon-green)]' : 'text-[var(--text-secondary)]'
               )}
               style={active ? { filter: 'drop-shadow(0 0 4px rgba(0,228,120,0.4))' } : undefined}
             >

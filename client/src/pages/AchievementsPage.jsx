@@ -29,6 +29,18 @@ export function AchievementsPage() {
         return (streaks.current / 30) * 100;
       case 'first-thousand':
         return Math.min((xp.global / 1000) * 100, 100);
+      case 'body-builder': {
+        try {
+          const saved = localStorage.getItem('sessionCompletions') || '{}';
+          const completions = JSON.parse(saved);
+          const count = Object.keys(completions).filter(
+            (k) => k.startsWith('body-transformation_') && completions[k]
+          ).length;
+          return Math.min((count / 30) * 100, 100);
+        } catch {
+          return 0;
+        }
+      }
       default:
         return 0;
     }

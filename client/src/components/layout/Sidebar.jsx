@@ -33,19 +33,19 @@ export function Sidebar() {
     <aside
       className="hidden md:flex flex-col fixed inset-y-0 left-0 z-20 w-[280px] border-r"
       style={{
-        backgroundColor: '#080f11',
-        borderColor: 'rgba(59, 73, 76, 0.2)',
+        backgroundColor: 'var(--bg-sidebar)',
+        borderColor: 'var(--border-muted)',
       }}
     >
       <div className="px-8 pt-8 pb-6">
         <Link to="/dashboard" className="block hover:opacity-90 transition-opacity">
-          <span className="text-[24px] font-extrabold text-[#00daf3] tracking-[-1.2px] leading-none">
+          <span className="text-[24px] font-extrabold text-[var(--neon-cyan-alt)] tracking-[-1.2px] leading-none">
             Aether
           </span>
         </Link>
 
         <div className="mt-6 flex items-center gap-3">
-          <div className="size-10 shrink-0 overflow-hidden rounded-full border border-[rgba(59,73,76,0.3)] bg-[#242b2d]">
+          <div className="size-10 shrink-0 overflow-hidden rounded-full border border-[var(--border-muted)] bg-[var(--bg-badge)]">
             {user?.avatarUrl ? (
               <img
                 src={user.avatarUrl}
@@ -53,16 +53,16 @@ export function Sidebar() {
                 className="size-full object-cover"
               />
             ) : (
-              <div className="flex size-full items-center justify-center text-[11px] font-bold text-[#00daf3]">
+              <div className="flex size-full items-center justify-center text-[11px] font-bold text-[var(--neon-cyan-alt)]">
                 {initials}
               </div>
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-[12px] font-bold uppercase tracking-[1.2px] text-[#dce4e5]">
+            <p className="text-[12px] font-bold uppercase tracking-[1.2px] text-[var(--text-primary)]">
               MASTER RANK
             </p>
-            <p className="text-[10px] text-[#bac9cc]">
+            <p className="text-[10px] text-[var(--text-secondary)]">
               {currentDay != null && currentDay > 0
                 ? `Day ${currentDay} of ${totalDays}`
                 : getCurrentPhaseStatus() === 'before'
@@ -101,9 +101,9 @@ export function Sidebar() {
 
                 isActive
 
-                  ? 'border-[#00e478] bg-[#242b2d] text-[#00daf3]'
+                  ? 'border-[var(--neon-green)] bg-[var(--bg-badge)] text-[var(--neon-cyan-alt)]'
 
-                  : 'border-transparent text-[#bac9cc] hover:text-[#dce4e5]'
+                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
 
               )}
 
@@ -123,7 +123,7 @@ export function Sidebar() {
 
 
 
-      <div className="px-6 py-6 border-t" style={{ borderColor: 'rgba(59,73,76,0.1)' }}>
+      <div className="px-6 py-6 border-t border-[var(--border-muted)]">
 
         <button
 
@@ -131,7 +131,7 @@ export function Sidebar() {
 
           onClick={() => navigate('/dashboard')}
 
-          className="flex w-full items-center justify-center gap-2 rounded-[8px] border border-[rgba(0,228,120,0.3)] bg-[#242b2d] px-4 py-4 text-[16px] font-bold text-[#00e478] transition-opacity hover:opacity-90"
+          className="flex w-full items-center justify-center gap-2 rounded-[8px] border border-[var(--neon-green)]/30 bg-[var(--bg-badge)] px-4 py-4 text-[16px] font-bold text-[var(--neon-green)] transition-opacity hover:opacity-90"
 
         >
 
@@ -159,7 +159,7 @@ export function Sidebar() {
 
               to={item.path}
 
-              className="flex items-center gap-4 px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[#bac9cc] hover:text-[#dce4e5] transition-colors"
+              className="flex items-center gap-4 px-6 py-4 text-[12px] font-bold uppercase tracking-[1.2px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
 
             >
 

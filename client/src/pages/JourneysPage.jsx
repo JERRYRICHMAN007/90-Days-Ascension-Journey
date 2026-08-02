@@ -36,7 +36,7 @@ export function JourneysPage() {
           variants={staggerContainer}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {journeys.map((j) => {
             const Icon = j.icon;
@@ -45,7 +45,7 @@ export function JourneysPage() {
                 key={j.title}
                 variants={staggerItem}
                 whileHover={{ y: -6, transition: { duration: 0.25 } }}
-                className="group flex min-h-[280px] lg:min-h-[320px] flex-col justify-between rounded-2xl border border-[#222] bg-[#141414] p-8 transition-shadow duration-300 hover:border-[#3b494c] hover:shadow-[0_8px_32px_rgba(0,229,255,0.08)]"
+                className="group flex flex-col justify-between rounded-2xl border border-[#222] bg-[#141414] p-6 sm:p-8 transition-shadow duration-300 hover:border-[#3b494c] hover:shadow-[0_8px_32px_rgba(0,229,255,0.08)]"
               >
                 <div>
                   <motion.div
@@ -83,7 +83,7 @@ export function JourneysPage() {
             Explore Mastery System
           </Link>
           <Link
-            to="/signin"
+            to="/signup"
             className="rounded-xl bg-[#00e5ff] px-8 py-4 text-base font-bold text-[#00363d] hover:opacity-90 hover:shadow-[0_0_24px_rgba(0,229,255,0.3)] transition-all duration-300"
           >
             Begin Journey

@@ -20,7 +20,7 @@ router.post(
   authRateLimiter,
   [
     body('name').trim().isLength({ min: 2, max: 100 }),
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
     body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
   ],
   async (req, res, next) => {
@@ -65,7 +65,7 @@ router.post(
   '/login',
   authRateLimiter,
   [
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
     body('password').notEmpty(),
   ],
   async (req, res, next) => {
@@ -167,7 +167,7 @@ router.post(
   '/forgot-password',
   authRateLimiter,
   [
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
   ],
   async (req, res, next) => {
     try {

@@ -34,7 +34,7 @@ function formatDisplayDate(ymd) {
 }
 
 export function SettingsPage() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [startDate, setStartDate] = useState(getStoredJourneyStartDate);
   const [savedFlash, setSavedFlash] = useState(false);
 
@@ -160,7 +160,7 @@ export function SettingsPage() {
             <label className="text-sm font-medium mb-2 block">Theme</label>
             <Dropdown
               value={theme}
-              onChange={toggleTheme}
+              onChange={setTheme}
               options={themeOptions}
               className="w-full max-w-xs"
             />
