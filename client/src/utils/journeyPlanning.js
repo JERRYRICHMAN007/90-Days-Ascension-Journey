@@ -14,6 +14,8 @@ import {
 } from './dates.js';
 import { STORAGE_KEYS } from './storageKeys.js';
 import { getDateForDay as getGlobalDateForDay } from './dates.js';
+import { JOURNEY_IDS } from './journeyTheme.js';
+import { resetJourneyProgress } from './progressTracking.js';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEKDAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -32,17 +34,105 @@ function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+/** @typedef {'not_started'|'active'|'completed'} JourneyState */
+
+/** @returns {{ startYmd: string, startedAt: string|null, isStarted: boolean } | null} */
+export function parseStartEntry(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return { startYmd: raw, startedAt: raw, isStarted: true };
+  }
+  if (raw?.startYmd && /^\d{4}-\d{2}-\d{2}$/.test(raw.startYmd)) {
+    const startedAt = raw.startedAt;
+    if (startedAt === null || startedAt === false) {
+      return { startYmd: raw.startYmd, startedAt: null, isStarted: false };
+    }
+    return { startYmd: raw.startYmd, startedAt, isStarted: true };
+  }
+  return null;
+}
+
+function entryIsExplicitlyStarted(entry) {
+  if (!entry?.isStarted) return false;
+  if (!entry.startedAt) return false;
+  return true;
+}
+
+/** @returns {JourneyState} */
+export function getJourneyState(journeyId) {
+  const entry = parseStartEntry(getAllJourneyStartDates()[journeyId]);
+  if (!entryIsExplicitlyStarted(entry)) return 'not_started';
+
+  const today = startOfLocalDay();
+  const start = parseYmd(entry.startYmd);
+  const end = addMonths(start, JOURNEY_DURATION_MONTHS);
+
+  if (today > end) return 'completed';
+  return 'active';
+}
+
+export function hasPlannedSchedule(journeyId) {
+  return !!parseStartEntry(getAllJourneyStartDates()[journeyId])?.startYmd;
+}
+
+export function isJourneyStarted(journeyId) {
+  return getJourneyState(journeyId) !== 'not_started';
+}
+
 /** Per-journey start dates map */
 export function getAllJourneyStartDates() {
   return readJson(STORAGE_KEYS.JOURNEY_STARTS, {});
 }
 
-export function getStoredJourneyStartDate(journeyId) {
-  const map = getAllJourneyStartDates();
-  if (journeyId && map[journeyId] && /^\d{4}-\d{2}-\d{2}$/.test(map[journeyId])) {
-    return map[journeyId];
+/**
+ * Copy legacy global start date into per-journey map when missing.
+ * Only applies to journeys that already have progress — never bulk-starts all journeys.
+ */
+export function migratePerJourneyStartsFromGlobal() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const globalYmd = localStorage.getItem(STORAGE_KEYS.JOURNEY_START);
+    const map = { ...getAllJourneyStartDates() };
+    let changed = false;
+
+    const completions = JSON.parse(localStorage.getItem('sessionCompletions') || '{}');
+
+    if (globalYmd && /^\d{4}-\d{2}-\d{2}$/.test(globalYmd)) {
+      JOURNEY_IDS.forEach((id) => {
+        if (map[id]) return;
+        const hasProgress = Object.keys(completions).some((k) => k.startsWith(`${id}_`));
+        if (hasProgress) {
+          map[id] = { startYmd: globalYmd, startedAt: globalYmd };
+          changed = true;
+        }
+      });
+    }
+
+    // Downgrade auto-started journeys (bulk migration) that have no progress
+    Object.entries(map).forEach(([id, raw]) => {
+      const entry = parseStartEntry(raw);
+      if (!entry?.isStarted) return;
+      const hasProgress = Object.keys(completions).some((k) => k.startsWith(`${id}_`));
+      const isLegacyDateOnlyStart =
+        typeof entry.startedAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(entry.startedAt);
+      if (!hasProgress && isLegacyDateOnlyStart) {
+        map[id] = { startYmd: entry.startYmd, startedAt: null };
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      writeJson(STORAGE_KEYS.JOURNEY_STARTS, map);
+    }
+  } catch {
+    /* ignore */
   }
-  return null;
+}
+
+export function getStoredJourneyStartDate(journeyId) {
+  const entry = parseStartEntry(getAllJourneyStartDates()[journeyId]);
+  return entry?.startYmd ?? null;
 }
 
 /** Default for the date picker only — not a started journey */
@@ -51,21 +141,60 @@ export function getDefaultPickerDate() {
 }
 
 export function hasJourneyStartDate(journeyId) {
-  const map = getAllJourneyStartDates();
-  return Boolean(journeyId && map[journeyId] && /^\d{4}-\d{2}-\d{2}$/.test(map[journeyId]));
+  return isJourneyStarted(journeyId);
 }
 
 /**
- * Persist start date for a journey. Also updates global default for backward compat.
+ * Save a planned start date without beginning progress tracking.
+ */
+export function setJourneyPlannedStartDate(journeyId, ymd) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
+    throw new Error('Start date must be YYYY-MM-DD');
+  }
+  const map = getAllJourneyStartDates();
+  const existing = parseStartEntry(map[journeyId]);
+  if (existing?.isStarted) {
+    map[journeyId] = { startYmd: ymd, startedAt: existing.startedAt };
+  } else {
+    map[journeyId] = { startYmd: ymd, startedAt: null };
+  }
+  writeJson(STORAGE_KEYS.JOURNEY_STARTS, map);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('journey-start-updated', { detail: { journeyId, startDate: ymd, planned: true } })
+    );
+  }
+  return ymd;
+}
+
+/**
+ * Begin the journey — stores start date and marks it active.
+ * Does NOT update the deprecated global start date.
+ */
+export function startJourney(journeyId, ymd) {
+  const map = getAllJourneyStartDates();
+  const existing = parseStartEntry(map[journeyId]);
+  const useYmd = ymd || existing?.startYmd || getDefaultPickerDate();
+  return setJourneyStartDateFor(journeyId, useYmd);
+}
+
+/**
+ * @deprecated Use isJourneyStarted — kept for existing imports
+ */
+export function hasJourneySchedule(journeyId) {
+  return isJourneyStarted(journeyId);
+}
+
+/**
+ * Persist start date for a journey and mark it as started.
  */
 export function setJourneyStartDateFor(journeyId, ymd) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
     throw new Error('Start date must be YYYY-MM-DD');
   }
   const map = getAllJourneyStartDates();
-  map[journeyId] = ymd;
+  map[journeyId] = { startYmd: ymd, startedAt: new Date().toISOString() };
   writeJson(STORAGE_KEYS.JOURNEY_STARTS, map);
-  setGlobalStart(ymd);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(
       new CustomEvent('journey-start-updated', { detail: { journeyId, startDate: ymd } })
@@ -75,8 +204,7 @@ export function setJourneyStartDateFor(journeyId, ymd) {
 }
 
 /**
- * Clear this journey's start date so the user can begin a new 6-month arc.
- * Does not delete task progress — only the schedule anchor.
+ * Clear this journey's schedule and progress. Other journeys are untouched.
  */
 export function resetJourneySchedule(journeyId) {
   const map = getAllJourneyStartDates();
@@ -84,12 +212,20 @@ export function resetJourneySchedule(journeyId) {
     delete map[journeyId];
     writeJson(STORAGE_KEYS.JOURNEY_STARTS, map);
   }
+
+  try {
+    resetJourneyProgress(journeyId);
+  } catch {
+    /* ignore */
+  }
+
   if (typeof window !== 'undefined') {
     window.dispatchEvent(
       new CustomEvent('journey-start-updated', {
         detail: { journeyId, reset: true },
       })
     );
+    window.dispatchEvent(new CustomEvent('progress-updated', { detail: { journeyId } }));
   }
 }
 
@@ -123,7 +259,7 @@ export function getDateForDay(journeyId, dayNumber) {
 }
 
 export function getCurrentDayNumber(journeyId) {
-  if (!hasJourneyStartDate(journeyId)) return null;
+  if (!isJourneyStarted(journeyId)) return null;
   const today = startOfLocalDay();
   const start = getJourneyStartDate(journeyId);
   const end = getJourneyEndDate(journeyId);
@@ -138,7 +274,7 @@ export function getCurrentDayNumber(journeyId) {
 }
 
 export function getDaysRemaining(journeyId) {
-  if (!hasJourneyStartDate(journeyId)) return null;
+  if (!isJourneyStarted(journeyId)) return null;
   const current = getCurrentDayNumber(journeyId);
   const total = getJourneyTotalDays(journeyId);
   if (total == null) return null;
@@ -151,7 +287,8 @@ export function getDaysRemaining(journeyId) {
 
 /** Time elapsed through the 6-month arc (0–100), not task completion */
 export function getTimeElapsedPercent(journeyId) {
-  if (!hasJourneyStartDate(journeyId)) return 0;
+  if (getJourneyState(journeyId) === 'not_started') return 0;
+  if (getJourneyState(journeyId) === 'completed') return 100;
   const today = startOfLocalDay();
   const start = getJourneyStartDate(journeyId);
   const end = getJourneyEndDate(journeyId);
@@ -164,7 +301,9 @@ export function getTimeElapsedPercent(journeyId) {
 }
 
 export function getJourneyPhaseStatus(journeyId) {
-  if (!hasJourneyStartDate(journeyId)) return 'unconfigured';
+  const state = getJourneyState(journeyId);
+  if (state === 'not_started') return 'unconfigured';
+  if (state === 'completed') return 'after';
   const today = startOfLocalDay();
   const start = getJourneyStartDate(journeyId);
   const end = getJourneyEndDate(journeyId);
@@ -200,14 +339,16 @@ export function formatDisplayDate(ymdOrDate) {
 }
 
 export function getJourneyTimeline(journeyId) {
-  const configured = hasJourneyStartDate(journeyId);
+  const entry = parseStartEntry(getAllJourneyStartDates()[journeyId]);
+  const state = getJourneyState(journeyId);
   const pickerYmd = getDefaultPickerDate();
   const previewEnd = addMonths(parseYmd(pickerYmd), JOURNEY_DURATION_MONTHS);
 
-  if (!configured) {
+  if (!entry?.startYmd) {
     return {
       journeyId,
       configured: false,
+      state: 'not_started',
       startYmd: pickerYmd,
       startLabel: 'Not set',
       endYmd: formatYmd(previewEnd),
@@ -222,9 +363,29 @@ export function getJourneyTimeline(journeyId) {
     };
   }
 
-  const startYmd = getStoredJourneyStartDate(journeyId);
-  const end = getJourneyEndDate(journeyId);
-  const totalDays = getJourneyTotalDays(journeyId);
+  const startYmd = entry.startYmd;
+  const end = addMonths(parseYmd(startYmd), JOURNEY_DURATION_MONTHS);
+  const totalDays = daysInclusive(parseYmd(startYmd), end);
+
+  if (state === 'not_started') {
+    return {
+      journeyId,
+      configured: true,
+      state: 'not_started',
+      startYmd,
+      startLabel: formatDisplayDate(startYmd),
+      endYmd: formatYmd(end),
+      endLabel: formatDisplayDate(end),
+      masteryDeadlineLabel: formatDisplayDate(end),
+      totalDays,
+      currentDay: null,
+      daysRemaining: null,
+      timeElapsedPercent: 0,
+      status: 'planned',
+      monthsDuration: JOURNEY_DURATION_MONTHS,
+    };
+  }
+
   const currentDay = getCurrentDayNumber(journeyId);
   const daysRemaining = getDaysRemaining(journeyId);
   const timeElapsedPercent = getTimeElapsedPercent(journeyId);
@@ -232,7 +393,8 @@ export function getJourneyTimeline(journeyId) {
 
   return {
     journeyId,
-    configured,
+    configured: true,
+    state,
     startYmd,
     startLabel: formatDisplayDate(startYmd),
     endYmd: formatYmd(end),
@@ -245,6 +407,64 @@ export function getJourneyTimeline(journeyId) {
     status,
     monthsDuration: JOURNEY_DURATION_MONTHS,
   };
+}
+
+// ——— Start all journeys (settings) ———
+
+export function getStartAllJourneysEnabled() {
+  return readJson(STORAGE_KEYS.START_ALL_JOURNEYS, false) === true;
+}
+
+export function setStartAllJourneysEnabled(enabled) {
+  writeJson(STORAGE_KEYS.START_ALL_JOURNEYS, !!enabled);
+  if (enabled) {
+    startAllConfiguredJourneys();
+  }
+}
+
+/** Start every journey that has a planned schedule but is not yet active */
+export function startAllConfiguredJourneys() {
+  const map = getAllJourneyStartDates();
+  let started = 0;
+  Object.entries(map).forEach(([journeyId, raw]) => {
+    const entry = parseStartEntry(raw);
+    if (entry?.startYmd && !entry.isStarted) {
+      startJourney(journeyId, entry.startYmd);
+      started += 1;
+    }
+  });
+  return started;
+}
+
+/** Summary for sidebar / dashboard */
+export function getActiveJourneySummaries() {
+  const map = getAllJourneyStartDates();
+  return Object.keys(map)
+    .filter((id) => isJourneyStarted(id))
+    .map((id) => ({
+      journeyId: id,
+      currentDay: getCurrentDayNumber(id),
+      totalDays: getJourneyTotalDays(id),
+      state: getJourneyState(id),
+    }))
+    .filter((s) => s.state === 'active');
+}
+
+export function getSidebarDayLabel() {
+  const active = getActiveJourneySummaries();
+  if (active.length === 0) {
+    const planned = Object.keys(getAllJourneyStartDates()).filter(
+      (id) => hasPlannedSchedule(id) && !isJourneyStarted(id)
+    );
+    if (planned.length > 0) return 'Journey ready — press Start';
+    return 'Ready to begin';
+  }
+  if (active.length === 1) {
+    const { currentDay, totalDays } = active[0];
+    if (currentDay != null && totalDays) return `Day ${currentDay} of ${totalDays}`;
+    return 'Journey active';
+  }
+  return `${active.length} journeys active`;
 }
 
 // ——— Weekly availability (optional) ———
@@ -377,6 +597,9 @@ export function getWeeklyGoal(journeyId, weekDayNumbers) {
 }
 
 export function getNextMilestone(journeyId, completedDays, totalDays) {
+  if (getJourneyState(journeyId) === 'not_started') {
+    return { label: 'Start your journey', icon: '🎯', daysUntil: 0, progress: 0 };
+  }
   const milestones = [
     { at: 7, label: 'First week complete', icon: '🎯' },
     { at: 30, label: '30-day consistency', icon: '🔥' },

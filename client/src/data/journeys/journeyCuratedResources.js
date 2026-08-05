@@ -99,7 +99,7 @@ export const DUAL_BRAND_CURATED_RESOURCES = [
     title: 'Canva',
     url: 'https://www.canva.com',
     type: 'tool',
-    description: 'Design assets for Ryxen and HavenX brands',
+    description: 'Design assets for personal and company brands',
   },
   {
     title: 'Figma',

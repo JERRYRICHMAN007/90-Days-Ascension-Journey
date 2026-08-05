@@ -50,7 +50,7 @@ export function JourneyHeroPanel({
 
   return (
     <div
-      className="shrink-0 border-b border-white/10"
+      className="shrink-0 border-b border-[var(--border-subtle)]"
       style={{
         background: `linear-gradient(180deg, rgba(${rgb},0.06) 0%, var(--bg-primary) 55%)`,
       }}
@@ -62,7 +62,7 @@ export function JourneyHeroPanel({
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="shrink-0 size-10 touch-manipulation hover:bg-white/10"
+            className="shrink-0 size-10 touch-manipulation text-[var(--text-primary)] bg-[var(--bg-badge)] hover:bg-[var(--surface-hover)] border border-[var(--border-subtle)]"
             aria-label="Back to dashboard"
           >
             <ChevronLeft className="size-5" />
@@ -75,7 +75,8 @@ export function JourneyHeroPanel({
               Your journey
             </p>
             <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[var(--text-primary)] leading-tight">
-              {greeting}, {user?.name?.split(' ')[0] || 'there'} 👋
+              {greeting}
+              {user?.name ? `, ${user.name.split(' ')[0]}` : ''} 👋
             </h1>
             <p className="text-sm text-[var(--text-secondary)] mt-1">{todayFocus}</p>
           </div>

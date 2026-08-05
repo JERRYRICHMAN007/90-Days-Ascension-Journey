@@ -16,7 +16,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="font-display text-4xl sm:text-5xl lg:text-[48px] font-extrabold uppercase tracking-[-0.04em] leading-[1.05] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.5)]"
+            className="font-display text-4xl sm:text-5xl lg:text-[48px] font-extrabold uppercase tracking-[-0.04em] leading-[1.05] text-[var(--text-primary)]"
           >
             ASCEND WITH AETHER.
           </motion.h1>
@@ -38,7 +38,7 @@ export function LandingPage() {
           >
             <Link
               to="/signin"
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-[var(--neon-purple)]/50 bg-[var(--bg-card)]/90 px-8 sm:px-[42px] py-[18px] text-lg font-bold text-[var(--neon-purple)] shadow-[0_0_16px_rgba(196,181,253,0.15)] hover:bg-[var(--neon-purple)]/10 hover:shadow-[0_0_28px_rgba(196,181,253,0.25)] backdrop-blur-sm transition-all duration-300"
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-muted)] bg-[var(--bg-elevated)] px-8 sm:px-[42px] py-[18px] text-lg font-bold text-[var(--neon-green)] shadow-[var(--shadow-card)] hover:bg-[var(--bg-card-hover)] hover:border-[var(--neon-green)]/40 transition-all duration-300"
             >
               Enter Aether
               <ArrowRight className="w-4 h-4" />
@@ -61,7 +61,7 @@ export function LandingPage() {
               >
                 <Link
                   to={to}
-                  className="block rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]/80 backdrop-blur-md px-6 py-5 text-center font-display text-base font-bold text-[var(--text-primary)] hover:border-[var(--neon-purple)]/50 hover:text-[var(--neon-purple)] hover:shadow-[0_0_20px_rgba(196,181,253,0.12)] transition-all duration-300"
+                  className="block rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-6 py-5 text-center font-display text-base font-bold text-[var(--text-primary)] shadow-[var(--shadow-xs)] hover:border-[var(--border-muted)] hover:bg-[var(--bg-card-hover)] hover:shadow-[var(--shadow-card)] transition-all duration-300"
                 >
                   {label}
                 </Link>

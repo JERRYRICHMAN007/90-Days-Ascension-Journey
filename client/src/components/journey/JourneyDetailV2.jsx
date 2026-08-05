@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, 
@@ -42,22 +42,30 @@ import { ReadingFlowHero } from './ReadingFlowHero';
 import { WritersFlowHero } from './WritersFlowHero';
 import { DualBrandFlowHero } from './DualBrandFlowHero';
 import { SessionFlowCards } from './SessionFlowCards';
-import { getQuoteOfTheDay, getEncouragingMessage, getQuoteForJourneyDay, isDayQuoteUnlocked } from '../../data/quotes';
+import { getQuoteOfTheDay, getEncouragingMessage } from '../../data/quotes';
 import { cn } from '../../lib/utils';
 import { getJourneyPreparation } from '../../data/preparationData';
 import { getSoftwareEngineeringReflection, getProjectComponentForDay, getDisciplineResources } from '../../data/journeys/index.js';
 import DailyQuiz from '../DailyQuiz';
 import { saveQuizResult } from '../../utils/quizResults.js';
 import { getJourneyAccent } from '../../utils/journeyAccents.js';
-import { JourneyHeroPanel } from './JourneyHeroPanel';
+import { JourneyDetailShell } from './JourneyDetailShell';
+import { JourneyOverviewPage } from './JourneyOverviewPage';
+import { JourneyStatsPage } from './JourneyStatsPage';
+import { JourneyAchievementsPage } from './JourneyAchievementsPage';
+import { JourneyNotesPage } from './JourneyNotesPage';
+import { getRegistryEntry } from '../../utils/journeyRegistry.js';
 import { JourneyWeekNav } from './JourneyWeekNav';
 import { GamificationToast } from './GamificationToast';
 import { JourneyStartGate } from './JourneyStartGate';
 import {
-  hasJourneyStartDate,
+  isJourneyStarted,
   getCurrentDayNumber as getJourneyCurrentDay,
   getJourneyPhaseStatus,
 } from '../../utils/journeyPlanning.js';
+import { JourneyMotivationQuote } from './JourneyMotivationQuote';
+import { JourneySetupWizard } from './JourneySetupWizard';
+import { JourneyReviewModal } from './JourneyReviewModal';
 
 /**
  * Journey Detail Page v2.0 - PRD Redesign
@@ -73,11 +81,22 @@ export function JourneyDetailV2({
   journeyId,
 }) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { xp, getLevel, completeTask, addXP, achievements, streaks } = useGamification();
   const { user } = useAuth();
   const [progressTick, setProgressTick] = useState(0);
   const [timelineTick, setTimelineTick] = useState(0);
-  const journeyConfigured = hasJourneyStartDate(journeyId);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const journeyStarted = isJourneyStarted(journeyId);
+
+  useEffect(() => {
+    if (searchParams.get('setup') === '1') {
+      setSetupOpen(true);
+      searchParams.delete('setup');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     const handleProgressUpdate = () => setProgressTick((t) => t + 1);
@@ -95,7 +114,7 @@ export function JourneyDetailV2({
   
   // Get what user is working on today
   const getTodayFocus = () => {
-    if (!journeyConfigured) {
+    if (!journeyStarted) {
       return 'Choose your start date below to begin this journey';
     }
     if (getJourneyPhaseStatus(journeyId) === 'before') {
@@ -174,7 +193,7 @@ export function JourneyDetailV2({
 
   // Check if we're in preparation phase (Day 0)
   const currentPhase = getCurrentPhase();
-  const currentDayNumber = journeyConfigured ? getJourneyCurrentDay(journeyId) : null;
+  const currentDayNumber = journeyStarted ? getJourneyCurrentDay(journeyId) : null;
   
   // Onboarding: July 9–17, 2026 (soft start before Day 1 on July 18)
   const isPreparationPhase = getCurrentPhaseStatus() === 'onboarding';
@@ -263,7 +282,7 @@ export function JourneyDetailV2({
   
   // Auto-select today's day and week on initial load only (never override user selection)
   useEffect(() => {
-    if (!journeyConfigured) return;
+    if (!journeyStarted) return;
     if (hasInitialSyncToToday.current) return;
     if (currentDayNumber === null || currentDayNumber === undefined || weeks.length === 0) return;
     
@@ -285,7 +304,7 @@ export function JourneyDetailV2({
   
   // Auto-select first content day when week changes OR on initial load
   useEffect(() => {
-    if (!journeyConfigured) return;
+    if (!journeyStarted) return;
     if (selectedWeek && weeks.length > 0) {
       const week = weeks.find(w => w && w.weekNumber === selectedWeek);
       if (week && week.days && week.days.length > 0) {
@@ -806,30 +825,57 @@ export function JourneyDetailV2({
     ? journey.icon 
     : null;
 
+  const registryEntry = getRegistryEntry(journeyId);
+  const displayTitle = registryEntry?.title || journey.title;
+
   return (
     <div className="min-h-screen flex flex-col text-white" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <GamificationToast />
-
-      <JourneyHeroPanel
-        key={timelineTick}
-        journey={journey}
+      <JourneySetupWizard
         journeyId={journeyId}
-        user={user}
-        greeting={getGreeting()}
-        todayFocus={getTodayFocus()}
-        completedDays={completedDays}
-        progressPercentage={progressPercentage}
-        selectedWeek={selectedWeek}
-        weeksCount={weeks.length}
-        colors={colors}
+        open={setupOpen}
+        onClose={() => setSetupOpen(false)}
+        onComplete={() => setTimelineTick((t) => t + 1)}
+        onRequestReview={() => {
+          setSetupOpen(false);
+          setReviewOpen(true);
+        }}
         accentColor={journeyAccent?.color}
         accentRgb={journeyAccent?.rgb}
-        iconEmoji={iconEmoji}
-        IconComponent={IconComponent}
-        onBack={() => navigate('/dashboard')}
-        onTimelineRefresh={() => setTimelineTick((t) => t + 1)}
+      />
+      <JourneyReviewModal
+        journeyId={journeyId}
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        onConfirm={() => {
+          setTimelineTick((t) => t + 1);
+          setProgressTick((t) => t + 1);
+        }}
+        onEdit={() => setSetupOpen(true)}
+        accentColor={journeyAccent?.color}
+        accentRgb={journeyAccent?.rgb}
       />
 
+      <JourneyDetailShell
+        className="flex-1 min-h-0"
+        pages={[
+          <JourneyOverviewPage
+            key="overview"
+            journey={journey}
+            journeyId={journeyId}
+            journeyTitle={displayTitle}
+            completedDays={completedDays}
+            progressPercentage={progressPercentage}
+            accentColor={journeyAccent?.color}
+            accentRgb={journeyAccent?.rgb}
+            iconEmoji={iconEmoji}
+            IconComponent={IconComponent}
+            colors={colors}
+            onBack={() => navigate('/dashboard')}
+            onTimelineRefresh={() => setTimelineTick((t) => t + 1)}
+            onEditSetup={() => setSetupOpen(true)}
+          />,
+          <>
       <JourneyWeekNav
         journeyId={journeyId}
         weeks={weeks}
@@ -846,17 +892,17 @@ export function JourneyDetailV2({
         isDayComplete={(day) => getDayProgress(day)}
         isPreparationPhase={isPreparationPhase}
         preparationData={preparationData}
-        isConfigured={journeyConfigured}
+        isConfigured={journeyStarted}
+        currentDayNumber={currentDayNumber}
       />
-
-      {/* Section C - Main Content Area */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
         <div className="max-w-4xl mx-auto w-full flex flex-col gap-6 px-6 py-8 overflow-x-hidden">
-          {!journeyConfigured && (
+          {!journeyStarted && (
             <JourneyStartGate
-              journeyTitle={journey.title}
+              journeyTitle={displayTitle}
               accentColor={journeyAccent?.color}
               accentRgb={journeyAccent?.rgb}
+              onSetup={() => setSetupOpen(true)}
             />
           )}
           {/* Left Column - Navigation (Hidden - replaced by horizontal nav) */}
@@ -1174,7 +1220,7 @@ export function JourneyDetailV2({
                       <p className="text-muted-foreground">No day data available. Please try refreshing the page.</p>
                     </Card>
                   )}
-                  {(journeyConfigured && (currentDay || isPreparationPhase)) && (
+                  {(journeyStarted && (currentDay || isPreparationPhase)) && (
                     <div className="space-y-6">
                 {/* Week 1 Testing & Trials Message */}
                 {currentDay?.isTestRun && currentDay?.testRunNote && (
@@ -1206,45 +1252,15 @@ export function JourneyDetailV2({
                   </Card>
                 )}
 
-                {/* Daily Quote — unlocked only when that day's date has arrived */}
-                {!currentDay?.isTestRun && selectedDay >= 1 && (() => {
-                  const quoteDay = selectedDay;
-                  const quoteUnlocked = isDayQuoteUnlocked(quoteDay);
-
-                  if (!quoteUnlocked) {
-                    const unlockDateStr = toDateString(quoteDay);
-                    return (
-                      <Card className="p-4 sm:p-5 md:p-6 border border-border/50 bg-muted/30">
-                        <div className="flex items-center gap-3 sm:gap-4 text-muted-foreground">
-                          <Lock className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                          <div>
-                            <p className="text-sm sm:text-base font-medium text-foreground">Daily quote locked</p>
-                            <p className="text-xs sm:text-sm mt-1">
-                              Unlocks on {formatDayName(unlockDateStr)}, {formatDateShort(unlockDateStr)}, 2026
-                            </p>
-                          </div>
-                        </div>
-                      </Card>
-                    );
-                  }
-
-                  const dailyQuote = getQuoteForJourneyDay(journeyId, quoteDay);
-                  if (!dailyQuote) return null;
-
-                  return (
-                    <Card className={`p-4 sm:p-5 md:p-6 lg:p-8 bg-gradient-to-br ${colors.gradient} border-0 text-white`}>
-                      <div className="flex items-start gap-3 sm:gap-4">
-                        <div className="text-2xl sm:text-3xl md:text-4xl shrink-0">{dailyQuote.icon}</div>
-                        <div className="flex-1 min-w-0 overflow-hidden">
-                          <blockquote className="text-sm sm:text-base md:text-lg lg:text-xl font-medium mb-2 sm:mb-3 leading-relaxed break-words">
-                            "{dailyQuote.quote}"
-                          </blockquote>
-                          <cite className="text-xs sm:text-sm text-white/80 italic break-words">— {dailyQuote.author}</cite>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })()}
+                {!currentDay?.isTestRun && selectedDay >= 1 && (
+                  <JourneyMotivationQuote
+                    journeyId={journeyId}
+                    domain={journeyId}
+                    dayNumber={selectedDay}
+                    accentColor={journeyAccent?.color}
+                    accentRgb={journeyAccent?.rgb}
+                  />
+                )}
 
                 {/* Day Header or Preparation Header */}
                 {isPreparationPhase && preparationData ? (
@@ -2699,6 +2715,17 @@ export function JourneyDetailV2({
           </main>
         </div>
       </div>
+          </>,
+          <JourneyStatsPage key="stats" journeyId={journeyId} weeks={weeks} progressTick={progressTick} />,
+          <JourneyAchievementsPage
+            key="achievements"
+            journeyId={journeyId}
+            progressPercentage={progressPercentage}
+            completedDays={completedDays}
+          />,
+          <JourneyNotesPage key="notes" journeyId={journeyId} />,
+        ]}
+      />
     </div>
   );
 }

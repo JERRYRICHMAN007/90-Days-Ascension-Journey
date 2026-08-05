@@ -1,17 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Bell, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 import { MobileMenu } from './MobileNav';
 import { ThemeToggleButton } from './ThemeToggleButton';
+import { DashboardCalendarPanel, DashboardNotificationsPanel } from '../dashboard/DashboardNavPanels';
+import { getUnreadNotificationCount } from '../../utils/journeyNotifications.js';
 
 export function TopNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(() => getUnreadNotificationCount());
   const isDashboard = location.pathname === '/dashboard';
+
+  useEffect(() => {
+    const refresh = () => setUnreadCount(getUnreadNotificationCount());
+    window.addEventListener('notifications-updated', refresh);
+    window.addEventListener('journey-start-updated', refresh);
+    window.addEventListener('journey-registry-updated', refresh);
+    return () => {
+      window.removeEventListener('notifications-updated', refresh);
+      window.removeEventListener('journey-start-updated', refresh);
+      window.removeEventListener('journey-registry-updated', refresh);
+    };
+  }, []);
 
   const initials = (user?.name || 'FM')
     .split(' ')
@@ -68,18 +85,30 @@ export function TopNav() {
             <>
               <button
                 type="button"
-                className="flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2"
+                onClick={() => {
+                  setNotificationsOpen(false);
+                  setCalendarOpen((v) => !v);
+                }}
+                className="flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2 rounded-lg hover:bg-[var(--surface-hover)]"
                 aria-label="Calendar"
+                aria-expanded={calendarOpen}
               >
                 <Calendar className="size-5" />
               </button>
               <button
                 type="button"
-                className="relative flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2"
+                onClick={() => {
+                  setCalendarOpen(false);
+                  setNotificationsOpen((v) => !v);
+                }}
+                className="relative flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2 rounded-lg hover:bg-[var(--surface-hover)]"
                 aria-label="Notifications"
+                aria-expanded={notificationsOpen}
               >
                 <Bell className="size-5" />
-                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[var(--neon-green)] md:hidden" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[var(--neon-green)]" />
+                )}
               </button>
             </>
           )}
@@ -108,6 +137,8 @@ export function TopNav() {
       </div>
     </header>
     <MobileMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} />
+    <DashboardCalendarPanel open={calendarOpen} onClose={() => setCalendarOpen(false)} />
+    <DashboardNotificationsPanel open={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     </>
   );
 }

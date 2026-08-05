@@ -4,7 +4,7 @@ import { Zap } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import { figmaSidebarNavItems, figmaSidebarFooterItems } from './navItems';
-import { getCurrentDayNumber, getCurrentPhaseStatus, getJourneyTotalDays } from '../../utils/dates';
+import { getSidebarDayLabel } from '../../utils/journeyPlanning.js';
 
 export function Sidebar() {
   const location = useLocation();
@@ -18,8 +18,7 @@ export function Sidebar() {
     return () => window.removeEventListener('journey-start-updated', refresh);
   }, []);
 
-  const currentDay = getCurrentDayNumber();
-  const totalDays = getJourneyTotalDays();
+  const dayLabel = getSidebarDayLabel();
   void tick;
 
   const initials = (user?.name || 'Aether Initiate')
@@ -62,13 +61,7 @@ export function Sidebar() {
             <p className="text-[12px] font-bold uppercase tracking-[1.2px] text-[var(--text-primary)]">
               MASTER RANK
             </p>
-            <p className="text-[10px] text-[var(--text-secondary)]">
-              {currentDay != null && currentDay > 0
-                ? `Day ${currentDay} of ${totalDays}`
-                : getCurrentPhaseStatus() === 'before'
-                  ? 'Set start in Settings'
-                  : 'Before ascent'}
-            </p>
+            <p className="text-[10px] text-[var(--text-secondary)]">{dayLabel}</p>
           </div>
         </div>
       </div>

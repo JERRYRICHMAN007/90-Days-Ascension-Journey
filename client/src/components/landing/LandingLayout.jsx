@@ -14,7 +14,7 @@ export function LandingLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden text-white flex flex-col" style={LANDING_MESH_BG}>
+    <div className="min-h-screen overflow-x-hidden text-[var(--text-primary)] flex flex-col" style={LANDING_MESH_BG}>
       <LandingNav />
       <motion.main
         key={location.pathname}

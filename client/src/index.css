@@ -29,6 +29,19 @@
 
   --progress-height: 6px;
 
+  /* Surface interaction tokens (theme overrides below) */
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --surface-subtle: rgba(255, 255, 255, 0.03);
+  --surface-pressed: rgba(255, 255, 255, 0.08);
+  --divider: rgba(255, 255, 255, 0.1);
+
+  /* Elevation */
+  --shadow-xs: none;
+  --shadow-card: none;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.35);
+  --shadow-popover: 0 24px 48px rgba(0, 0, 0, 0.45);
+
   --journey-body-hex: #6ee7b7;
   --journey-brand-hex: #93c5fd;
   --journey-reading-hex: #c4b5fd;
@@ -100,57 +113,111 @@
   --input: 0 0% 13%;
   --ring: 152 100% 50%;
   --radius: 0.75rem;
+  --destructive: 0 62.8% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --error: #f87171;
+  --info: var(--neon-cyan);
 }
 
-/* Light Theme */
+/* Light Theme — calm, layered, premium (Notion / Linear / Apple Health inspired) */
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg-primary: #f4f2fa;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f0edf8;
-  --bg-elevated: #ffffff;
-  --bg-badge: #ebe8f4;
-  --bg-header: rgba(255, 255, 255, 0.92);
-  --bg-nav: rgba(244, 242, 250, 0.96);
-  --bg-sidebar: #ffffff;
+  /* Layered surfaces — warm neutral, reduced glare */
+  --bg-primary: #EDECE8;
+  --bg-secondary: #E4E3DE;
+  --bg-card: #F7F6F3;
+  --bg-card-hover: #EFEEE9;
+  --bg-elevated: #FAFAF8;
+  --bg-badge: #E0DFDA;
+  --bg-header: rgba(247, 246, 243, 0.92);
+  --bg-nav: rgba(237, 236, 232, 0.96);
+  --bg-sidebar: #F7F6F3;
 
-  --text-primary: #1a1625;
-  --text-secondary: #524d62;
-  --text-muted: #7a7389;
-  --text-accent: #6366f1;
+  --surface-hover: rgba(28, 25, 23, 0.035);
+  --surface-subtle: rgba(28, 25, 23, 0.02);
+  --surface-pressed: rgba(28, 25, 23, 0.06);
+  --divider: rgba(28, 25, 23, 0.07);
 
-  --border-subtle: rgba(99, 102, 241, 0.12);
-  --border-active: #6366f1;
-  --border-muted: rgba(99, 102, 241, 0.2);
+  --shadow-xs: 0 1px 2px rgba(28, 25, 23, 0.03);
+  --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.03), 0 1px 6px rgba(28, 25, 23, 0.025);
+  --shadow-md: 0 3px 12px rgba(28, 25, 23, 0.05);
+  --shadow-lg: 0 8px 28px rgba(28, 25, 23, 0.06);
+  --shadow-popover: 0 12px 40px rgba(28, 25, 23, 0.08), 0 0 0 1px rgba(28, 25, 23, 0.04);
 
-  --aether-mesh-bg: radial-gradient(ellipse 45% 35% at 10% 10%, rgba(196, 181, 253, 0.18), transparent 55%),
-    radial-gradient(ellipse 40% 35% at 90% 90%, rgba(147, 197, 253, 0.14), transparent 55%),
-    radial-gradient(ellipse 35% 30% at 50% 50%, rgba(110, 231, 183, 0.08), transparent 60%);
+  /* Typography hierarchy — softer contrast */
+  --text-primary: #292524;
+  --text-secondary: #6B6560;
+  --text-muted: #8A837C;
+  --text-accent: #44403C;
 
-  --progress-track: #e4e0ef;
+  /* Minimal borders */
+  --border-subtle: rgba(28, 25, 23, 0.07);
+  --border-active: #57534E;
+  --border-muted: rgba(28, 25, 23, 0.1);
 
-  --primary: 252 55% 58%;
+  /* Soft ambient mesh — barely visible */
+  --aether-mesh-bg:
+    radial-gradient(ellipse 55% 45% at 0% 0%, rgba(120, 113, 108, 0.05), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(120, 113, 108, 0.04), transparent 55%);
+
+  --progress-track: #E7E5E4;
+
+  /* Unified accent system — emerald primary, neutral secondary */
+  --neon-green: #059669;
+  --neon-green-alt: #047857;
+  --neon-cyan: #0E7490;
+  --neon-cyan-alt: #155E75;
+  --neon-purple: #7C3AED;
+  --neon-amber: #B45309;
+  --neon-blue: #2563EB;
+  --neon-rose: #BE185D;
+
+  --neon-glow-green: 0 0 0 1px rgba(5, 150, 105, 0.18);
+  --neon-glow-cyan: 0 0 0 1px rgba(14, 116, 144, 0.15);
+  --neon-glow-purple: 0 0 0 1px rgba(124, 58, 237, 0.12);
+  --neon-glow-amber: none;
+  --neon-glow-blue: none;
+
+  --aether-brand-gradient: linear-gradient(135deg, #7C3AED 0%, #0E7490 52%, #059669 100%);
+
+  --error: #DC2626;
+  --info: #0E7490;
+
+  --journey-body-hex: #059669;
+  --journey-brand-hex: #0E7490;
+  --journey-reading-hex: #7C3AED;
+  --journey-writing-hex: #B45309;
+  --journey-se-hex: #2563EB;
+
+  --journey-body: 160 84% 33%;
+  --journey-brand: 192 91% 31%;
+  --journey-reading: 262 83% 52%;
+  --journey-writing: 32 95% 44%;
+  --journey-software: 217 91% 53%;
+
+  --primary: 160 84% 33%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 199 89% 48%;
+  --secondary: 25 5% 45%;
   --secondary-foreground: 0 0% 100%;
-  --accent: 142 76% 36%;
-  --accent-foreground: 0 0% 100%;
-  --success: 145 60% 40%;
-  --warning: 38 92% 45%;
-  --background: 220 15% 97%;
-  --foreground: 0 0% 10%;
-  --surface: 0 0% 100%;
-  --muted: 220 14% 92%;
-  --muted-foreground: 0 0% 38%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 10%;
+  --accent: 60 5% 94%;
+  --accent-foreground: 24 10% 10%;
+  --success: 160 84% 33%;
+  --warning: 32 95% 44%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --background: 60 6% 95%;
+  --foreground: 24 10% 10%;
+  --surface: 60 9% 98%;
+  --muted: 60 5% 92%;
+  --muted-foreground: 25 6% 44%;
+  --card: 60 9% 98%;
+  --card-foreground: 24 10% 10%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 10%;
-  --border: 220 15% 88%;
-  --input: 220 15% 88%;
-  --ring: 252 55% 58%;
+  --popover-foreground: 24 10% 10%;
+  --border: 24 6% 90%;
+  --input: 24 6% 88%;
+  --ring: 160 84% 33%;
   --radius: 0.75rem;
 }
 
@@ -259,6 +326,7 @@ h1, h2, h3, .font-display {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-card);
   padding: 25px;
+  box-shadow: var(--shadow-card);
 }
 
 .aether-progress-track {
@@ -579,7 +647,101 @@ p, span, div, h1, h2, h3, h4, h5, h6 {
 }
 
 [data-theme="light"] .card-lift:hover {
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Light theme component refinements ── */
+
+[data-theme="light"] .aether-auth-field-icon,
+[data-theme="light"] .aether-auth-field-trailing,
+[data-theme="light"] .aether-auth-field-trailing button {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .aether-eyebrow {
+  color: var(--text-muted);
+  letter-spacing: 0.22em;
+}
+
+[data-theme="light"] .aether-subtitle {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .neon-text-green,
+[data-theme="light"] .neon-text-cyan {
+  text-shadow: none;
+}
+
+[data-theme="light"] .glass-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="light"] .glass-panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="light"] .glass-nav {
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-xs);
+}
+
+[data-theme="light"] .shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(28, 25, 23, 0.04),
+    transparent
+  );
+}
+
+[data-theme="light"] .mastery-ring-idle .mastery-ring-arc {
+  animation: none;
+  filter: none;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus {
+  border-color: var(--neon-green);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+  outline: none;
+}
+
+/* Scrollbar — subtle on light */
+[data-theme="light"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(28, 25, 23, 0.15);
+  border-radius: 9999px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-theme="light"] .growth-stats-layer {
+  opacity: 0.18 !important;
 }
 
 /* Scrollbar utilities */

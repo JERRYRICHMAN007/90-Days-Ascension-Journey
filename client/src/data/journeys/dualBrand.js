@@ -39,8 +39,8 @@ function getDualBrandReflection(weekNum, dayIndex) {
     prompt: `Reflect on today's ${focus} work for both Personal Brand and Company Brand`,
     questions: [
       `What progress did I make on ${focus}?`,
-      `Personal Brand (_richman.oo7): How did today's tasks go? ${personalTasksText}`,
-      `Company Brand (_ryxen.oo7): How did today's tasks go? ${companyTasksText}`,
+      `Personal brand: How did today's tasks go? ${personalTasksText}`,
+      `Company brand: How did today's tasks go? ${companyTasksText}`,
       `Did I achieve the expected outcome: ${outcome}?`,
       "What challenges did I face?",
       "What will I focus on improving tomorrow?",

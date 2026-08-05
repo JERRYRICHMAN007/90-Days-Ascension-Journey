@@ -3,7 +3,7 @@
  * Quotes are organized by journey domain — one unique quote per journey day
  */
 
-import { getCurrentDayNumber, getDateForDay } from '../utils/dates';
+import { getDateForDay, getCurrentDayNumber } from '../utils/journeyPlanning.js';
 
 export const domainQuotes = {
   'body-transformation': [
@@ -97,10 +97,7 @@ export const domainQuotes = {
   ],
 };
 
-/**
- * General quotes for dashboard/home page
- */
-const generalQuotes = [
+export const generalQuotes = [
   { quote: "Success is the sum of small efforts repeated day in and day out.", author: "Robert Collier", icon: "🌟" },
   { quote: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar", icon: "🚀" },
   { quote: "The future depends on what you do today.", author: "Mahatma Gandhi", icon: "✨" },
@@ -121,9 +118,9 @@ const generalQuotes = [
  * Whether a journey day's quote is unlocked (that calendar date has arrived)
  * Day 0 never unlocks; Day 1+ unlocks on or after their scheduled date
  */
-export function isDayQuoteUnlocked(dayNumber) {
+export function isDayQuoteUnlocked(journeyId, dayNumber) {
   if (!dayNumber || dayNumber < 1) return false;
-  const dayDate = getDateForDay(dayNumber);
+  const dayDate = getDateForDay(journeyId, dayNumber);
   if (!dayDate) return false;
   const today = new Date();
   const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -150,9 +147,9 @@ export function getQuoteForJourneyDay(domain, dayNumber) {
 /**
  * Get today's quote for dashboard/home — only if the current journey day has arrived
  */
-export function getQuoteOfTheDay(domain, _completedDays = 0) {
-  const currentDay = getCurrentDayNumber();
-  if (!currentDay || currentDay < 1 || !isDayQuoteUnlocked(currentDay)) {
+export function getQuoteOfTheDay(domain, journeyId, _completedDays = 0) {
+  const currentDay = journeyId ? getCurrentDayNumber(journeyId) : null;
+  if (!currentDay || currentDay < 1 || !isDayQuoteUnlocked(journeyId, currentDay)) {
     return null;
   }
   return getQuoteForJourneyDay(domain, currentDay);

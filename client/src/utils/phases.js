@@ -4,7 +4,7 @@
  * Onboarding: July 9–17, 2026
  * Phase 1 (Days 1–60): Frontend foundations
  * Phase 2 (Days 61–120): Backend + APIs
- * Phase 3 (Days 121–184): Build and ship Comfort (transport app)
+ * Phase 3 (Days 121–184): Build and ship capstone app
  *
  * Start Date: Saturday, July 18, 2026
  */
@@ -98,7 +98,7 @@ export function getPhaseDescription(phase) {
     return 'Backend + APIs';
   }
   if (phase === 3) {
-    return 'Build & Ship Comfort';
+    return 'Build & Ship Capstone';
   }
   return 'Unknown Phase';
 }

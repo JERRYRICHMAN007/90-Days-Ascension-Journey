@@ -153,7 +153,7 @@ export function ProfilePage() {
                 </div>
 
                 <h3 className="text-2xl font-bold text-foreground text-center">
-                  {user?.name || 'Jerry'}
+                  {user?.name || 'Member'}
                 </h3>
               </div>
 

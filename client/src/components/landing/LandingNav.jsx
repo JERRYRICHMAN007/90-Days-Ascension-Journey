@@ -46,6 +46,12 @@ export function LandingNav() {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
+            to="/signin"
+            className="rounded-lg border border-[var(--border-subtle)] px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-bold text-[var(--text-primary)] hover:border-[var(--neon-purple)]/50 hover:text-[var(--neon-purple)] transition-all duration-300"
+          >
+            Sign In
+          </Link>
+          <Link
             to="/signup"
             className="rounded-lg px-3 sm:px-6 py-2 text-sm sm:text-base font-bold text-[#1a1724] hover:opacity-90 hover:shadow-[0_0_20px_rgba(196,181,253,0.35)] transition-all duration-300"
             style={{ background: 'var(--aether-brand-gradient)' }}
@@ -88,7 +94,7 @@ export function LandingNav() {
                       `block rounded-lg px-4 py-3 text-base font-bold transition-colors ${
                         isActive
                           ? 'bg-[var(--neon-purple)]/10 text-[var(--neon-purple)]'
-                          : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]'
+                          : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
                       }`
                     }
                   >

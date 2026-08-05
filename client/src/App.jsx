@@ -11,6 +11,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import JourneyDetail from "./components/JourneyDetail";
 import { HomePage } from "./pages/HomePage";
+import { CreateJourneyPage } from "./pages/CreateJourneyPage";
 import { AchievementsPage } from "./pages/AchievementsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -25,12 +26,15 @@ import { ForgotPasswordForm } from "./components/auth/ForgotPasswordForm";
 import { ResetPasswordForm } from "./components/auth/ResetPasswordForm";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { migrateLegacyStorage } from "./utils/storageKeys.js";
+import { migrateJourneyRegistry } from "./utils/journeyRegistry.js";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
 import { hydrateFromBackend } from "./utils/hydrateFromBackend.js";
 import { flushQueue } from "./utils/offlineQueue.js";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 // Run migration synchronously before React mounts so a bad key cannot white-screen the app
 migrateLegacyStorage();
+migrateJourneyRegistry();
 
 async function runPostAuthSync() {
   try {
@@ -71,6 +75,7 @@ function App() {
               v7_relativeSplatPath: true,
             }}
           >
+            <ScrollToTop />
             <Suspense
               fallback={
                 <div className="min-h-screen flex items-center justify-center bg-background">
@@ -100,6 +105,7 @@ function App() {
                       <DashboardLayout>
                         <Routes>
                           <Route path="/dashboard" element={<HomePage />} />
+                          <Route path="/dashboard/create-journey" element={<CreateJourneyPage />} />
                           <Route path="/body-transformation" element={<JourneyDetail journeyId="body-transformation" />} />
                           <Route path="/dual-brand" element={<JourneyDetail journeyId="dual-brand" />} />
                           <Route path="/reading" element={<JourneyDetail journeyId="reading" />} />

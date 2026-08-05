@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import { LandingNav } from '../landing/LandingNav';
 
 const MESH_BG = {
   backgroundColor: 'var(--bg-primary)',
@@ -36,7 +37,9 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
   const isSignup = mode === 'signup';
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row" style={MESH_BG}>
+    <div className="min-h-screen flex flex-col" style={MESH_BG}>
+      <LandingNav />
+      <div className="flex flex-1 flex-col lg:flex-row min-h-0">
       <aside
         className="hidden lg:flex lg:w-[48%] xl:w-[52%] flex-col justify-between p-12 xl:p-16 border-r"
         style={{ borderColor: 'var(--border-subtle)' }}
@@ -83,28 +86,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
         </p>
       </aside>
 
-      <main className="flex-1 flex flex-col min-h-screen lg:min-h-0">
-        <header
-          className="lg:hidden sticky top-0 z-10 flex items-center justify-between h-16 px-5 border-b backdrop-blur-[12px]"
-          style={{
-            backgroundColor: 'rgba(13,21,22,0.85)',
-            borderColor: 'var(--border-subtle)',
-          }}
-        >
-          <Link
-            to="/"
-            className="text-xl font-extrabold tracking-[-1px] text-[var(--neon-cyan-alt)]"
-          >
-            Aether
-          </Link>
-          <Link
-            to="/"
-            className="text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]"
-          >
-            Home
-          </Link>
-        </header>
-
+      <main className="flex-1 flex flex-col min-h-0 lg:min-h-0">
         <div
           className={`flex-1 flex items-center justify-center px-5 sm:px-8 ${
             isSignup ? 'py-6 sm:py-8' : 'py-10 sm:py-12'
@@ -153,6 +135,7 @@ export function AuthLayout({ mode, title, subtitle, children, footer }: AuthLayo
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { TopNav } from './TopNav';
 import { MobileNav } from './MobileNav';
 import { cn } from '../../lib/utils';
 import { pageTransition } from '../../lib/motion.js';
+import { AchievementUnlockToast } from '../gamification/AchievementUnlockToast';
 
 const JOURNEY_PATHS = [
   '/body-transformation',
@@ -21,6 +22,9 @@ export function DashboardLayout({ children, className }) {
     location.pathname.startsWith('/journey/') ||
     location.pathname.startsWith('/discipline/');
   const isDashboard = location.pathname === '/dashboard';
+  const isCreateJourney = location.pathname === '/dashboard/create-journey';
+  const isSettings = location.pathname === '/settings';
+  const useWideLayout = isDashboard || isCreateJourney || isSettings;
 
   return (
     <div className="flex min-h-screen overflow-x-hidden text-[var(--text-primary)]" style={{ backgroundColor: 'var(--bg-primary)' }}>
@@ -37,7 +41,7 @@ export function DashboardLayout({ children, className }) {
           <div
             className={cn(
               isJourneyPage ? 'w-full' : 'w-full mx-auto',
-              isDashboard ? 'max-w-[1440px]' : 'max-w-5xl space-y-6'
+              useWideLayout ? 'max-w-[1440px]' : 'max-w-5xl space-y-6'
             )}
           >
             <AnimatePresence mode="wait">
@@ -55,6 +59,7 @@ export function DashboardLayout({ children, className }) {
         </main>
         <MobileNav />
       </div>
+      <AchievementUnlockToast />
     </div>
   );
 }

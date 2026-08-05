@@ -10,7 +10,7 @@ import {
   collectDaySessionKeys,
   isDayFullyComplete,
 } from '../../utils/progressTracking.js';
-import { getCurrentDayNumber } from '../../utils/dates.js';
+import { getCurrentDayNumber } from '../../utils/journeyPlanning.js';
 import { JOURNEY_COVER_IMAGES } from '../../utils/dashboardAssets.js';
 import { useGamification } from '../../hooks/useGamification';
 
@@ -49,7 +49,7 @@ export function DashboardJourneyRow({ journeyId, index = 0, tick = 0 }) {
   const accent = getJourneyAccent(journeyId);
   const theme = getJourneyTheme(journeyId);
   const { getLevel } = useGamification();
-  const currentDay = getCurrentDayNumber();
+  const currentDay = getCurrentDayNumber(journeyId);
 
   const { description, mastery, level, momentum, displayTitle } = useMemo(() => {
     void tick;
@@ -63,8 +63,7 @@ export function DashboardJourneyRow({ journeyId, index = 0, tick = 0 }) {
       mastery: m,
       level: levelData.level,
       momentum: getWeeklyMomentum(journeyId, day),
-      displayTitle:
-        journeyId === 'dual-brand' ? 'Dual Brand Design' : accent.fullLabel,
+      displayTitle: accent.fullLabel,
     };
   }, [journeyId, tick, accent, currentDay, getLevel]);
 

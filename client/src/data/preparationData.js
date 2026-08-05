@@ -62,7 +62,7 @@ export const journeyPreparationData = {
   },
   'dual-brand': {
     title: 'Dual Brand Preparation',
-    subtitle: 'Prepare your creative workspace and brand assets for Ryxen + HavenX',
+    subtitle: 'Prepare your creative workspace and brand assets for both brands',
     icon: '🎨',
     sections: [
       {
@@ -81,8 +81,8 @@ export const journeyPreparationData = {
         title: 'Brand Assets & Resources',
         icon: '📁',
         tasks: [
-          'Gather existing Ryxen brand assets',
-          'Gather existing HavenX brand assets',
+          'Gather existing personal brand assets',
+          'Gather existing company brand assets',
           'Organize brand guidelines and style guides',
           'Prepare logo files and variations',
           'Set up brand asset libraries',
@@ -234,7 +234,7 @@ export const journeyPreparationData = {
   },
   'software-engineering': {
     title: 'Software Engineering Preparation',
-    subtitle: 'Prepare your development environment and tools for 6 months — ship Comfort by the end',
+    subtitle: 'Prepare your development environment — finish with a shipped capstone project',
     icon: '💻',
     sections: [
       {

@@ -1,196 +1,341 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Sparkles, Sun, Moon } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-import { Card } from '../components/ui/card';
-import { Dropdown } from '../components/ui/dropdown';
+import { useNavigate } from 'react-router-dom';
 import {
-  DEFAULT_JOURNEY_START,
-  formatYmd,
-  getJourneyEndDate,
-  getJourneyTotalDays,
-  getStoredJourneyStartDate,
-  JOURNEY_DURATION_MONTHS,
-  setJourneyStartDate,
-} from '../utils/dates';
+  Sun,
+  Moon,
+  Rocket,
+  User,
+  Bell,
+  Palette,
+  Wand2,
+  Shield,
+  Database,
+  Info,
+  PlayCircle,
+  RotateCcw,
+  ChevronRight,
+} from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/ui/button';
+import { ThemeToggleButton } from '../components/layout/ThemeToggleButton';
+import { SettingsSection, SettingsRow } from '../components/settings/SettingsSection.jsx';
+import { SettingsConfirmDialog } from '../components/settings/SettingsConfirmDialog.jsx';
+import { SettingsToast } from '../components/settings/SettingsToast.jsx';
+import {
+  getJourneyBulkSummary,
+  enableAllConfiguredJourneys,
+  resetAllJourneysProgress,
+  getGlobalRemindersEnabled,
+  setGlobalRemindersEnabled,
+} from '../utils/journeyBulkActions.js';
 
 const themeOptions = [
-  { value: 'vibrant', label: 'Vibrant', icon: Sparkles },
   { value: 'light', label: 'Light', icon: Sun },
   { value: 'dark', label: 'Dark', icon: Moon },
 ];
 
-function formatDisplayDate(ymd) {
-  try {
-    const [y, m, d] = ymd.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  } catch {
-    return ymd;
-  }
-}
-
 export function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const [startDate, setStartDate] = useState(getStoredJourneyStartDate);
-  const [savedFlash, setSavedFlash] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [reminders, setReminders] = useState(getGlobalRemindersEnabled);
+  const [toast, setToast] = useState(null);
+  const [toastType, setToastType] = useState('success');
+  const [enableConfirmOpen, setEnableConfirmOpen] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [tick, setTick] = useState(0);
+
+  const summary = useMemo(() => getJourneyBulkSummary(), [tick]);
+  const configuredCount = summary.filter((j) => j.configured).length;
+  const activeCount = summary.filter((j) => j.started).length;
+  const readyToStart = summary.filter((j) => j.configured && !j.started).length;
+  const unconfigured = summary.filter((j) => !j.configured);
 
   useEffect(() => {
-    const onUpdate = (e) => {
-      const next = e?.detail?.startDate || getStoredJourneyStartDate();
-      setStartDate(next);
-    };
-    window.addEventListener('journey-start-updated', onUpdate);
-    return () => window.removeEventListener('journey-start-updated', onUpdate);
+    setReminders(getGlobalRemindersEnabled());
   }, []);
 
-  const summary = useMemo(() => {
-    const end = getJourneyEndDate();
-    const total = getJourneyTotalDays();
-    return {
-      endYmd: formatYmd(end),
-      endLabel: formatDisplayDate(formatYmd(end)),
-      totalDays: total,
-    };
-  }, [startDate]);
-
-  const handleStartChange = (e) => {
-    const value = e.target.value;
-    if (!value) return;
-    setStartDate(value);
-    setJourneyStartDate(value);
-    setSavedFlash(true);
-    window.setTimeout(() => setSavedFlash(false), 2000);
+  const showToast = (message, type = 'success') => {
+    setToastType(type);
+    setToast(message);
   };
 
-  const useToday = () => {
-    const today = formatYmd(new Date());
-    setStartDate(today);
-    setJourneyStartDate(today);
-    setSavedFlash(true);
-    window.setTimeout(() => setSavedFlash(false), 2000);
+  const handleEnableAll = () => {
+    if (configuredCount === 0) {
+      showToast('No set-up journeys yet — complete setup on each journey first.', 'error');
+      return;
+    }
+    setEnableConfirmOpen(true);
   };
 
-  const useDefault = () => {
-    setStartDate(DEFAULT_JOURNEY_START);
-    setJourneyStartDate(DEFAULT_JOURNEY_START);
-    setSavedFlash(true);
-    window.setTimeout(() => setSavedFlash(false), 2000);
+  const confirmEnableAll = () => {
+    setEnableConfirmOpen(false);
+    const result = enableAllConfiguredJourneys();
+    setTick((t) => t + 1);
+
+    if (result.started > 0) {
+      showToast(
+        `All configured journeys have been enabled successfully (${result.started} started${result.alreadyActive ? `, ${result.alreadyActive} already active` : ''}).`
+      );
+    } else if (result.alreadyActive > 0) {
+      showToast(`All configured journeys are already active (${result.alreadyActive}).`);
+    } else {
+      showToast('No journeys were ready to start.', 'error');
+    }
+
+    if (result.unconfigured.length > 0) {
+      window.setTimeout(() => {
+        showToast(
+          `${result.unconfigured.length} journey(s) still need setup: ${result.unconfigured.map((j) => j.title).join(', ')}.`,
+          'error'
+        );
+      }, 3800);
+    }
   };
+
+  const confirmResetAll = () => {
+    setResetConfirmOpen(false);
+    const count = resetAllJourneysProgress();
+    setTick((t) => t + 1);
+    showToast(
+      `Progress reset for ${count} journeys. They are ready to start again — schedules and goals were kept.`
+    );
+  };
+
+  const enableConfirmDescription =
+    readyToStart > 0
+      ? `This will start ${readyToStart} journey${readyToStart === 1 ? '' : 's'} that are set up but not active yet. Each keeps its own schedule and reminders.${
+          unconfigured.length
+            ? ` ${unconfigured.length} journey(s) still need setup and will be skipped.`
+            : ''
+        }`
+      : activeCount === configuredCount && configuredCount > 0
+        ? `All ${configuredCount} set-up journey${configuredCount === 1 ? ' is' : 's are'} already active.`
+        : `No journeys are waiting to start right now.`;
+
+  const journeyStats = [
+    { label: 'Set up', hint: 'Schedule & goals saved', value: configuredCount },
+    { label: 'Active', hint: 'Progress tracking on', value: activeCount },
+    { label: 'Ready', hint: 'Set up, not started', value: readyToStart },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Settings</h1>
-        <p className="text-muted-foreground">Customize your experience</p>
-      </div>
+    <div className="w-full space-y-5 pb-8">
+      <SettingsToast message={toast} type={toastType} />
 
-      <Card className="p-6">
-        <div className="flex items-start gap-3 mb-4">
-          <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <CalendarDays className="size-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Journey start date</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Your {JOURNEY_DURATION_MONTHS}-month countdown begins on the day you choose
-              (Day 1). End date updates automatically.
-            </p>
-          </div>
+      <SettingsConfirmDialog
+        open={enableConfirmOpen}
+        title="Enable all set-up journeys?"
+        description={enableConfirmDescription}
+        confirmLabel="Enable all"
+        onConfirm={confirmEnableAll}
+        onCancel={() => setEnableConfirmOpen(false)}
+      />
+
+      <SettingsConfirmDialog
+        open={resetConfirmOpen}
+        title="Reset all journey progress?"
+        description="This cannot be undone. Clears progress, streaks, completion history, and journey XP for every journey. Your schedules, goals, and setup stay saved — journeys move back to Ready (not Active)."
+        confirmLabel="Reset all progress"
+        variant="danger"
+        onConfirm={confirmResetAll}
+        onCancel={() => setResetConfirmOpen(false)}
+      />
+
+      <header>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">Settings</h1>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">Your control center for Aether</p>
+      </header>
+
+      {/* Account */}
+      <SettingsSection
+        icon={User}
+        title="Account"
+        description="Profile and sign-in details"
+      >
+        <SettingsRow
+          label={user?.name || 'Guest'}
+          description={user?.email || 'Sign in to sync across devices'}
+        >
+          <Button variant="outline" size="sm" className="rounded-full text-xs" onClick={() => navigate('/profile')}>
+            Edit profile <ChevronRight className="size-3 ml-0.5" />
+          </Button>
+        </SettingsRow>
+      </SettingsSection>
+
+      {/* Journey Management */}
+      <SettingsSection
+        icon={Rocket}
+        title="Journey management"
+        description="Global controls for all your journeys — enable or reset progress without losing your setup"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-1">
+          {journeyStats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-lg border border-[var(--border-subtle)] px-3 py-2.5 text-center bg-[var(--bg-primary)]/50"
+            >
+              <p className="text-lg font-bold text-[var(--text-primary)]">{stat.value}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">{stat.label}</p>
+              <p className="text-[9px] text-[var(--text-muted)] mt-0.5 leading-snug">{stat.hint}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="space-y-4 max-w-md">
-          <div>
-            <label htmlFor="journey-start" className="text-sm font-medium mb-2 block">
-              Day 1
-            </label>
-            <input
-              id="journey-start"
-              type="date"
-              value={startDate}
-              onChange={handleStartChange}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
+        <div className="flex flex-col sm:flex-row gap-2 pt-1">
+          <Button
+            className="rounded-full flex-1 gap-2"
+            style={{ background: 'var(--neon-green)', color: '#0a0a0a' }}
+            onClick={handleEnableAll}
+          >
+            <PlayCircle className="size-4" />
+            Enable all journeys
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-full flex-1 gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            onClick={() => setResetConfirmOpen(true)}
+          >
+            <RotateCcw className="size-4" />
+            Reset all journeys
+          </Button>
+        </div>
 
-          <div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-3 text-sm space-y-1">
-            <p>
-              <span className="text-muted-foreground">Starts:</span>{' '}
-              <span className="font-medium">{formatDisplayDate(startDate)}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Ends ({JOURNEY_DURATION_MONTHS} months later):</span>{' '}
-              <span className="font-medium">{summary.endLabel}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Total days:</span>{' '}
-              <span className="font-medium">{summary.totalDays}</span>
-            </p>
-            {savedFlash && (
-              <p className="text-primary text-xs font-medium pt-1">Start date saved.</p>
-            )}
-          </div>
+        {unconfigured.length > 0 && (
+          <p className="text-[11px] text-[var(--text-muted)] px-1">
+            Needs setup: {unconfigured.map((j) => j.title).join(', ')}
+          </p>
+        )}
+      </SettingsSection>
 
+      {/* Notifications */}
+      <SettingsSection
+        icon={Bell}
+        title="Notifications"
+        description="Reminders and alerts across your journeys"
+      >
+        <SettingsRow
+          label="Journey reminders"
+          description="Gentle nudges before scheduled activities. Per-journey times are set in each journey's setup."
+        >
+          <input
+            type="checkbox"
+            checked={reminders}
+            onChange={() => {
+              const next = !reminders;
+              setReminders(next);
+              setGlobalRemindersEnabled(next);
+              showToast(next ? 'Reminders enabled globally.' : 'Reminders paused globally.');
+            }}
+            className="size-4 rounded accent-[var(--neon-green)]"
+            aria-label="Journey reminders"
+          />
+        </SettingsRow>
+      </SettingsSection>
+
+      {/* Appearance */}
+      <SettingsSection icon={Palette} title="Appearance" description="Theme and visual style">
+        <SettingsRow label="Quick toggle" description="Switch light and dark mode">
+          <ThemeToggleButton />
+        </SettingsRow>
+        <div>
+          <p className="text-xs font-medium text-[var(--text-secondary)] mb-2">Color palette</p>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={useToday}
-              className="px-3 py-2 text-sm rounded-lg border border-border hover:bg-muted transition-colors"
-            >
-              Start today
-            </button>
-            <button
-              type="button"
-              onClick={useDefault}
-              className="px-3 py-2 text-sm rounded-lg border border-border hover:bg-muted transition-colors"
-            >
-              Use Jul 18, 2026
-            </button>
+            {themeOptions.map((opt) => {
+              const Icon = opt.icon;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setTheme(opt.value)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+                    theme === opt.value
+                      ? 'border-[var(--neon-green)] bg-[var(--neon-green)]/10 text-[var(--neon-green)]'
+                      : 'border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+                  }`}
+                >
+                  <Icon className="size-3.5" />
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
         </div>
-      </Card>
+      </SettingsSection>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Appearance</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">Theme</label>
-            <Dropdown
-              value={theme}
-              onChange={setTheme}
-              options={themeOptions}
-              className="w-full max-w-xs"
-            />
-          </div>
-        </div>
-      </Card>
+      {/* AI Assistant */}
+      <SettingsSection
+        icon={Wand2}
+        title="AI assistant"
+        description="Journey-scoped planning coach on each journey overview"
+      >
+        <SettingsRow
+          label="Per-journey AI coach"
+          description="Each journey has its own scoped assistant. Open any journey and use the overview tab to customize with natural language."
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full text-xs"
+            onClick={() => navigate('/dashboard')}
+          >
+            Go to journeys
+          </Button>
+        </SettingsRow>
+      </SettingsSection>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Data</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Export Data</h3>
-              <p className="text-sm text-muted-foreground">Download your progress data</p>
-            </div>
-            <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
-              Export
-            </button>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Clear All Data</h3>
-              <p className="text-sm text-muted-foreground">Reset your progress (cannot be undone)</p>
-            </div>
-            <button className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90">
-              Clear
-            </button>
-          </div>
-        </div>
-      </Card>
+      {/* Privacy */}
+      <SettingsSection icon={Shield} title="Privacy & security" description="Data and account safety">
+        <SettingsRow label="Session timeout" description="Automatic sign-out after 30 minutes of inactivity">
+          <span className="text-xs text-[var(--text-muted)]">Enabled</span>
+        </SettingsRow>
+        <SettingsRow label="Local-first data" description="Progress is stored on this device. Sign in to sync when available.">
+          <span className="text-xs text-[var(--text-muted)]">Active</span>
+        </SettingsRow>
+      </SettingsSection>
+
+      {/* Data & Backup */}
+      <SettingsSection icon={Database} title="Data & backup" description="Export and manage your data">
+        <SettingsRow label="Export progress" description="Download your journey data as JSON">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full text-xs"
+            onClick={() => {
+              try {
+                const data = {
+                  exportedAt: new Date().toISOString(),
+                  sessionCompletions: JSON.parse(localStorage.getItem('sessionCompletions') || '{}'),
+                  xp: JSON.parse(localStorage.getItem('aetherXP') || '{}'),
+                  streaks: JSON.parse(localStorage.getItem('aetherStreaks') || '{}'),
+                  journeyStarts: JSON.parse(localStorage.getItem('aetherJourneyStarts') || '{}'),
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `aether-export-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Progress exported successfully.');
+              } catch {
+                showToast('Export failed. Please try again.', 'error');
+              }
+            }}
+          >
+            Export
+          </Button>
+        </SettingsRow>
+      </SettingsSection>
+
+      {/* About */}
+      <SettingsSection icon={Info} title="About" description="Application information">
+        <SettingsRow label="Aether" description="Personal journey operating system">
+          <span className="text-xs font-mono text-[var(--text-muted)]">v1.0</span>
+        </SettingsRow>
+      </SettingsSection>
     </div>
   );
 }

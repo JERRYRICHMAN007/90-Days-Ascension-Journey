@@ -10,7 +10,7 @@ export function MasteryPage() {
   return (
     <LandingLayout>
       <section className="relative overflow-hidden py-12 sm:py-16 lg:py-24 min-h-[calc(100vh-4rem)]">
-        <GrowthStatsBackground variant="section" />
+        <GrowthStatsBackground variant="section" className="growth-stats-layer opacity-70" />
 
         <div className="relative z-10 mx-auto grid max-w-[1440px] grid-cols-1 items-start gap-10 px-4 sm:gap-12 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16">
           <motion.div
@@ -19,13 +19,13 @@ export function MasteryPage() {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="min-w-0 space-y-4 order-2 lg:order-1"
           >
-            <p className="text-xs font-bold tracking-[1.2px] uppercase text-[#c3f5ff]">
+            <p className="text-xs font-bold tracking-[1.2px] uppercase text-[var(--text-muted)]">
               THE SYSTEM
             </p>
-            <h1 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold tracking-[-0.96px] leading-[1.1] text-white">
+            <h1 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold tracking-[-0.96px] leading-[1.1] text-[var(--text-primary)]">
               Discipline as a Service.
             </h1>
-            <p className="max-w-xl text-base sm:text-lg leading-[1.6] text-[#bac9cc]">
+            <p className="max-w-xl text-base sm:text-lg leading-[1.6] text-[var(--text-secondary)]">
               Our proprietary Mastery Score tracks your 6-month trajectory across three critical
               vectors. There is no guesswork—only data-driven evolution.
             </p>
@@ -41,16 +41,16 @@ export function MasteryPage() {
                   key={p.num}
                   variants={staggerItem}
                   whileHover={{ x: 4 }}
-                  className="flex gap-4 sm:gap-6 items-start rounded-xl border border-transparent hover:border-white/[0.06] hover:bg-[#0d1516]/50 p-3 -m-3 transition-colors duration-300"
+                  className="flex gap-4 sm:gap-6 items-start rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--surface-subtle)] p-3 -m-3 transition-colors duration-300"
                 >
-                  <div className="flex size-10 sm:size-12 shrink-0 items-center justify-center border border-[#3b494c] text-sm sm:text-base font-bold text-[#c3f5ff] transition-colors duration-300 hover:border-[#c3f5ff]">
+                  <div className="flex size-10 sm:size-12 shrink-0 items-center justify-center border border-[var(--border-muted)] text-sm sm:text-base font-bold text-[var(--neon-cyan)] transition-colors duration-300 hover:border-[var(--neon-cyan)]/50">
                     {p.num}
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-xl sm:text-2xl font-bold tracking-[-0.48px] text-white">
+                    <h4 className="text-xl sm:text-2xl font-bold tracking-[-0.48px] text-[var(--text-primary)]">
                       {p.title}
                     </h4>
-                    <p className="mt-1 text-sm sm:text-base text-[#bac9cc] leading-6">
+                    <p className="mt-1 text-sm sm:text-base text-[var(--text-secondary)] leading-6">
                       {p.description}
                     </p>
                   </div>
@@ -66,9 +66,9 @@ export function MasteryPage() {
             >
               <Link
                 to="/legacy"
-                className="inline-flex items-center gap-2 text-sm font-bold text-[#00e5ff] hover:text-[#c3f5ff] transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-bold text-[var(--neon-cyan)] hover:text-[var(--neon-green)] transition-colors"
               >
-                Ready to commit? See what's next →
+                Ready to commit? See what&apos;s next →
               </Link>
             </motion.div>
           </motion.div>
@@ -80,7 +80,7 @@ export function MasteryPage() {
             className="order-1 w-full min-w-0 lg:order-2 lg:flex lg:justify-center"
           >
             <div className="relative">
-              <div className="absolute -inset-4 rounded-3xl bg-[#00e5ff]/5 blur-2xl pointer-events-none" />
+              <div className="absolute -inset-4 rounded-3xl bg-[var(--neon-cyan)]/5 blur-2xl pointer-events-none" />
               <MasteryRing />
             </div>
           </motion.div>

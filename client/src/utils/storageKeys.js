@@ -9,10 +9,28 @@ export const STORAGE_KEYS = {
   QUIZ_RESULTS: 'aetherQuizResults',
   MIGRATION_FLAG: 'aether_storage_migrated_v1',
   JOURNEY_START: 'aetherJourneyStartDate',
-  /** Per-journey start dates: { [journeyId]: 'YYYY-MM-DD' } */
+  /** Per-journey schedules: { [journeyId]: { startYmd, startedAt } | 'YYYY-MM-DD' (legacy) } */
   JOURNEY_STARTS: 'aetherJourneyStarts',
+  /** User-created journey list: JourneyRegistryEntry[] */
+  JOURNEY_REGISTRY: 'aetherJourneyRegistry',
+  /** True after the user creates their first real journey */
+  HAS_CREATED_JOURNEY: 'aetherHasCreatedJourney',
+  /** Registry migration marker */
+  JOURNEY_REGISTRY_MIGRATED_V2: 'aetherJourneyRegistryMigratedV2',
   /** Per-journey availability: { [journeyId]: { enabled, availableDays, hoursPerDay } } */
   JOURNEY_AVAILABILITY: 'aetherJourneyAvailability',
+  /** When true, all configured journeys start together */
+  START_ALL_JOURNEYS: 'aetherStartAllJourneys',
+  /** Per-journey setup wizard answers: { [journeyId]: JourneySetupProfile } */
+  JOURNEY_SETUP: 'aetherJourneySetup',
+  /** Saved favorite quote ids */
+  FAVORITE_QUOTES: 'aetherFavoriteQuotes',
+  /** User-created journey templates */
+  CUSTOM_TEMPLATES: 'aetherCustomTemplates',
+  /** Per-journey daily journal: { [journeyId]: { [dayNumber]: DayNote } } */
+  JOURNEY_DAILY_NOTES: 'aetherJourneyDailyNotes',
+  /** Per-journey weekly plan: { [journeyId]: { [0-6]: WeekdayActivity } } */
+  JOURNEY_WEEKLY_PLAN: 'aetherJourneyWeeklyPlan',
 };
 
 /** Older key names → current Aether keys (run once on load). */

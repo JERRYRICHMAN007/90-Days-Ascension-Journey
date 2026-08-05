@@ -8,7 +8,7 @@
     "server"
   ],
   "scripts": {
-    "dev": "concurrently -n api,web -c cyan,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev": "node scripts/free-dev-port.mjs && concurrently -n api,web -c cyan,green --kill-others-on-fail \"npm run dev -w server\" \"wait-on http://127.0.0.1:5001/health && npm run dev -w client\"",
     "dev:client": "npm run dev -w client",
     "dev:server": "npm run dev -w server",
     "build": "npm run build -w client && npm run build -w server",
@@ -18,7 +18,8 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "supabase": "^2.109.1"
+    "supabase": "^2.109.1",
+    "wait-on": "^8.0.5"
   },
   "engines": {
     "node": ">=20"

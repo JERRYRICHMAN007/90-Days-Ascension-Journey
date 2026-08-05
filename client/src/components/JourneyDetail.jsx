@@ -22,10 +22,11 @@ import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { JourneyDetailV2 } from "./journey/JourneyDetailV2";
 import { getCurrentPhaseStatus, getWeekNumber } from "../utils/dates";
 import {
-  hasJourneyStartDate,
+  isJourneyStarted,
   getCurrentDayNumber as getJourneyCurrentDay,
 } from "../utils/journeyPlanning.js";
 import { calculateSessionBasedProgress, isDayFullyComplete, toggleDayComplete } from "../utils/progressTracking";
+import { getContentTemplateId } from "../utils/journeyRegistry.js";
 import "./JourneyDetail.css";
 
 function JourneyDetail({ journeyId: propJourneyId }) {
@@ -39,17 +40,18 @@ function JourneyDetail({ journeyId: propJourneyId }) {
   const location = useLocation();
   const journeyId = propJourneyId || paramJourneyId;
   const navigate = useNavigate();
-  const { weeks, journey } = getJourneyData(journeyId);
+  const contentId = getContentTemplateId(journeyId);
+  const { weeks, journey } = getJourneyData(contentId);
   // Initialize with first available week/day, or default to 1
   const firstWeek = weeks && weeks.length > 0 ? weeks[0] : null;
   const firstDay = firstWeek?.days && firstWeek.days.length > 0 ? firstWeek.days.find(d => d && d.dayNumber === 1) || firstWeek.days[0] : null;
-  const journeyConfigured = hasJourneyStartDate(journeyId);
+  const journeyStarted = isJourneyStarted(journeyId);
   const currentPhaseStatus = getCurrentPhaseStatus();
-  const currentDayNumber = journeyConfigured ? getJourneyCurrentDay(journeyId) : null;
+  const currentDayNumber = journeyStarted ? getJourneyCurrentDay(journeyId) : null;
   const defaultDay =
-    journeyConfigured && currentDayNumber !== null && currentDayNumber > 0
+    journeyStarted && currentDayNumber !== null && currentDayNumber > 0
       ? currentDayNumber
-      : journeyConfigured
+      : journeyStarted
         ? 1
         : null;
   const defaultWeek = defaultDay ? getWeekNumber(defaultDay) : 1;

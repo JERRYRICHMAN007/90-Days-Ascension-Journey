@@ -5090,12 +5090,12 @@ function getSoftwareEngineeringTheme(weekNum) {
     "React Native Advanced - Navigation & State",
     "React Native - Maps, Location & Real-time",
     "React Native - Payments & MoMo Integration",
-    "Comfort App - Passenger App MVP",
-    "Comfort App - Driver App MVP",
-    "Comfort App - Admin Dashboard (ReactJS)",
-    "Comfort App - Backend APIs & Infrastructure",
-    "Comfort App - Testing, Deployment & Launch",
-    "Comfort App - Final Polish & Production Ready",
+    "Capstone — User-facing app MVP",
+    "Capstone — Operations app MVP",
+    "Capstone — Admin dashboard",
+    "Capstone — Backend APIs & infrastructure",
+    "Capstone — Testing, deployment & launch",
+    "Capstone — Final polish & production ready",
   ];
   return themes[weekNum - 1] || "Software Engineering Theme";
 }

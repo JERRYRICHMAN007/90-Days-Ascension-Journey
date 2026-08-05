@@ -4,7 +4,7 @@
   "description": "Backend API for Aether",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "npm run prisma:generate && set PORT=5001&& set HOST=127.0.0.1&& tsx watch src/index.ts",
+    "dev": "npm run prisma:generate && cross-env PORT=5001 HOST=127.0.0.1 tsx watch src/index.ts",
     "build": "prisma generate",
     "start": "tsx src/index.ts",
     "start:prod": "cross-env NODE_ENV=production node scripts/start-production.mjs",

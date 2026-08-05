@@ -7,7 +7,7 @@ const primaryBtnClass =
   'w-full sm:w-auto h-10 px-5 text-sm sm:h-11 sm:px-6 md:h-12 md:px-7 md:text-base bg-gradient-to-r from-primary via-accent to-secondary text-white font-semibold shadow-md hover:shadow-lg transition-all hover:scale-[1.02] group';
 
 const secondaryBtnClass =
-  'w-full sm:w-auto h-10 px-5 text-sm sm:h-11 sm:px-6 md:h-12 md:px-7 md:text-base border-2 hover:bg-white hover:text-black hover:border-white transition-colors';
+  'w-full sm:w-auto h-10 px-5 text-sm sm:h-11 sm:px-6 md:h-12 md:px-7 md:text-base border border-[var(--border-muted)] bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-active)] transition-colors';
 
 export function LandingCtaButtons({
   primaryLabel = 'Sign In',

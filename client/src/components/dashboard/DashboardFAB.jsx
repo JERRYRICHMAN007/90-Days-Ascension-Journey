@@ -1,39 +1,5 @@
-import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getJourneyCardsConfig } from '../../utils/journeyTheme.js';
-import { getCurrentDayNumber, getCurrentPhaseStatus } from '../../utils/dates.js';
-import { getJourneyData } from '../../data/journeys/index.js';
-import {
-  collectDaySessionKeys,
-  getJourneyCompletions,
-} from '../../utils/progressTracking.js';
-
-function findNextJourneyPath() {
-  const phase = getCurrentPhaseStatus();
-  const currentDay = getCurrentDayNumber();
-  if (phase !== 'phase1' && phase !== 'phase2' && phase !== 'phase3' || !currentDay) {
-    return '/dashboard';
-  }
-
-  for (const { id, path } of getJourneyCardsConfig()) {
-    try {
-      const { weeks } = getJourneyData(id);
-      const day = weeks
-        .flatMap((w) => w.days || [])
-        .find((d) => d.dayNumber === currentDay);
-      if (!day) continue;
-      const keys = collectDaySessionKeys(id, day);
-      if (keys.length === 0) continue;
-      const completions = getJourneyCompletions(id);
-      const incomplete = keys.some((k) => !completions[k]?.completed);
-      if (incomplete) return path;
-    } catch {
-      continue;
-    }
-  }
-
-  return getJourneyCardsConfig()[0]?.path || '/dashboard';
-}
+import { Plus } from 'lucide-react';
 
 export function DashboardFAB() {
   const navigate = useNavigate();
@@ -41,11 +7,12 @@ export function DashboardFAB() {
   return (
     <button
       type="button"
-      onClick={() => navigate(findNextJourneyPath())}
-      className="fixed bottom-24 right-6 z-30 hidden md:flex size-14 items-center justify-center rounded-full bg-[#00e478] text-[#003d1f] shadow-[0_0_10px_rgba(0,228,120,0.4)] transition-transform hover:scale-105 active:scale-95 md:bottom-10"
-      aria-label="Start next session"
+      onClick={() => navigate('/dashboard/create-journey')}
+      className="fixed bottom-24 right-6 z-30 flex items-center gap-2 rounded-full bg-[var(--neon-green)] px-5 py-3.5 text-sm font-bold text-[#003d1f] shadow-[0_0_16px_rgba(110,231,183,0.4)] transition-transform hover:scale-[1.02] active:scale-95 md:bottom-10"
+      aria-label="Create new journey"
     >
-      <Plus className="size-6 stroke-[2.5]" />
+      <Plus className="size-5 stroke-[2.5]" />
+      <span className="hidden sm:inline">New Journey</span>
     </button>
   );
 }

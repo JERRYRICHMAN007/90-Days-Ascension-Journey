@@ -13,7 +13,7 @@ import {
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import {
-  setJourneyStartDateFor,
+  setJourneyPlannedStartDate,
   resetJourneySchedule,
   setJourneyAvailability,
   getJourneyAvailability,
@@ -21,15 +21,17 @@ import {
   formatDisplayDate,
   getJourneyTimeline,
   getDefaultPickerDate,
-  hasJourneyStartDate,
+  hasPlannedSchedule,
+  isJourneyStarted,
 } from '../../utils/journeyPlanning.js';
 import { addMonths, parseYmd, JOURNEY_DURATION_MONTHS, formatYmd } from '../../utils/dates.js';
+import { JourneyDateRangePicker } from './JourneyDatePicker.jsx';
 
 /**
  * Journey schedule: start date, mastery deadline preview, availability, reset arc.
  */
 export function JourneySetupPanel({ journeyId, onSaved, accentColor, accentRgb, className }) {
-  const [configured, setConfigured] = useState(() => hasJourneyStartDate(journeyId));
+  const [configured, setConfigured] = useState(() => hasPlannedSchedule(journeyId));
   const [timeline, setTimeline] = useState(() => getJourneyTimeline(journeyId));
   const [startDate, setStartDate] = useState(
     timeline.configured ? timeline.startYmd : getDefaultPickerDate()
@@ -45,7 +47,7 @@ export function JourneySetupPanel({ journeyId, onSaved, accentColor, accentRgb, 
   const refreshTimeline = () => {
     const next = getJourneyTimeline(journeyId);
     setTimeline(next);
-    setConfigured(hasJourneyStartDate(journeyId));
+    setConfigured(hasPlannedSchedule(journeyId));
     if (next.configured) setStartDate(next.startYmd);
   };
 
@@ -63,14 +65,15 @@ export function JourneySetupPanel({ journeyId, onSaved, accentColor, accentRgb, 
     return () => window.removeEventListener('journey-start-updated', onUpdate);
   }, [journeyId]);
 
-  const previewEnd = formatDisplayDate(
-    formatYmd(addMonths(parseYmd(startDate), JOURNEY_DURATION_MONTHS))
-  );
+  const previewEndYmd = formatYmd(addMonths(parseYmd(startDate), JOURNEY_DURATION_MONTHS));
+  const previewEnd = formatDisplayDate(previewEndYmd);
+  const previewDays =
+    Math.round((parseYmd(previewEndYmd) - parseYmd(startDate)) / (1000 * 60 * 60 * 24)) + 1;
   const weekdayLabels = getWeekdayLabels();
 
   const handleSaveStart = () => {
     if (!startDate) return;
-    setJourneyStartDateFor(journeyId, startDate);
+    setJourneyPlannedStartDate(journeyId, startDate);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
     refreshTimeline();
@@ -173,27 +176,16 @@ export function JourneySetupPanel({ journeyId, onSaved, accentColor, accentRgb, 
                 <TimelineNode label="Mastery" value={previewEnd} accent={accent} icon={Flag} />
               </div>
 
-              <div className="space-y-3">
-                <label
-                  htmlFor={`start-${journeyId}`}
-                  className="text-[10px] font-bold uppercase tracking-widest"
-                  style={{ color: accent }}
-                >
-                  Journey start date
-                </label>
-                <input
-                  id={`start-${journeyId}`}
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full max-w-sm rounded-xl border px-4 py-3 text-sm font-medium text-[var(--text-primary)] focus:outline-none focus:ring-2 transition-shadow"
-                  style={{
-                    background: 'rgba(0,0,0,0.25)',
-                    borderColor: `rgba(${rgb},0.35)`,
-                    boxShadow: `inset 0 0 0 1px rgba(${rgb},0.08)`,
-                  }}
-                />
-                <div className="flex flex-wrap gap-2 pt-1">
+              <JourneyDateRangePicker
+                startYmd={startDate}
+                onStartChange={setStartDate}
+                endYmd={previewEndYmd}
+                totalDays={previewDays}
+                accentColor={accent}
+                accentRgb={rgb}
+              />
+
+              <div className="flex flex-wrap gap-2 pt-1">
                   <Button
                     size="sm"
                     onClick={handleSaveStart}
@@ -213,7 +205,7 @@ export function JourneySetupPanel({ journeyId, onSaved, accentColor, accentRgb, 
                     onClick={() => {
                       const today = formatYmd(new Date());
                       setStartDate(today);
-                      setJourneyStartDateFor(journeyId, today);
+                      setJourneyPlannedStartDate(journeyId, today);
                       refreshTimeline();
                       onSaved?.();
                     }}
@@ -231,7 +223,6 @@ export function JourneySetupPanel({ journeyId, onSaved, accentColor, accentRgb, 
                     <Sparkles className="size-3.5" /> Schedule saved — your roadmap is live
                   </motion.p>
                 )}
-              </div>
 
               {/* Weekly availability */}
               <div
