@@ -281,7 +281,7 @@ export const journeyPreparationData = {
         title: 'Time Blocks & Schedule',
         icon: '⏰',
         tasks: [
-          'Software Engineering: Daily 4:00 PM - 5:00 PM (except Sunday)',
+          'Software Engineering: Daily 4:00 AM - 5:30 AM (Mobile · Frontend · Backend, except Saturday)',
           'Mobile Mon-Wed · Frontend Thu-Fri · Backend Sat',
           'Block all time slots in your calendar accordingly',
           'Plan discipline rotation schedule and code review time'

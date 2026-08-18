@@ -47,3 +47,11 @@ export function ensureDayNote(journeyId, dayNumber) {
   if (existing.updatedAt) return existing;
   return saveDayNote(journeyId, dayNumber, {});
 }
+
+export function clearJourneyNotes(journeyId) {
+  if (!journeyId) return;
+  const all = readAll();
+  delete all[journeyId];
+  writeAll(all);
+  window.dispatchEvent(new CustomEvent('journey-notes-updated', { detail: { journeyId } }));
+}

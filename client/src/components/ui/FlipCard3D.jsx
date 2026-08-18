@@ -7,6 +7,11 @@ const SIZE_CLASSES = {
   md: 'w-[140px] h-[148px] sm:w-[160px] sm:h-[160px]',
   lg: 'w-[160px] h-[168px] sm:w-[180px] sm:h-[180px]',
   wide: 'w-[200px] h-[148px] sm:w-[220px] sm:h-[160px]',
+  fluid: 'w-full h-[156px] sm:h-[164px]',
+  /** Compact full-width cards for daily learn/execute flows */
+  flow: 'w-full h-[148px] sm:h-[156px]',
+  /** Session / learning blocks — keep modest height */
+  session: 'w-full h-[176px] sm:h-[188px]',
 };
 
 export function FlipCard3D({

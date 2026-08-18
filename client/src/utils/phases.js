@@ -61,29 +61,23 @@ export function getPhaseDayNumber(dayNumber) {
 }
 
 /**
+ * Disciplines are available based on the day's schedule (not phase gates).
+ * Mobile, Frontend, and Backend run every day except Saturday.
  * @param {string} discipline
- * @param {number} dayNumber
+ * @param {number} dayNumber - kept for API compatibility
+ * @param {string[]} [scheduledForDay] - optional live schedule list
  * @returns {boolean}
  */
-export function isDisciplineAvailable(discipline, dayNumber) {
-  const phase = getCurrentPhase(dayNumber);
-  if (!phase) {
+export function isDisciplineAvailable(discipline, dayNumber, scheduledForDay = null) {
+  if (Array.isArray(scheduledForDay)) {
+    if (scheduledForDay.length === 0) return false;
+    if (scheduledForDay.includes(discipline)) return true;
+    if (discipline === 'Backend' && scheduledForDay.includes('Systems Engineering')) return true;
     return false;
   }
 
-  if (phase === 1) {
-    return discipline === 'Frontend' || discipline === 'Mobile';
-  }
-
-  if (phase === 2) {
-    return discipline === 'Backend' || discipline === 'APIs';
-  }
-
-  if (phase === 3) {
-    return discipline === 'Comfort' || discipline === 'Backend' || discipline === 'Frontend';
-  }
-
-  return false;
+  // Fallback when no live schedule is passed: allow core trio
+  return discipline === 'Frontend' || discipline === 'Mobile' || discipline === 'Backend';
 }
 
 /**

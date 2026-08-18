@@ -304,22 +304,18 @@ function getBibleReading(weekNum, dayIndex) {
 }
 
 function getReadingTheme(weekNum) {
-  const themes = [
-    "Foundations of Habit & System Thinking",
-    "Identity-Based Change & Structure",
-    "Obsession & Ambition",
-    "Systems for Wealth & Success",
-    "Stoic Wisdom & Millionaire Mindset",
-    "Advanced Habit Systems",
-    "Peak Performance & Systems",
-    "Philosophical Wealth Building",
-    "Integration & Application",
-    "Mastery & Implementation",
-    "Advanced Strategies",
-    "Wisdom Synthesis",
-    "Reflection & Next Steps",
+  // Align weekly themes to the active monthly book (~4 weeks per month)
+  const month = Math.min(6, Math.max(1, Math.ceil(weekNum / 4)));
+  const book = READING_BOOKS_BY_MONTH[month - 1];
+  const themesByMonth = [
+    'Successful Habits — structure & consistency',
+    'System Building — scalable processes',
+    'Atomic Habits — identity & tiny wins',
+    'Be Obsessed or Be Average — intensity & drive',
+    'Meditations — discipline & composure',
+    'Cash Flow Quadrant — money & leverage',
   ];
-  return themes[weekNum - 1] || "Reading Theme";
+  return themesByMonth[month - 1] || book?.title || 'Reading Theme';
 }
 
 function getReadingResources(weekNum, dayOfWeek, dayNumber = 1) {
@@ -327,7 +323,7 @@ function getReadingResources(weekNum, dayOfWeek, dayNumber = 1) {
   const isFriday = dayOfWeek === 5;
   const book = getBookForDayNumber(dayNumber);
 
-  if (!isFriday) {
+  if (!isFriday && book) {
     resources.push(
       normalizeResource({
         title: getBookDisplayTitle(book),
@@ -339,22 +335,12 @@ function getReadingResources(weekNum, dayOfWeek, dayNumber = 1) {
     );
   }
 
-  // Full 7-book curriculum
-  READING_BOOKS_BY_MONTH.forEach((b) => {
-    resources.push(
-      normalizeResource({
-        title: b.author ? `${b.title} — ${b.author}` : b.title,
-        url: b.url || 'https://www.goodreads.com',
-        type: 'book',
-        description: b.purpose,
-        time: b.readingTime,
-      })
-    );
-  });
+  // One focused tool for the day — not the whole library
+  if (READING_TOOL_RESOURCES?.length) {
+    const tool = READING_TOOL_RESOURCES[(dayNumber - 1) % READING_TOOL_RESOURCES.length];
+    if (tool) resources.push(normalizeResource(tool));
+  }
 
-  // Supplementary + tools
-  resources.push(...READING_SUPPLEMENTARY_BOOKS, ...READING_TOOL_RESOURCES);
-
-  return resources;
+  return resources.slice(0, 3);
 }
 

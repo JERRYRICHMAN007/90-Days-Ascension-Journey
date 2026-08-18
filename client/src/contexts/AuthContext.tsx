@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api } from '../services/api';
 import { STORAGE_KEYS } from '../utils/storageKeys.js';
+import { clearAuthSessionPreserveProgress, syncJourneyStateToBackend } from '../utils/journeyPersist.js';
 
 interface User {
   id: string;
@@ -26,86 +27,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 
-  // Clear all cache and storage (but preserve user progress and gamification)
+  // Clear auth session only — keep journey progress + starts on this device
   const clearAllCache = () => {
-    try {
-      // Preserve critical user data before clearing
-      const offlineMode = localStorage.getItem(STORAGE_KEYS.OFFLINE_MODE);
-      const sessionCompletions = localStorage.getItem('sessionCompletions');
-      const aetherXP = localStorage.getItem(STORAGE_KEYS.XP);
-      const aetherStreaks = localStorage.getItem(STORAGE_KEYS.STREAKS);
-      const aetherAchievements = localStorage.getItem(STORAGE_KEYS.ACHIEVEMENTS);
-      const lessonProgressKeys: string[] = [];
-      
-      // Collect all lesson progress keys
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('lessonProgress_')) {
-          lessonProgressKeys.push(key);
-        }
-      }
-      
-      // Store lesson progress data
-      const lessonProgressData: Record<string, string> = {};
-      lessonProgressKeys.forEach(key => {
-        const value = localStorage.getItem(key);
-        if (value) {
-          lessonProgressData[key] = value;
-        }
-      });
-      
-      // Clear localStorage
-      localStorage.clear();
-      
-      // Restore preserved data
-      if (offlineMode) {
-        localStorage.setItem(STORAGE_KEYS.OFFLINE_MODE, offlineMode);
-      }
-      if (sessionCompletions) {
-        localStorage.setItem('sessionCompletions', sessionCompletions);
-      }
-      if (aetherXP) {
-        localStorage.setItem(STORAGE_KEYS.XP, aetherXP);
-      }
-      if (aetherStreaks) {
-        localStorage.setItem(STORAGE_KEYS.STREAKS, aetherStreaks);
-      }
-      if (aetherAchievements) {
-        localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, aetherAchievements);
-      }
-      Object.entries(lessonProgressData).forEach(([key, value]) => {
-        localStorage.setItem(key, value);
-      });
-      
-      // Clear sessionStorage
-      sessionStorage.clear();
-      
-      // Clear IndexedDB if used
-      if ('indexedDB' in window) {
-        indexedDB.databases().then(databases => {
-          databases.forEach(db => {
-            if (db.name) {
-              indexedDB.deleteDatabase(db.name);
-            }
-          });
-        });
-      }
-      
-      // Clear service worker cache if available
-      if ('caches' in window) {
-        caches.keys().then(names => {
-          names.forEach(name => {
-            caches.delete(name);
-          });
-        });
-      }
-    } catch (error) {
-      console.error('Error clearing cache:', error);
-    }
+    clearAuthSessionPreserveProgress();
   };
 
   const signOut = async () => {
     const refreshToken = localStorage.getItem('refreshToken');
+
+    // Push latest journey state to the cloud before wiping the session token
+    try {
+      await syncJourneyStateToBackend();
+    } catch (error) {
+      console.warn('Aether: pre-logout journey sync failed', error);
+    }
+
     if (refreshToken) {
       try {
         await api.logout(refreshToken);
@@ -114,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     
-    // Clear all cache and storage
+    // Clear auth tokens only — journey progress stays on device
     clearAllCache();
     
     api.setToken(null);

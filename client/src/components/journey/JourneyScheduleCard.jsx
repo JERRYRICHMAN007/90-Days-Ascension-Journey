@@ -50,13 +50,6 @@ export function JourneyScheduleCard({ journeyId, onSaved, onEditSetup, accentCol
           (1000 * 60 * 60 * 24)
       ) + 1;
 
-  const handleSavePlan = () => {
-    if (!startDate) return;
-    setJourneyPlannedStartDate(journeyId, startDate);
-    refresh();
-    onSaved?.();
-  };
-
   const handleStart = () => {
     if (!startDate) return;
     setJourneyPlannedStartDate(journeyId, startDate);
@@ -114,30 +107,12 @@ export function JourneyScheduleCard({ journeyId, onSaved, onEditSetup, accentCol
             onClick={handleStart}
             className="rounded-full font-display text-xs uppercase tracking-wider font-bold text-[#0a0a0a]"
             style={{
-              background: `linear-gradient(135deg, ${accent}, rgba(${rgb},0.85))`,
-              boxShadow: `0 4px 20px rgba(${rgb},0.35)`,
+              background: `linear-gradient(135deg, rgba(${rgb},0.72), rgba(${rgb},0.55))`,
+              boxShadow: `0 4px 16px rgba(${rgb},0.22)`,
             }}
           >
             <Play className="size-3.5 mr-1.5 fill-current" />
             Start Journey
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleSavePlan}
-            className="rounded-full text-xs border-[var(--border-subtle)] text-[var(--text-primary)]"
-          >
-            Save schedule
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="rounded-full text-xs text-[var(--text-primary)]"
-            onClick={() => {
-              const today = formatYmd(new Date());
-              setStartDate(today);
-            }}
-          >
-            Use today
           </Button>
         </div>
 
@@ -208,12 +183,18 @@ export function JourneyScheduleCard({ journeyId, onSaved, onEditSetup, accentCol
         <ScheduleRow icon={Flag} label="Ends" value={timeline.endLabel} accent={accent} />
         <ScheduleRow icon={Clock} label="Duration" value={`${timeline.totalDays} days`} accent={accent} />
       </div>
-      {timeline.currentDay != null && (
-        <p className="text-xs text-[var(--text-secondary)]">
-          Day {timeline.currentDay} of {timeline.totalDays}
-          {timeline.daysRemaining != null && ` · ${timeline.daysRemaining} days remaining`}
-        </p>
-      )}
+      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+        Your journey runs from <strong className="text-[var(--text-primary)]">{timeline.startLabel}</strong> to{' '}
+        <strong className="text-[var(--text-primary)]">{timeline.endLabel}</strong>
+        {timeline.currentDay != null && (
+          <>
+            {' '}
+            · Day {timeline.currentDay} of {timeline.totalDays}
+            {timeline.daysRemaining != null && ` · ${timeline.daysRemaining} days remaining`}
+          </>
+        )}
+        .
+      </p>
       <Button
         size="sm"
         variant="ghost"
@@ -224,7 +205,9 @@ export function JourneyScheduleCard({ journeyId, onSaved, onEditSetup, accentCol
       </Button>
       {resetConfirm && (
         <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/25">
-          <p className="text-xs text-rose-200 flex-1">Clear schedule and start fresh?</p>
+          <p className="text-xs text-rose-200 flex-1">
+            Wipe all progress and restart from Day 1 on your next start date?
+          </p>
           <Button size="sm" className="rounded-full bg-rose-500" onClick={handleReset}>
             Yes, reset
           </Button>

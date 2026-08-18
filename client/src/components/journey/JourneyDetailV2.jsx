@@ -25,13 +25,15 @@ import {
   X,
   Circle,
   Lock,
-  Info
+  Info,
+  AlertTriangle,
+  ArrowRight
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useGamification } from '../../hooks/useGamification';
 import { useAuth } from '../../contexts/AuthContext';
-import { getCurrentDayNumber, getCurrentPhaseStatus, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow, isDayPast, getWeekNumber } from '../../utils/dates';
+import { getCurrentDayNumber, getCurrentPhaseStatus, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow, isDayPast } from '../../utils/dates';
 import { getCurrentPhase, getPhaseDescription, formatPhaseDayNumber, isDisciplineAvailable, getPhaseDaysRemaining } from '../../utils/phases';
 import { calculateSessionBasedProgress, isDayFullyComplete, markSessionComplete, isSessionComplete, cleanInvalidProgress, toggleDayComplete } from '../../utils/progressTracking';
 import { hasScheduledActivities, getNoActivityMessage } from '../../utils/daySchedule';
@@ -45,9 +47,11 @@ import { SessionFlowCards } from './SessionFlowCards';
 import { getQuoteOfTheDay, getEncouragingMessage } from '../../data/quotes';
 import { cn } from '../../lib/utils';
 import { getJourneyPreparation } from '../../data/preparationData';
-import { getSoftwareEngineeringReflection, getProjectComponentForDay, getDisciplineResources } from '../../data/journeys/index.js';
+import { getSoftwareEngineeringReflection, getProjectComponentForDay } from '../../data/journeys/index.js';
 import DailyQuiz from '../DailyQuiz';
-import { saveQuizResult } from '../../utils/quizResults.js';
+import PracticalAssessment from '../PracticalAssessment';
+import { hasPassedQuiz } from '../../utils/quizResults.js';
+import { DayResourcesPanel, collectDayRelevantResources } from './DayResourcesPanel';
 import { getJourneyAccent } from '../../utils/journeyAccents.js';
 import { JourneyDetailShell } from './JourneyDetailShell';
 import { JourneyOverviewPage } from './JourneyOverviewPage';
@@ -62,10 +66,18 @@ import {
   isJourneyStarted,
   getCurrentDayNumber as getJourneyCurrentDay,
   getJourneyPhaseStatus,
+  getDateForDay as getJourneyDateForDay,
+  getContentWeekForDay,
+  getLiveDayLabel,
+  getLiveDayYmd,
 } from '../../utils/journeyPlanning.js';
 import { JourneyMotivationQuote } from './JourneyMotivationQuote';
 import { JourneySetupWizard } from './JourneySetupWizard';
 import { JourneyReviewModal } from './JourneyReviewModal';
+import { DayCompletionPanel } from './DayCompletionPanel';
+import { resolveLiveJourneyDay, getLiveTimeBlock } from '../../utils/liveJourneyDay.js';
+import { getIncompletePastDays } from '../../utils/incompleteDays.js';
+import { getJourneySetup } from '../../utils/journeySetup.js';
 
 /**
  * Journey Detail Page v2.0 - PRD Redesign
@@ -88,6 +100,7 @@ export function JourneyDetailV2({
   const [timelineTick, setTimelineTick] = useState(0);
   const [setupOpen, setSetupOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [quizPhase, setQuizPhase] = useState('quiz'); // 'quiz' | 'assessment'
   const journeyStarted = isJourneyStarted(journeyId);
 
   useEffect(() => {
@@ -103,6 +116,19 @@ export function JourneyDetailV2({
     window.addEventListener('progress-updated', handleProgressUpdate);
     return () => window.removeEventListener('progress-updated', handleProgressUpdate);
   }, []);
+
+  // Reset quiz/assessment view when day changes
+  useEffect(() => {
+    if (!selectedDay || !journeyId) {
+      setQuizPhase('quiz');
+      return;
+    }
+    if (hasPassedQuiz(journeyId, selectedDay)) {
+      setQuizPhase('assessment');
+    } else {
+      setQuizPhase('quiz');
+    }
+  }, [selectedDay, journeyId, progressTick]);
   
   // Get greeting based on time of day
   const getGreeting = () => {
@@ -195,7 +221,6 @@ export function JourneyDetailV2({
   const currentPhase = getCurrentPhase();
   const currentDayNumber = journeyStarted ? getJourneyCurrentDay(journeyId) : null;
   
-  // Onboarding: July 9–17, 2026 (soft start before Day 1 on July 18)
   const isPreparationPhase = getCurrentPhaseStatus() === 'onboarding';
   
   // Always get preparation data so Day 0 is always available
@@ -206,7 +231,7 @@ export function JourneyDetailV2({
   // Calendar weeks: Sunday → Saturday
   let effectiveWeek = selectedWeek;
   if (selectedDay >= 1) {
-    const calculatedWeek = getWeekNumber(selectedDay);
+    const calculatedWeek = getContentWeekForDay(weeks, selectedDay);
     if (calculatedWeek >= 1 && calculatedWeek <= weeks.length) {
       effectiveWeek = calculatedWeek;
     }
@@ -254,6 +279,11 @@ export function JourneyDetailV2({
       }
     }
   }
+
+  // Remap baked content calendar → this journey's real weekday (fixes false Saturday rest, etc.)
+  if (currentDay) {
+    currentDay = resolveLiveJourneyDay(currentDay, journeyId);
+  }
   
   // Debug: Log if currentDay is not found (only in development)
   if (import.meta.env.DEV && selectedDay > 0 && !currentDay && !isPreparationPhase) {
@@ -288,7 +318,7 @@ export function JourneyDetailV2({
     
     hasInitialSyncToToday.current = true;
     const effectiveDay = currentDayNumber > 0 ? currentDayNumber : 1;
-    const currentWeekNumber = effectiveDay > 0 ? getWeekNumber(effectiveDay) : 1;
+    const currentWeekNumber = effectiveDay > 0 ? getContentWeekForDay(weeks, effectiveDay) : 1;
     const validWeekNumber = Math.max(1, Math.min(currentWeekNumber, weeks.length));
     
     if (selectedDay !== effectiveDay || selectedWeek !== validWeekNumber) {
@@ -348,22 +378,23 @@ export function JourneyDetailV2({
     }, 150);
   }, [selectedDay]);
   
+  // Calendar weekday from THIS journey's start date (not the hardcoded content library date)
+  const journeyCalendarDate = useMemo(() => {
+    if (!currentDay?.dayNumber) return null;
+    return getJourneyDateForDay(journeyId, currentDay.dayNumber);
+  }, [journeyId, currentDay?.dayNumber]);
+
   // Get day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
   const dayOfWeek = useMemo(() => {
-    if (!currentDay?.dayNumber) return null;
-    const date = getDateForDay(currentDay.dayNumber);
-    if (!date) return null;
-    return date.getDay(); // 0 = Sunday, 6 = Saturday
-  }, [currentDay?.dayNumber]);
+    if (!journeyCalendarDate) return null;
+    return journeyCalendarDate.getDay();
+  }, [journeyCalendarDate]);
 
-  // Get day name (Monday, Tuesday, etc.)
+  // Get day name (Monday, Tuesday, etc.) — must match the user's real journey calendar
   const dayName = useMemo(() => {
     if (!currentDay?.dayNumber) return null;
-    const date = getDateForDay(currentDay.dayNumber);
-    if (!date) return null;
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return dayNames[date.getDay()];
-  }, [currentDay?.dayNumber]);
+    return getLiveDayLabel(journeyId, currentDay.dayNumber);
+  }, [journeyId, currentDay?.dayNumber]);
 
   const isSunday = dayOfWeek === 0;
   const isMonday = dayOfWeek === 1;
@@ -405,30 +436,38 @@ export function JourneyDetailV2({
     return Array.from(disciplinesSet);
   }, [journeyId, currentDay?.schedule]);
 
-  // Discipline order based on time schedule - only show disciplines scheduled for this day
-  // Schedule: Mon-Wed: Mobile | Thu-Fri: Frontend | Fri: Backend | Sat: Mobile, Frontend, Backend (Revisions) | Sun: WordPress
+  // Discipline tabs — only show disciplines scheduled for THIS day
+  // SE schedule: Mobile + Frontend + Backend every day except Saturday (4:00–5:30 AM)
   const allDisciplines = [
     { id: 'Mobile', label: 'Mobile', icon: Smartphone, color: '#f59e0b' },
     { id: 'Frontend', label: 'Frontend', icon: Code, color: '#667eea' },
     { id: 'Backend', label: 'Backend', icon: Server, color: '#10b981' },
-    { id: 'WordPress', label: 'WordPress', icon: Globe, color: '#8b5cf6' },
   ];
 
-  // Filter to only show disciplines that are available in current phase
   const disciplines = useMemo(() => {
     if (journeyId !== 'software-engineering') {
       return allDisciplines;
     }
-    
-    // Use phase-based filtering
-    const dayNumber = currentDay?.dayNumber || selectedDay;
-    if (dayNumber) {
-      return allDisciplines.filter(d => isDisciplineAvailable(d.id, dayNumber));
+
+    // Live weekday wins over baked library schedule (Day 1 may have been generated as Saturday)
+    if (isSaturday) {
+      return [];
     }
-    
-    // Fallback: if no day number, show Phase 1 disciplines
-    return allDisciplines.filter(d => d.id === 'Mobile' || d.id === 'Frontend');
-  }, [journeyId, currentDay?.dayNumber, selectedDay]);
+
+    if (scheduledDisciplines.length > 0) {
+      return allDisciplines.filter((d) =>
+        scheduledDisciplines.includes(d.id) ||
+        (d.id === 'Backend' && scheduledDisciplines.includes('Systems Engineering'))
+      );
+    }
+
+    // Non-Saturday with remapped empty schedule → still show the trio
+    if (dayOfWeek != null) {
+      return allDisciplines;
+    }
+
+    return [];
+  }, [journeyId, scheduledDisciplines, isSaturday, dayOfWeek]);
   
   // Auto-select first available discipline if current one is not scheduled
   useEffect(() => {
@@ -497,6 +536,13 @@ export function JourneyDetailV2({
     if (!day || !day.dayNumber) return false;
     return isDayFullyComplete(journeyId, day);
   };
+
+  const incompletePastDays = useMemo(() => {
+    void progressTick;
+    return getIncompletePastDays(journeyId, weeks || []);
+  }, [journeyId, weeks, progressTick]);
+
+  const oldestIncompleteDay = incompletePastDays[0] || null;
 
   // Extract all tasks from current day (discipline-aware for Software Engineering)
   const extractTasks = (day) => {
@@ -732,17 +778,32 @@ export function JourneyDetailV2({
       if (week && week.days && Array.isArray(week.days)) {
         const nextDay = week.days.find((d) => d && d.dayNumber === nextDayNumber);
         if (nextDay) {
-          return nextDay;
+          const liveDate = getJourneyDateForDay(journeyId, nextDayNumber);
+          if (liveDate) {
+            const names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return resolveLiveJourneyDay(
+              {
+                ...nextDay,
+                dayName: names[liveDate.getDay()],
+                date: `${liveDate.getFullYear()}-${String(liveDate.getMonth() + 1).padStart(2, '0')}-${String(liveDate.getDate()).padStart(2, '0')}`,
+                weekNumber: week.weekNumber,
+              },
+              journeyId
+            );
+          }
+          return resolveLiveJourneyDay(nextDay, journeyId);
         }
       }
     }
     
-    // If not found in weeks, create a placeholder using getDateForDay
-    const nextDate = getDateForDay(nextDayNumber);
+    // If not found in weeks, create a placeholder using journey calendar
+    const nextDate = getJourneyDateForDay(journeyId, nextDayNumber);
     if (nextDate) {
+      const names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       return {
         dayNumber: nextDayNumber,
-        date: nextDate.toISOString().split('T')[0]
+        date: nextDate.toISOString().split('T')[0],
+        dayName: names[nextDate.getDay()],
       };
     }
     
@@ -751,14 +812,7 @@ export function JourneyDetailV2({
 
   const nextDay = findNextDay();
 
-  const toDateString = (dayNumber) => {
-    const date = getDateForDay(dayNumber);
-    if (!date) return '';
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  };
+  const toDateString = (dayNumber) => getLiveDayYmd(journeyId, dayNumber) ?? '';
 
   const formatDateShort = (dateString) => {
     if (!dateString) return '';
@@ -902,6 +956,7 @@ export function JourneyDetailV2({
               journeyTitle={displayTitle}
               accentColor={journeyAccent?.color}
               accentRgb={journeyAccent?.rgb}
+              planSource={getJourneySetup(journeyId).planSource}
               onSetup={() => setSetupOpen(true)}
             />
           )}
@@ -923,7 +978,7 @@ export function JourneyDetailV2({
               </div>
               {/* Week Navigation */}
               <Card className="p-2.5 sm:p-3 md:p-4">
-                <h3 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 sm:mb-2.5 md:mb-3">Learning Plan</h3>
+                <h3 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 sm:mb-2.5 md:mb-3">Journey Schedule</h3>
                 <div className="space-y-1.5 sm:space-y-2">
                   {weeks.map((week) => {
                     const weekProgress = getWeekProgress(week);
@@ -1183,7 +1238,14 @@ export function JourneyDetailV2({
                   {/* Discipline Tabs - Only for Software Engineering (Inside Content Area) */}
                   {journeyId === 'software-engineering' && (
                     <div className="flex items-center gap-1.5 sm:gap-2 border-b border-border/50 pb-2 sm:pb-3 overflow-x-auto scrollbar-hide -mx-1 sm:mx-0 px-1 sm:px-0">
-                      {disciplines.map((discipline) => {
+                      {disciplines.length === 0 ? (
+                        <p className="text-sm text-muted-foreground px-2 py-2">
+                          {isSaturday
+                            ? 'No coding sessions today — Saturday is a rest day for Software Engineering.'
+                            : 'No coding sessions scheduled for this day.'}
+                        </p>
+                      ) : (
+                        disciplines.map((discipline) => {
                         const Icon = discipline.icon;
                         const isActive = activeDiscipline === discipline.id;
                         
@@ -1211,7 +1273,8 @@ export function JourneyDetailV2({
                             <span className="whitespace-nowrap">{discipline.label}</span>
                           </button>
                         );
-                      })}
+                      })
+                      )}
                     </div>
                   )}
 
@@ -1282,199 +1345,97 @@ export function JourneyDetailV2({
                     </div>
                   </div>
                 ) : currentDay ? (
-                  <div className="glass-card rounded-xl p-4 sm:p-5 md:p-6 border border-border/50">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 sm:mb-4 gap-3 sm:gap-4">
-                      <div className="min-w-0 flex-1 overflow-hidden">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-display flex items-center gap-2 break-words">
-                            Day {currentDay.dayNumber}
-                            {isTomorrow(currentDay.dayNumber) && (
-                              <span className="text-xs sm:text-sm px-2 py-1 rounded bg-primary/20 text-primary font-normal whitespace-nowrap shrink-0">
-                                Tomorrow
-                              </span>
-                            )}
-                          </h2>
-                          {getDayProgress(currentDay) && (
-                            <span className="px-2 py-1 bg-primary/20 text-primary rounded text-xs sm:text-sm font-semibold shrink-0 whitespace-nowrap">
-                              Completed
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm sm:text-base text-muted-foreground break-words">
-                          {dayName && (
-                            <span className="font-semibold text-foreground mr-2">{dayName},</span>
-                          )}
-                          {currentDay.date && (() => {
-                            // Parse date string properly to avoid timezone issues
-                            const [year, month, day] = currentDay.date.split('-').map(Number);
-                            const date = new Date(year, month - 1, day); // month is 0-indexed
-                            return date.toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric'
-                            });
-                          })()}
-                        </p>
-                        {/* Time Allocation */}
-                        {journey && journey.timeBlock && (
-                          <p className="text-xs sm:text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span>{journey.timeBlock}</span>
-                          </p>
-                        )}
-                      </div>
-                      {/* Mark Complete Button - Available for all days (1-90) in all weeks */}
-                      {currentDay && canCompleteDay(currentDay.dayNumber) ? (
-                        <Button
-                          onClick={() => {
-                            // Only require tasks to be completed if there are tasks
-                            if (!getDayProgress(currentDay) && !allTasksCompleted && dayTasks.length > 0) {
-                              // Show message that all tasks must be completed
-                              alert(`Please complete all ${dayTasks.length} task(s) before marking the day as complete.`);
-                              return;
-                            }
-                            
-                            // Check if this is the end of a week (Day 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 90)
-                            // Week 1: Days 1-7 (Day 7 is end), Week 2: Days 8-14 (Day 14 is end), etc.
-                            // Day 7 % 7 = 0, Day 14 % 7 = 0, Day 21 % 7 = 0, etc.
-                            const isWeekEnd = currentDay.dayNumber % 7 === 0;
-                            const isCurrentlyComplete = getDayProgress(currentDay);
-                            
-                            // IMPORTANT: No automatic XP/streak awards here!
-                            // Gamification scores are ONLY earned through:
-                            // 1. Completing individual tasks (via toggleTask)
-                            // 2. Completing daily quizzes (via quiz submission)
-                            // 3. Submitting reflections (via reflection form)
-                            // 4. Completing projects (via project completion)
-                            // Marking a day complete is just a status indicator, not an action that earns points
-                            
-                            if (isWeekEnd && !isCurrentlyComplete) {
-                              const weekNumber = getWeekNumber(currentDay.dayNumber);
-                              const weekData = weeks.find((w) => w.weekNumber === weekNumber);
-                              const weekDayNumbers = (weekData?.days || []).map((d) => d.dayNumber);
-                              const allDays = weeks.flatMap((w) => w.days || []);
-
-                              for (const dayNum of weekDayNumbers) {
-                                if (dayNum > journey.totalDays) continue;
-                                const day = allDays.find((d) => d.dayNumber === dayNum);
-                                if (day) {
-                                  toggleDayComplete(journeyId, day, true);
-                                }
-                              }
-                            } else {
-                              const wasComplete = isCurrentlyComplete;
-                              toggleDayComplete(journeyId, currentDay, !wasComplete);
-                            }
-                            setProgressTick((t) => t + 1);
+                  <div className="space-y-4">
+                    {oldestIncompleteDay &&
+                      currentDay.dayNumber !== oldestIncompleteDay.dayNumber && (
+                        <div
+                          className="rounded-xl border px-4 py-3 flex flex-wrap items-center gap-3"
+                          style={{
+                            background: 'color-mix(in srgb, #f59e0b 10%, var(--bg-card))',
+                            borderColor: 'color-mix(in srgb, #f59e0b 40%, var(--border-subtle))',
                           }}
-                          className={cn(
-                            'touch-manipulation w-full sm:w-auto shrink-0',
-                            getDayProgress(currentDay) 
-                              ? '!bg-green-600 hover:!bg-green-700 !text-white border-green-700 shadow-md' 
-                              : (!allTasksCompleted && dayTasks.length > 0)
-                              ? 'opacity-50 cursor-not-allowed'
-                              : ''
-                          )}
-                          style={{ 
-                            minHeight: '44px',
-                            ...(getDayProgress(currentDay) ? {
-                              backgroundColor: '#16a34a',
-                              color: '#ffffff'
-                            } : {})
-                          }}
-                          // Only disable if: day is not completed AND there are tasks AND not all tasks are completed
-                          // If there are no tasks, the button should always be enabled
-                          disabled={!getDayProgress(currentDay) && dayTasks.length > 0 && !allTasksCompleted}
                         >
-                          {getDayProgress(currentDay) ? (
-                            <>
-                              <Check className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-white" />
-                              <span className="text-sm sm:text-base text-white">Completed</span>
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                              <span className="text-sm sm:text-base">
-                                {currentDay.dayNumber % 7 === 0 
-                                  ? 'Mark Week Complete' 
-                                  : 'Mark Complete'}
-                              </span>
-                            </>
-                          )}
-                        </Button>
-                      ) : currentDay && currentDay.dayNumber === 0 ? (
-                        <div className="text-sm sm:text-base text-muted-foreground flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-md bg-muted/50 border border-border/50">
-                          <span>Day 0 - Cannot Complete</span>
+                          <AlertTriangle className="size-4 text-amber-400 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-[var(--text-primary)]">
+                              Day {oldestIncompleteDay.dayNumber} still needs completion
+                            </p>
+                            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                              {incompletePastDays.length} unfinished day
+                              {incompletePastDays.length === 1 ? '' : 's'} behind you. Finish those
+                              first so today stays honest.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onDayChange?.(oldestIncompleteDay.dayNumber);
+                              onWeekChange?.(getContentWeekForDay(weeks, oldestIncompleteDay.dayNumber));
+                            }}
+                            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-black shrink-0"
+                            style={{ background: '#f59e0b' }}
+                          >
+                            Go to Day {oldestIncompleteDay.dayNumber}
+                            <ArrowRight className="size-3.5" />
+                          </button>
                         </div>
-                      ) : null}
-                    </div>
+                      )}
+                    <DayCompletionPanel
+                      dayNumber={currentDay.dayNumber}
+                      dayName={dayName}
+                      dateYmd={getLiveDayYmd(journeyId, currentDay.dayNumber) ?? ''}
+                      timeBlock={getLiveTimeBlock(journeyId, currentDay.dayNumber, journey?.timeBlock)}
+                      isTomorrow={isTomorrow(currentDay.dayNumber)}
+                      isComplete={getDayProgress(currentDay)}
+                      canComplete={canCompleteDay(currentDay.dayNumber)}
+                      isWeekEnd={currentDay.dayNumber % 7 === 0}
+                      tasks={currentDay.isTestRun ? [] : dayTasks}
+                      taskCompletion={taskCompletion}
+                      allTasksCompleted={allTasksCompleted}
+                      accentColor={journeyAccent?.color || 'var(--neon-green)'}
+                      onToggleTask={toggleTask}
+                      onMarkComplete={() => {
+                        if (
+                          oldestIncompleteDay &&
+                          currentDay.dayNumber > oldestIncompleteDay.dayNumber &&
+                          !getDayProgress(currentDay)
+                        ) {
+                          const go = window.confirm(
+                            `Day ${oldestIncompleteDay.dayNumber} ("${oldestIncompleteDay.label}") is still incomplete. Finish earlier days first.\n\nGo to Day ${oldestIncompleteDay.dayNumber} now?`
+                          );
+                          if (go) {
+                            onDayChange?.(oldestIncompleteDay.dayNumber);
+                            onWeekChange?.(getContentWeekForDay(weeks, oldestIncompleteDay.dayNumber));
+                          }
+                          return;
+                        }
+                        if (!getDayProgress(currentDay) && !allTasksCompleted && dayTasks.length > 0) {
+                          alert(`Please complete all ${dayTasks.length} task(s) before marking the day as complete.`);
+                          return;
+                        }
+                        const isWeekEnd = currentDay.dayNumber % 7 === 0;
+                        const isCurrentlyComplete = getDayProgress(currentDay);
+                        if (isWeekEnd && !isCurrentlyComplete) {
+                          const weekNumber = getContentWeekForDay(weeks, currentDay.dayNumber);
+                          const weekData = weeks.find((w) => w.weekNumber === weekNumber);
+                          const weekDayNumbers = (weekData?.days || []).map((d) => d.dayNumber);
+                          const allDays = weeks.flatMap((w) => w.days || []);
+                          for (const dayNum of weekDayNumbers) {
+                            if (dayNum > journey.totalDays) continue;
+                            const day = allDays.find((d) => d.dayNumber === dayNum);
+                            if (day) toggleDayComplete(journeyId, day, true);
+                          }
+                        } else {
+                          toggleDayComplete(journeyId, currentDay, !isCurrentlyComplete);
+                        }
+                        setProgressTick((t) => t + 1);
+                      }}
+                    />
 
-                    {/* Day Theme */}
                     {currentDay.theme && (
-                      <div className={`p-4 rounded-lg ${colors.bg} border ${colors.border}`}>
+                      <div className={`p-4 rounded-xl ${colors.bg} border ${colors.border}`}>
                         <p className="text-sm font-medium text-foreground">{currentDay.theme}</p>
                       </div>
-                    )}
-
-                    {/* Task Checklist - Hide for Week 1 (Testing & Trials) */}
-                    {!currentDay?.isTestRun && dayTasks.length > 0 && (
-                      <Card className="p-4 sm:p-6 border border-border/50">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
-                            <Target className="w-5 h-5 text-primary" />
-                            Today's Tasks
-                          </h3>
-                          <span className="text-xs sm:text-sm text-muted-foreground">
-                            {dayTasks.filter(t => taskCompletion[t.id]).length} / {dayTasks.length} completed
-                          </span>
-                        </div>
-                        <div className="space-y-2">
-                          {dayTasks.map((task) => {
-                            const isCompleted = taskCompletion[task.id] === true;
-                            return (
-                              <div
-                                key={task.id}
-                                className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                                onClick={() => toggleTask(task.id)}
-                              >
-                                <button
-                                  className="mt-0.5 flex-shrink-0"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleTask(task.id);
-                                  }}
-                                >
-                                  {isCompleted ? (
-                                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                  ) : (
-                                    <Circle className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
-                                  )}
-                                </button>
-                                <div className="flex-1 min-w-0">
-                                  <p className={cn(
-                                    "text-sm sm:text-base",
-                                    isCompleted 
-                                      ? "line-through text-muted-foreground" 
-                                      : "text-foreground"
-                                  )}>
-                                    {task.text}
-                                  </p>
-                                  {task.category && (
-                                    <span className="text-xs text-muted-foreground mt-1 inline-block">
-                                      {task.category}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {!allTasksCompleted && dayTasks.length > 0 && (
-                          <p className="text-xs text-muted-foreground mt-3 italic">
-                            Complete all tasks to mark this day as done
-                          </p>
-                        )}
-                      </Card>
                     )}
                   </div>
                 ) : null}
@@ -1839,7 +1800,9 @@ export function JourneyDetailV2({
                               mindset={currentDay.mindset}
                               journeyId={journeyId}
                               dayNumber={currentDay.dayNumber}
-                              dailyLearning={currentDay.dailyLearning}
+                              weekNum={currentWeek?.weekNumber || selectedWeek || 1}
+                              dayName={dayName || currentDay.dayName}
+                              dailyLearning={null}
                               nextDay={nextDay}
                               onPreviewDay={onDayChange}
                               focusLabel={
@@ -2365,236 +2328,147 @@ export function JourneyDetailV2({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                     >
-                      {/* For Software Engineering: Show discipline-specific resources */}
-                      {journeyId === 'software-engineering' && disciplineContent ? (
-                        <Card className="p-4 sm:p-6 border border-border/50">
-                          <div className="flex items-center gap-2 mb-4">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                            <h3 className="text-lg font-semibold">{activeDiscipline} Resources</h3>
-                          </div>
-                          {/* Get resources from schedule sessions, with fallback to day-specific resources */}
-                          {(() => {
-                            const allResources = [];
-                            const seenResources = new Set(); // Track seen resources to prevent duplicates
-                            
-                            // Collect resources from scheduled sessions
-                            disciplineContent.deepLearning.forEach(session => {
-                              if (session.content?.resources && Array.isArray(session.content.resources)) {
-                                session.content.resources.forEach(resource => {
-                                  // Create unique key from title and URL to detect duplicates
-                                  const resourceKey = `${resource.title || ''}_${resource.url || ''}`;
-                                  if (!seenResources.has(resourceKey)) {
-                                    seenResources.add(resourceKey);
-                                    allResources.push(resource);
-                                  }
-                                });
-                              }
-                            });
-                            disciplineContent.implementation.forEach(session => {
-                              if (session.content?.resources && Array.isArray(session.content.resources)) {
-                                session.content.resources.forEach(resource => {
-                                  // Create unique key from title and URL to detect duplicates
-                                  const resourceKey = `${resource.title || ''}_${resource.url || ''}`;
-                                  if (!seenResources.has(resourceKey)) {
-                                    seenResources.add(resourceKey);
-                                    allResources.push(resource);
-                                  }
-                                });
-                              }
-                            });
-                            
-                            // Fallback: If no resources from sessions (e.g., WordPress not scheduled today), get day-specific resources
-                            if (allResources.length === 0 && currentDay?.dayNumber) {
-                              const dayIndex = (currentDay.dayNumber - 1) % 7;
-                              const weekNum = getWeekNumber(currentDay.dayNumber);
-                              // Map discipline name to match getDisciplineResources format
-                              const disciplineName = activeDiscipline === 'WordPress' ? 'Systems Engineering' : activeDiscipline;
-                              const fallbackResources = getDisciplineResources(
-                                disciplineName,
-                                weekNum,
-                                null,
-                                currentDay.dayNumber,
-                                dayIndex
-                              );
-                              if (fallbackResources && Array.isArray(fallbackResources) && fallbackResources.length > 0) {
-                                fallbackResources.forEach(resource => {
-                                  const resourceKey = `${resource.title || ''}_${resource.url || ''}`;
-                                  if (!seenResources.has(resourceKey)) {
-                                    seenResources.add(resourceKey);
-                                    allResources.push(resource);
-                                  }
-                                });
-                              }
-                            }
-                            
-                            return allResources.length > 0 ? (
-                              <ul className="space-y-3">
-                                {allResources.map((resource, idx) => (
-                                  <li key={idx} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                                    <div className="flex-1">
-                                      <a
-                                        href={resource.url || '#'}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-foreground hover:text-primary transition-colors font-medium"
-                                      >
-                                        {resource.title || resource}
-                                      </a>
-                                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                        {resource.time && (
-                                          <span className="text-xs text-muted-foreground">({resource.time})</span>
-                                        )}
-                                        {resource.category && (
-                                          <span className="text-xs text-muted-foreground">• {resource.category}</span>
-                                        )}
-                                      </div>
-                                      {resource.description && (
-                                        <p className="text-xs text-muted-foreground mt-1">{resource.description}</p>
-                                      )}
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-muted-foreground">No resources available for {activeDiscipline}.</p>
-                            );
-                          })()}
-                        </Card>
-                      ) : (currentDay.resources || (journeyId === 'dual-brand' && currentDay.learningResources)) ? (
-                        <Card className="p-4 sm:p-6 border border-border/50">
-                          <div className="flex items-center gap-2 mb-4">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                            <h3 className="text-lg font-semibold">Resources</h3>
-                          </div>
-                          {(() => {
-                            // For dual brand, use learningResources; otherwise use resources
-                            const resources = journeyId === 'dual-brand' 
-                              ? (currentDay.learningResources || [])
-                              : (Array.isArray(currentDay.resources) ? currentDay.resources : []);
-                            
-                            // Handle nested array structure for dual brand resources
-                            const flattenedResources = [];
-                            resources.forEach(resource => {
-                              if (Array.isArray(resource)) {
-                                flattenedResources.push(...resource);
-                              } else {
-                                flattenedResources.push(resource);
-                              }
-                            });
-                            
-                            return flattenedResources.length > 0 ? (
-                              <ul className="space-y-3">
-                                {flattenedResources.map((resource, idx) => {
-                                  // Check if this is a Bible reading resource
-                                  const isBibleResource = resource.category === 'Bible' || 
-                                                         (resource.title && resource.title.includes('Bible Reading'));
-                                  
-                                  return (
-                                    <li key={idx} className="flex items-start justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <a
-                                            href={resource.url || '#'}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-foreground hover:text-primary transition-colors font-medium"
-                                          >
-                                            {resource.title}
-                                          </a>
-                                          {(resource.time || resource.category) && (
-                                            <span className="text-xs text-muted-foreground">
-                                              ({resource.time || resource.category})
-                                            </span>
-                                          )}
-                                        </div>
-                                        {isBibleResource && resource.description && (
-                                          <p className="text-xs text-muted-foreground mt-1">
-                                            📖 {resource.description}
-                                          </p>
-                                        )}
-                                        {isBibleResource && resource.chapterCount !== undefined && (
-                                          <p className="text-xs text-primary font-medium mt-1">
-                                            Chapters to read: {resource.chapterCount} chapter{resource.chapterCount > 1 ? 's' : ''} (15 minutes allocated)
-                                          </p>
-                                        )}
-                                      </div>
-                                      {isBibleResource && resource.url && (
-                                        <a
-                                          href={resource.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="ml-2 text-primary hover:text-primary/80 transition-colors shrink-0"
-                                          title="Read Bible Chapter"
-                                        >
-                                          <BookOpen className="w-4 h-4" />
-                                        </a>
-                                      )}
-                                    </li>
-                                  );
-                                })}
-                              </ul>
-                            ) : (
-                              <p className="text-muted-foreground">No resources for this day.</p>
-                            );
-                          })()}
-                        </Card>
-                      ) : (
-                        <Card className="p-12 text-center border border-border/50">
-                          <p className="text-muted-foreground">No resources for this day.</p>
-                        </Card>
-                      )}
+                      <DayResourcesPanel
+                        title={
+                          journeyId === 'software-engineering' && activeDiscipline
+                            ? activeDiscipline + ' resources'
+                            : "Today's resources"
+                        }
+                        subtitle="Only materials for today's task"
+                        accentColor={journeyAccent?.color || 'var(--neon-green)'}
+                        resources={collectDayRelevantResources({
+                          journeyId,
+                          day: currentDay,
+                          disciplineContent:
+                            journeyId === 'software-engineering' ? disciplineContent : null,
+                          max: 4,
+                        })}
+                      />
                     </motion.div>
                   )}
 
-                  {activeTab === 'quiz' && currentDay?.dailyQuiz && !currentDay?.isTestRun && (
+                  {activeTab === 'quiz' && !currentDay?.isTestRun && (
                     <motion.div
                       key="quiz"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
+                      className="space-y-3"
                     >
-                      <Card className="p-4 sm:p-6 border border-border/50">
+                      {(currentDay?.dailyQuiz || currentDay?.practicalAssessment) && (
+                        <div
+                          className="flex gap-1 p-1 rounded-xl border w-fit"
+                          style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setQuizPhase('quiz')}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                            style={{
+                              background:
+                                quizPhase === 'quiz'
+                                  ? journeyAccent?.color || 'var(--neon-green)'
+                                  : 'transparent',
+                              color: quizPhase === 'quiz' ? '#000' : 'var(--text-secondary)',
+                            }}
+                          >
+                            Quiz
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (
+                                hasPassedQuiz(journeyId, currentDay.dayNumber) ||
+                                !currentDay?.dailyQuiz
+                              ) {
+                                setQuizPhase('assessment');
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                            style={{
+                              background:
+                                quizPhase === 'assessment'
+                                  ? journeyAccent?.color || 'var(--neon-green)'
+                                  : 'transparent',
+                              color: quizPhase === 'assessment' ? '#000' : 'var(--text-secondary)',
+                              opacity:
+                                !currentDay?.dailyQuiz ||
+                                hasPassedQuiz(journeyId, currentDay.dayNumber)
+                                  ? 1
+                                  : 0.45,
+                            }}
+                          >
+                            Assessment
+                          </button>
+                        </div>
+                      )}
+
+                      {quizPhase === 'quiz' && currentDay?.dailyQuiz ? (
                         <DailyQuiz
                           dailyQuiz={currentDay.dailyQuiz}
+                          journeyId={journeyId}
+                          dayNumber={currentDay.dayNumber}
+                          accentColor={journeyAccent?.color || 'var(--neon-green)'}
+                          onContinueToAssessment={() => setQuizPhase('assessment')}
                           onComplete={(results) => {
-                            console.log("Daily quiz completed:", results);
-                            // Award XP based on quiz performance
-                            // IMPORTANT: Day 0 (testing week) does NOT earn any gamification scores
                             if (addXP && currentDay?.dayNumber !== 0) {
-                              const baseXP = 30; // Base XP for completing quiz
-                              const performanceBonus = Math.round((results.percentage / 100) * 20); // Up to 20 bonus XP
-                              const totalXP = baseXP + performanceBonus;
-                              addXP(totalXP, journeyId);
-                              
-                              // Award bonus for passing
-                              if (results.passed) {
-                                addXP(20, journeyId); // 20 bonus XP for passing
-                              }
+                              const baseXP = 30;
+                              const performanceBonus = Math.round((results.percentage / 100) * 20);
+                              addXP(baseXP + performanceBonus, journeyId);
+                              if (results.passed) addXP(20, journeyId);
                             }
-                            
-                            // Save quiz results
-                            try {
-                              saveQuizResult(journeyId, currentDay.dayNumber, {
-                                correct: results.correct,
-                                total: results.total,
-                                percentage: results.percentage,
-                              });
-                              const saved = localStorage.getItem(`dailyQuizzes_${journeyId}`) || "[]";
-                              const quizzes = JSON.parse(saved);
-                              quizzes.push({
-                                day: currentDay.dayNumber,
-                                ...results,
-                                completedAt: new Date().toISOString(),
-                              });
-                              localStorage.setItem(`dailyQuizzes_${journeyId}`, JSON.stringify(quizzes));
-                            } catch (error) {
-                              console.error("Error saving quiz results:", error);
-                            }
+                            if (results.passed) setQuizPhase('assessment');
+                            setProgressTick((t) => t + 1);
                           }}
                         />
-                      </Card>
+                      ) : quizPhase === 'quiz' && !currentDay?.dailyQuiz ? (
+                        <div
+                          className="rounded-xl border p-8 text-center text-sm text-[var(--text-muted)]"
+                          style={{
+                            background: 'var(--bg-card)',
+                            borderColor: 'var(--border-subtle)',
+                          }}
+                        >
+                          No quiz for this day.
+                        </div>
+                      ) : null}
+
+                      {quizPhase === 'assessment' && currentDay?.practicalAssessment ? (
+                        <PracticalAssessment
+                          assessment={currentDay.practicalAssessment}
+                          journeyId={journeyId}
+                          dayNumber={currentDay.dayNumber}
+                          accentColor={journeyAccent?.color || 'var(--neon-green)'}
+                          onComplete={() => {
+                            if (addXP && currentDay?.dayNumber !== 0) {
+                              addXP(40, journeyId);
+                            }
+                            setProgressTick((t) => t + 1);
+                          }}
+                        />
+                      ) : quizPhase === 'assessment' && !currentDay?.practicalAssessment ? (
+                        <div
+                          className="rounded-xl border p-6 text-center space-y-2"
+                          style={{
+                            background: 'var(--bg-card)',
+                            borderColor: 'var(--border-subtle)',
+                          }}
+                        >
+                          <p className="text-sm font-semibold text-[var(--text-primary)]">
+                            {hasPassedQuiz(journeyId, currentDay?.dayNumber)
+                              ? 'Quiz recorded'
+                              : 'Assessment'}
+                          </p>
+                          <p className="text-xs text-[var(--text-secondary)]">
+                            {hasPassedQuiz(journeyId, currentDay?.dayNumber)
+                              ? 'No separate practical assessment for this day — your quiz result is saved and locked.'
+                              : 'No practical assessment for this day.'}
+                          </p>
+                        </div>
+                      ) : null}
                     </motion.div>
                   )}
+
 
                   {activeTab === 'reflection' && !currentDay?.isTestRun && (
                     <motion.div

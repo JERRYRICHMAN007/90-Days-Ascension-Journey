@@ -9,6 +9,15 @@ import { getDefaultWeeklyPlanForCategory, resolveJourneyAIContext } from './jour
 
 const WEEKDAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+export function formatHourLabel(time) {
+  if (!time) return '';
+  const [h, m] = String(time).split(':').map(Number);
+  if (Number.isNaN(h)) return time;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m || 0).padStart(2, '0')} ${ampm}`;
+}
+
 function readAll() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEYS.JOURNEY_WEEKLY_PLAN) || '{}');

@@ -303,7 +303,8 @@ export function JourneySetupPanel({ journeyId, onSaved, accentColor, accentRgb, 
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[var(--text-primary)]">Reset journey arc</p>
                       <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">
-                        End this 6-month schedule and pick a new start date. Your completed tasks stay saved.
+                        Wipe all progress and pick a new start date. When you start again, that
+                        date becomes Day 1.
                       </p>
                     </div>
                   </div>

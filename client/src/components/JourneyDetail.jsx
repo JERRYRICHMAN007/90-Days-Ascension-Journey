@@ -20,10 +20,11 @@ import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { JourneyDetailV2 } from "./journey/JourneyDetailV2";
-import { getCurrentPhaseStatus, getWeekNumber } from "../utils/dates";
+import { getCurrentPhaseStatus } from "../utils/dates";
 import {
   isJourneyStarted,
   getCurrentDayNumber as getJourneyCurrentDay,
+  getContentWeekForDay,
 } from "../utils/journeyPlanning.js";
 import { calculateSessionBasedProgress, isDayFullyComplete, toggleDayComplete } from "../utils/progressTracking";
 import { getContentTemplateId } from "../utils/journeyRegistry.js";
@@ -54,7 +55,7 @@ function JourneyDetail({ journeyId: propJourneyId }) {
       : journeyStarted
         ? 1
         : null;
-  const defaultWeek = defaultDay ? getWeekNumber(defaultDay) : 1;
+  const defaultWeek = defaultDay ? getContentWeekForDay(weeks, defaultDay) : 1;
   const [selectedWeek, setSelectedWeek] = useState(defaultWeek);
   const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -75,6 +76,17 @@ function JourneyDetail({ journeyId: propJourneyId }) {
     window.addEventListener('journey-start-updated', onJourneyStart);
     return () => window.removeEventListener('journey-start-updated', onJourneyStart);
   }, [journeyId]);
+
+  // Deep-link: ?day=N from incomplete-day notifications / catch-up CTA
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const dayParam = Number(params.get('day'));
+    if (!dayParam || dayParam < 1 || !weeks?.length) return;
+    const exists = weeks.some((w) => w.days?.some((d) => d?.dayNumber === dayParam));
+    if (!exists) return;
+    setSelectedDay(dayParam);
+    setSelectedWeek(getContentWeekForDay(weeks, dayParam));
+  }, [location.search, weeks, journeyId]);
 
   if (!journey) {
     return <div>Journey not found</div>;
@@ -140,7 +152,7 @@ function JourneyDetail({ journeyId: propJourneyId }) {
         const dayNum = parseInt(dayParam);
         setSelectedDay(dayNum);
         // Calculate week correctly: Day 1-7 = Week 1, Day 8-14 = Week 2, etc.
-        const weekNum = dayNum === 0 ? 1 : getWeekNumber(dayNum);
+        const weekNum = dayNum === 0 ? 1 : getContentWeekForDay(weeks, dayNum);
         setSelectedWeek(weekNum);
       }
     } else {
@@ -221,25 +233,13 @@ function JourneyDetail({ journeyId: propJourneyId }) {
           </Button>
           <DailyQuiz
             dailyQuiz={currentDay.dailyQuiz}
+            journeyId={journeyId}
+            dayNumber={currentDay.dayNumber}
             onComplete={(results) => {
+              // Persistence handled inside DailyQuiz via saveQuizResult
               console.log("Daily quiz completed:", results);
-              try {
-                const saved =
-                  localStorage.getItem(`dailyQuizzes_${journeyId}`) || "[]";
-                const quizzes = JSON.parse(saved);
-                quizzes.push({
-                  day: currentDay.dayNumber,
-                  ...results,
-                  completedAt: new Date().toISOString(),
-                });
-                localStorage.setItem(
-                  `dailyQuizzes_${journeyId}`,
-                  JSON.stringify(quizzes)
-                );
-              } catch (error) {
-                console.error("Error saving quiz results:", error);
-              }
             }}
+            onContinueToAssessment={() => setActiveSection("assessment")}
           />
         </div>
       );
@@ -260,25 +260,11 @@ function JourneyDetail({ journeyId: propJourneyId }) {
           </Button>
           <PracticalAssessment
             assessment={currentDay.practicalAssessment}
+            journeyId={journeyId}
+            dayNumber={currentDay.dayNumber}
             onComplete={(results) => {
               console.log("Practical assessment completed:", results);
-              try {
-                const saved =
-                  localStorage.getItem(`practicalAssessments_${journeyId}`) ||
-                  "[]";
-                const assessments = JSON.parse(saved);
-                assessments.push({
-                  ...results,
-                  completedAt: new Date().toISOString(),
-                });
-                localStorage.setItem(
-                  `practicalAssessments_${journeyId}`,
-                  JSON.stringify(assessments)
-                );
-                toggleDayComplete(journeyId, currentDay, true);
-              } catch (error) {
-                console.error("Error saving assessment:", error);
-              }
+              toggleDayComplete(journeyId, currentDay, true);
             }}
           />
         </div>

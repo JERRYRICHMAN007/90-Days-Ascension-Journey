@@ -2,9 +2,12 @@
  * Dashboard notification items + read/unread persistence.
  */
 
-import { STORAGE_KEYS } from './storageKeys.js';
 import { getRegistryJourneys } from './journeyRegistry.js';
 import { getJourneyState, getJourneyTimeline } from './journeyPlanning.js';
+import {
+  getIncompletePastAcrossJourneys,
+  getJourneyRoute,
+} from './incompleteDays.js';
 
 const READ_KEY = 'aetherReadNotifications';
 
@@ -29,6 +32,8 @@ export function getReadNotificationIds() {
 
 export function markNotificationRead(id) {
   if (!id) return;
+  // Incomplete-day action items stay until the day is completed
+  if (String(id).startsWith('incomplete-')) return;
   const ids = readReadIds();
   if (!ids.includes(id)) {
     writeReadIds([...ids, id]);
@@ -37,13 +42,40 @@ export function markNotificationRead(id) {
 
 export function markAllNotificationsRead(notificationIds) {
   const ids = readReadIds();
-  const merged = [...new Set([...ids, ...notificationIds])];
+  const filtered = notificationIds.filter((id) => !String(id).startsWith('incomplete-'));
+  const merged = [...new Set([...ids, ...filtered])];
   writeReadIds(merged);
 }
 
 /** Build live notification list from journey registry state */
 export function buildDashboardNotifications() {
   const list = [];
+
+  getIncompletePastAcrossJourneys().forEach((row) => {
+    row.incomplete.slice(0, 5).forEach((item) => {
+      list.push({
+        id: `incomplete-${row.journeyId}-day-${item.dayNumber}`,
+        title: `Day ${item.dayNumber} still open — ${row.title}`,
+        body: `"${item.label}" wasn't marked complete. Finish that day before moving on.`,
+        type: 'action',
+        href: getJourneyRoute(row.journeyId, item.dayNumber),
+        journeyId: row.journeyId,
+        dayNumber: item.dayNumber,
+      });
+    });
+    if (row.incomplete.length > 5) {
+      list.push({
+        id: `incomplete-${row.journeyId}-more`,
+        title: `${row.incomplete.length - 5} more incomplete days`,
+        body: `Catch up on ${row.title} so your streak and schedule stay honest.`,
+        type: 'action',
+        href: getJourneyRoute(row.journeyId, row.incomplete[5].dayNumber),
+        journeyId: row.journeyId,
+        dayNumber: row.incomplete[5].dayNumber,
+      });
+    }
+  });
+
   getRegistryJourneys()
     .filter((j) => !j.isDemo)
     .forEach((j) => {

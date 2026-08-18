@@ -387,19 +387,11 @@ function getWriterTheme(weekNum) {
 }
 
 function getWriterResources(weekNum, dayIndex) {
-  const baseResources = WRITER_CURATED_RESOURCES;
-
-  if (weekNum <= 2) {
-    return [baseResources[0], baseResources[1]];
-  } else if (weekNum <= 4) {
-    return [baseResources[0], baseResources[2], baseResources[1]];
-  } else if (weekNum <= 6) {
-    return [baseResources[2], baseResources[3], baseResources[4]];
-  } else if (weekNum <= 8) {
-    return [baseResources[3], baseResources[4], baseResources[0]];
-  } else {
-    return baseResources;
-  }
+  const list = WRITER_CURATED_RESOURCES;
+  if (!list.length) return [];
+  // Two focused resources for this day — not the whole library
+  const start = ((weekNum - 1) * 3 + (dayIndex || 0)) % list.length;
+  return [list[start], list[(start + 1) % list.length]];
 }
 
 // CRASH COURSE FUNCTIONS (Legacy - Now used for first 11 days of full journey)

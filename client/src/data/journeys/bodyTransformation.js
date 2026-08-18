@@ -12,144 +12,18 @@ import {
   getBodyTransformationQuiz,
 } from './softwareEngineering.js';
 import { BODY_CURATED_RESOURCES, normalizeResource } from './journeyCuratedResources.js';
+import {
+  DEFAULT_WEEKLY_ROUTINES,
+  EXERCISE_FORM_GUIDES,
+  EXERCISE_MUSCLES,
+  buildWorkoutForDay,
+  resolveProgressionLevel,
+} from './bodyWorkoutPlan.js';
+
+export { EXERCISE_MUSCLES, EXERCISE_FORM_GUIDES };
 
 // Calendar dayIndex: 0=Monday … 5=Saturday, 6=Sunday
-const EXERCISE_FORM_GUIDES = {
-  plankSideRight: {
-    title: "Side Plank (Right) — Form Guide",
-    url: "https://www.youtube.com/watch?v=K2VljzY1v4A",
-    time: "3 min",
-  },
-  plankSideLeft: {
-    title: "Side Plank (Left) — Form Guide",
-    url: "https://www.youtube.com/watch?v=K2VljzY1v4A",
-    time: "3 min",
-  },
-  plankCenter: {
-    title: "Front Plank — Form Guide",
-    url: "https://www.youtube.com/watch?v=ASdvN_XEl_c",
-    time: "3 min",
-  },
-  pushUps: {
-    title: "Push-Ups — Form Guide",
-    url: "https://www.youtube.com/watch?v=IODxDxX7oi4",
-    time: "4 min",
-  },
-  crunches: {
-    title: "Crunches — Form Guide",
-    url: "https://www.youtube.com/watch?v=Xyd_fa5Tlk0",
-    time: "3 min",
-  },
-  burpees: {
-    title: "Burpees — Form Guide",
-    url: "https://www.youtube.com/watch?v=auBL9oZSMh4",
-    time: "4 min",
-  },
-  lunges: {
-    title: "Lunges — Form Guide",
-    url: "https://www.youtube.com/watch?v=QO_oBT4v_bM",
-    time: "4 min",
-  },
-  bicycles: {
-    title: "Bicycle Crunches — Form Guide",
-    url: "https://www.youtube.com/watch?v=9FGilx_CbdI",
-    time: "3 min",
-  },
-};
-
-/** Muscles targeted per exercise (react-body-highlighter slugs) */
-export const EXERCISE_MUSCLES = {
-  plankSideRight: ['abs', 'obliques'],
-  plankSideLeft: ['abs', 'obliques'],
-  plankCenter: ['abs'],
-  pushUps: ['chest', 'triceps', 'front-deltoids'],
-  crunches: ['abs'],
-  burpees: ['chest', 'quadriceps', 'abs', 'gluteal'],
-  lunges: ['quadriceps', 'gluteal', 'hamstring'],
-  bicycles: ['abs', 'obliques'],
-};
-
-const BODY_WEEKLY_ROUTINES = {
-  0: {
-    focus: "Plank & Core Circuit",
-    name: "Monday — Plank & Core Circuit",
-    rounds: 3,
-    link: "https://www.youtube.com/watch?v=pSHjTR5xN4s",
-    exercises: [
-      { name: "30 sec Plank (Right)", guideKey: "plankSideRight" },
-      { name: "30 sec Plank (Left)", guideKey: "plankSideLeft" },
-      { name: "30 sec Plank (Center)", guideKey: "plankCenter" },
-      { name: "10 Lunges (each side)", guideKey: "lunges" },
-      { name: "10 Burpees", guideKey: "burpees" },
-    ],
-  },
-  1: {
-    focus: "Push & Core",
-    name: "Tuesday — Push & Core",
-    rounds: 2,
-    link: "https://www.youtube.com/watch?v=ml6cT4AZdqI",
-    exercises: [
-      { name: "10 Push-Ups", guideKey: "pushUps" },
-      { name: "30 Crunches", guideKey: "crunches" },
-      { name: "10 Burpees", guideKey: "burpees" },
-      { name: "30 sec Plank", guideKey: "plankCenter" },
-      { name: "10 Lunges (each side)", guideKey: "lunges" },
-    ],
-  },
-  2: {
-    focus: "Legs & Core",
-    name: "Wednesday — Legs & Core",
-    rounds: 2,
-    link: "https://www.youtube.com/watch?v=2pLT-olgUJs",
-    exercises: [
-      { name: "10 Lunges (each side)", guideKey: "lunges" },
-      { name: "60 sec Plank", guideKey: "plankCenter" },
-      { name: "30 Crunches", guideKey: "crunches" },
-      { name: "10 Push-Ups", guideKey: "pushUps" },
-      { name: "30 Bicycle Crunches", guideKey: "bicycles" },
-    ],
-  },
-  3: {
-    focus: "Full Body Circuit",
-    name: "Thursday — Full Body Circuit",
-    rounds: 3,
-    link: "https://www.youtube.com/watch?v=ml0Ho6Ybq58",
-    exercises: [
-      { name: "10 Push-Ups", guideKey: "pushUps" },
-      { name: "30 Bicycle Crunches", guideKey: "bicycles" },
-      { name: "10 Burpees", guideKey: "burpees" },
-      { name: "60 sec Plank", guideKey: "plankCenter" },
-      { name: "10 Lunges (each side)", guideKey: "lunges" },
-    ],
-  },
-  4: {
-    focus: "HIIT Burn",
-    name: "Friday — HIIT Burn",
-    rounds: 2,
-    link: "https://www.youtube.com/watch?v=cbKkBnfPwno",
-    exercises: [
-      { name: "20 Burpees", guideKey: "burpees" },
-      { name: "10 Push-Ups", guideKey: "pushUps" },
-      { name: "10 Lunges (each side)", guideKey: "lunges" },
-      { name: "30 Bicycle Crunches", guideKey: "bicycles" },
-      { name: "60 sec Plank", guideKey: "plankCenter" },
-    ],
-  },
-  5: {
-    focus: "Rest & Recovery",
-    name: "Rest Day — Light stretching and active recovery",
-    rounds: 0,
-    link: null,
-    exercises: [],
-  },
-  6: {
-    focus: "Rest & Recovery",
-    name: "Rest Day (Recovery from Sunday basketball)",
-    rounds: 0,
-    link: null,
-    exercises: [],
-  },
-};
+const BODY_WEEKLY_ROUTINES = DEFAULT_WEEKLY_ROUTINES;
 
 const BODY_DAY_FOCUS = [
   BODY_WEEKLY_ROUTINES[0].focus,
@@ -538,21 +412,8 @@ export const bodyTransformationWeeks = generateWeeks(
   .filter((week) => week.days.length > 0);
 
 function getWorkoutForDay(weekNum, dayIndex) {
-  const routine = BODY_WEEKLY_ROUTINES[dayIndex];
-  if (!routine) {
-    return { name: "Workout Session", link: null, rounds: 0, exercises: [] };
-  }
-  return {
-    name: routine.name,
-    focus: routine.focus,
-    link: routine.link,
-    rounds: routine.rounds,
-    exercises: routine.exercises.map((ex) => ({
-      ...ex,
-      formGuide: EXERCISE_FORM_GUIDES[ex.guideKey] ?? null,
-      muscles: EXERCISE_MUSCLES[ex.guideKey] ?? [],
-    })),
-  };
+  const level = resolveProgressionLevel(weekNum);
+  return buildWorkoutForDay(dayIndex, level, null);
 }
 
 function getNutritionForWeek(weekNum, dayIndex) {
@@ -579,14 +440,14 @@ function getMindsetAffirmation(dayIndex) {
 }
 
 function getWorkoutResources(weekNum, dayIndex) {
-  const routine = BODY_WEEKLY_ROUTINES[dayIndex];
-  const curated = BODY_CURATED_RESOURCES.map(normalizeResource);
+  const workout = getWorkoutForDay(weekNum, dayIndex);
 
-  if (!routine) return curated;
+  if (!workout) {
+    return BODY_CURATED_RESOURCES.slice(0, 2).map(normalizeResource);
+  }
 
-  if (dayIndex === 5 || dayIndex === 6) {
+  if (dayIndex === 5 || dayIndex === 6 || workout.isRest) {
     return [
-      ...curated,
       normalizeResource({
         title: "Recovery & Rest Guide",
         url: "https://www.youtube.com/watch?v=4pKly2JojMw",
@@ -604,10 +465,10 @@ function getWorkoutResources(weekNum, dayIndex) {
     ];
   }
 
-  // Form guides for today's circuit + male-focused training channels
-  const resources = [...curated];
+  // Only form guides for today's circuit (+ one channel)
+  const resources = [];
   const seenGuides = new Set();
-  routine.exercises.forEach((exercise) => {
+  (workout.exercises || []).forEach((exercise) => {
     const guide = EXERCISE_FORM_GUIDES[exercise.guideKey];
     if (guide && !seenGuides.has(exercise.guideKey)) {
       seenGuides.add(exercise.guideKey);
@@ -616,12 +477,15 @@ function getWorkoutResources(weekNum, dayIndex) {
           ...guide,
           title: `${exercise.name} — Form Guide`,
           type: "youtube",
+          category: "Form",
           description: `Proper form and technique for ${exercise.name}`,
         })
       );
     }
   });
 
-  return resources;
+  const channelIdx = (weekNum + dayIndex) % BODY_CURATED_RESOURCES.length;
+  resources.push(normalizeResource(BODY_CURATED_RESOURCES[channelIdx]));
+  return resources.slice(0, 4);
 }
 

@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { JourneyScheduleCard } from './JourneyScheduleCard';
 import { JourneyMotivationQuote } from './JourneyMotivationQuote';
 import { JourneyGoalsSection } from './JourneyGoalsSection';
+import { JourneyRhythmEditor } from './JourneyRhythmEditor';
 import { JourneyAIAssistant } from './JourneyAIAssistant';
 import { getJourneySetup } from '../../utils/journeySetup.js';
 import { useJourneyTimeline } from '../../hooks/useJourneyTimeline';
@@ -65,6 +66,31 @@ export function JourneyOverviewPage({
               {state === 'active' && timeline.currentDay != null && `Day ${timeline.currentDay} of ${timeline.totalDays}`}
               {state === 'completed' && 'Completed'}
             </p>
+            {(timeline.startLabel || timeline.endLabel) && (
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-xs text-[var(--text-muted)]">
+                {timeline.startLabel && (
+                  <span>
+                    <span className="font-semibold uppercase tracking-wide" style={{ color: accent }}>
+                      Starts
+                    </span>{' '}
+                    {timeline.startLabel}
+                  </span>
+                )}
+                {timeline.startLabel && timeline.endLabel && (
+                  <span className="text-[var(--border-muted)]" aria-hidden>
+                    ·
+                  </span>
+                )}
+                {timeline.endLabel && (
+                  <span>
+                    <span className="font-semibold uppercase tracking-wide" style={{ color: accent }}>
+                      Ends
+                    </span>{' '}
+                    {timeline.endLabel}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -113,6 +139,12 @@ export function JourneyOverviewPage({
           </p>
         </motion.div>
       )}
+
+      <JourneyRhythmEditor
+        journeyId={journeyId}
+        accentColor={accent}
+        accentRgb={rgb}
+      />
 
       <JourneyGoalsSection
         journeyId={journeyId}

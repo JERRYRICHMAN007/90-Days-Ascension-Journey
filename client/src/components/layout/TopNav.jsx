@@ -23,10 +23,14 @@ export function TopNav() {
     window.addEventListener('notifications-updated', refresh);
     window.addEventListener('journey-start-updated', refresh);
     window.addEventListener('journey-registry-updated', refresh);
+    window.addEventListener('session-completed', refresh);
+    window.addEventListener('progress-updated', refresh);
     return () => {
       window.removeEventListener('notifications-updated', refresh);
       window.removeEventListener('journey-start-updated', refresh);
       window.removeEventListener('journey-registry-updated', refresh);
+      window.removeEventListener('session-completed', refresh);
+      window.removeEventListener('progress-updated', refresh);
     };
   }, []);
 

@@ -25,10 +25,12 @@ import {
   getJourneyAvailability,
   startJourney,
   setJourneyPlannedStartDate,
+  resolveLiveStartYmd,
 } from '../../utils/journeyPlanning.js';
 import { getRegistryEntry } from '../../utils/journeyRegistry.js';
 import { useJourneyTimeline } from '../../hooks/useJourneyTimeline';
 import { JourneyAIAssistant } from './JourneyAIAssistant.jsx';
+import { getDefaultPlanBlurb, getPlanDigest } from '../../utils/journeyCustomPlan.js';
 
 /**
  * Final review & confirmation before a journey officially starts.
@@ -52,6 +54,8 @@ export function JourneyReviewModal({
   const entry = getRegistryEntry(journeyId);
   const { milestone } = useJourneyTimeline(journeyId, 0, totalDays);
   const goals = parseGoalsFromSetup(profile);
+  const planSource = profile.planSource === 'custom' ? 'custom' : 'default';
+  const planDigest = getPlanDigest(journeyId, planSource);
 
   const effectiveStart = startYmd || timeline.startYmd || profile.startYmd;
   const effectiveEnd = timeline.endLabel;
@@ -62,8 +66,9 @@ export function JourneyReviewModal({
 
   const handleConfirm = () => {
     setConfirming(true);
-    if (effectiveStart) setJourneyPlannedStartDate(journeyId, effectiveStart);
-    startJourney(journeyId, effectiveStart);
+    const liveStart = resolveLiveStartYmd(effectiveStart);
+    if (liveStart) setJourneyPlannedStartDate(journeyId, liveStart);
+    startJourney(journeyId, liveStart);
     setConfirming(false);
     onConfirm?.();
     onClose?.();
@@ -93,6 +98,22 @@ export function JourneyReviewModal({
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+          <ReviewSection title="Plan" icon={Sparkles} accent={accentColor} onEdit={() => onEdit?.('setup')}>
+            <p className="text-sm font-semibold text-[var(--text-primary)] capitalize">
+              {planSource} plan
+            </p>
+            <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
+              {planSource === 'default' ? getDefaultPlanBlurb(journeyId) : 'Your customized 6-month plan.'}
+            </p>
+            <ul className="mt-2 space-y-1">
+              {planDigest.slice(0, 8).map((line) => (
+                <li key={line} className="text-xs text-[var(--text-primary)]">
+                  • {line}
+                </li>
+              ))}
+            </ul>
+          </ReviewSection>
+
           <ReviewSection title="Journey" icon={Flag} accent={accentColor} onEdit={() => onEdit?.('overview')}>
             <p className="font-semibold text-[var(--text-primary)]">{entry?.title || 'Your journey'}</p>
             {profile.whyImportant && (
@@ -119,8 +140,8 @@ export function JourneyReviewModal({
             <ReviewSection title="Duration" icon={Clock} accent={accentColor} compact>
               <p className="text-sm font-medium">{duration} days</p>
             </ReviewSection>
-            <ReviewSection title="Mode" icon={Sparkles} accent={accentColor} compact>
-              <p className="text-sm font-medium capitalize">{profile.mode || 'smart'} mode</p>
+            <ReviewSection title="Style" icon={Sparkles} accent={accentColor} compact>
+              <p className="text-sm font-medium capitalize">{planSource} plan</p>
             </ReviewSection>
           </div>
 

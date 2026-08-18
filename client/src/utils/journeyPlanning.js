@@ -13,9 +13,10 @@ import {
   startOfLocalDay,
 } from './dates.js';
 import { STORAGE_KEYS } from './storageKeys.js';
+import { scheduleJourneyStateSync } from './journeyPersist.js';
 import { getDateForDay as getGlobalDateForDay } from './dates.js';
 import { JOURNEY_IDS } from './journeyTheme.js';
-import { resetJourneyProgress } from './progressTracking.js';
+import { wipeJourneyRuntimeData, dispatchJourneyWipeEvents } from './journeyReset.js';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEKDAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -140,6 +141,67 @@ export function getDefaultPickerDate() {
   return formatYmd(new Date());
 }
 
+/** When going live, never start in the past — that would skip straight to Day 5+. */
+export function resolveLiveStartYmd(ymd) {
+  const today = getDefaultPickerDate();
+  if (!ymd || !/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return today;
+  return ymd < today ? today : ymd;
+}
+
+export function isJourneyDayToday(journeyId, dayNumber) {
+  if (!isJourneyStarted(journeyId) || !dayNumber || dayNumber < 1) return false;
+  const dayDate = getDateForDay(journeyId, dayNumber);
+  if (!dayDate) return false;
+  return startOfLocalDay(dayDate).getTime() === startOfLocalDay().getTime();
+}
+
+/** Sunday-first display order (JS getDay: 0=Sun … 6=Sat) */
+export const WEEKDAY_DISPLAY_ORDER = [0, 1, 2, 3, 4, 5, 6];
+
+function sundayOnOrBefore(date) {
+  const d = startOfLocalDay(date);
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
+
+/** Calendar week (Sun–Sat) containing this journey day, anchored to the user's start date. */
+export function getJourneyWeekNumber(journeyId, dayNumber) {
+  if (!dayNumber || dayNumber < 1) return 0;
+  const dayDate = getDateForDay(journeyId, dayNumber);
+  const start = getJourneyStartDate(journeyId);
+  if (!dayDate || !start) return Math.max(1, Math.ceil(dayNumber / 7));
+  const firstSunday = sundayOnOrBefore(start);
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  return (
+    Math.floor((startOfLocalDay(dayDate).getTime() - firstSunday.getTime()) / msPerWeek) + 1
+  );
+}
+
+/** In the start week only, hide weekday slots before the journey's first day. */
+export function shouldShowPlanWeekday(journeyId, weekdayIndex, isStartWeek) {
+  const start = getJourneyStartDate(journeyId);
+  if (!start || !isStartWeek) return true;
+  return weekdayIndex >= start.getDay();
+}
+
+export function getLiveDayLabel(journeyId, dayNumber) {
+  const date = getDateForDay(journeyId, dayNumber);
+  if (!date) return null;
+  return WEEKDAY_FULL[date.getDay()];
+}
+
+export function getLiveDayYmd(journeyId, dayNumber) {
+  const date = getDateForDay(journeyId, dayNumber);
+  return date ? formatYmd(date) : null;
+}
+
+/** Which content-library week contains this journey day number */
+export function getContentWeekForDay(weeks, dayNumber) {
+  if (!weeks?.length || !dayNumber || dayNumber < 1) return 1;
+  const match = weeks.find((w) => w?.days?.some((d) => d?.dayNumber === dayNumber));
+  return match?.weekNumber ?? 1;
+}
+
 export function hasJourneyStartDate(journeyId) {
   return isJourneyStarted(journeyId);
 }
@@ -164,6 +226,7 @@ export function setJourneyPlannedStartDate(journeyId, ymd) {
       new CustomEvent('journey-start-updated', { detail: { journeyId, startDate: ymd, planned: true } })
     );
   }
+  scheduleJourneyStateSync();
   return ymd;
 }
 
@@ -174,7 +237,7 @@ export function setJourneyPlannedStartDate(journeyId, ymd) {
 export function startJourney(journeyId, ymd) {
   const map = getAllJourneyStartDates();
   const existing = parseStartEntry(map[journeyId]);
-  const useYmd = ymd || existing?.startYmd || getDefaultPickerDate();
+  const useYmd = resolveLiveStartYmd(ymd || existing?.startYmd || getDefaultPickerDate());
   return setJourneyStartDateFor(journeyId, useYmd);
 }
 
@@ -200,11 +263,13 @@ export function setJourneyStartDateFor(journeyId, ymd) {
       new CustomEvent('journey-start-updated', { detail: { journeyId, startDate: ymd } })
     );
   }
+  scheduleJourneyStateSync();
   return ymd;
 }
 
 /**
- * Clear this journey's schedule and progress. Other journeys are untouched.
+ * Clear this journey's schedule and all progress. Other journeys are untouched.
+ * After reset, pick a new start date — that date becomes Day 1 when you start again.
  */
 export function resetJourneySchedule(journeyId) {
   const map = getAllJourneyStartDates();
@@ -214,19 +279,13 @@ export function resetJourneySchedule(journeyId) {
   }
 
   try {
-    resetJourneyProgress(journeyId);
+    wipeJourneyRuntimeData(journeyId);
   } catch {
     /* ignore */
   }
 
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(
-      new CustomEvent('journey-start-updated', {
-        detail: { journeyId, reset: true },
-      })
-    );
-    window.dispatchEvent(new CustomEvent('progress-updated', { detail: { journeyId } }));
-  }
+  dispatchJourneyWipeEvents(journeyId);
+  scheduleJourneyStateSync();
 }
 
 export function getJourneyStartDate(journeyId) {

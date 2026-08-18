@@ -261,125 +261,17 @@ function organizeContentBySchedule(
   };
 
   const isSaturday = dayIndex === 5;
-  const isSunday = dayIndex === 6;
   
   // Calculate dayNumber if not provided
   const calculatedDayNumber = dayNumber || ((weekNum - 1) * 7 + dayIndex + 1);
 
+  // Saturday: no Software Engineering sessions
   if (isSaturday) {
-    // Saturday: Mobile Revision, Frontend, Backend
-    // Mobile Revision Learning
-    if (timeBlocks.deepLearning && timeBlocks.deepLearning.length > 0) {
-      timeBlocks.deepLearning.forEach((block) => {
-        const disciplineContent = getDisciplineContent(
-          learningData,
-          block.discipline,
-          weekNum,
-          "study",
-          dayIndex,
-          calculatedDayNumber
-        );
-        scheduled.deepLearning.push({
-          ...block,
-          content: {
-            ...disciplineContent,
-            isRevision: block.isRevision || false,
-          },
-        });
-      });
-    }
-
-    // Mobile Revision (Focused Implementation)
-    if (
-      timeBlocks.focusedImplementation &&
-      timeBlocks.focusedImplementation.length > 0
-    ) {
-      timeBlocks.focusedImplementation.forEach((block) => {
-        // For revision sessions, use revision content instead of regular project content
-        const revisionContent = block.isRevision
-          ? getRevisionContent(block.discipline, weekNum, dayIndex)
-          : getDisciplineContent(
-              projectData,
-              block.discipline,
-              weekNum,
-              "build",
-              dayIndex,
-              calculatedDayNumber
-            );
-        scheduled.focusedImplementation.push({
-          ...block,
-          content: {
-            ...revisionContent,
-            isRevision: block.isRevision || false,
-            revisionType: "practice",
-          },
-        });
-      });
-    }
-
     return scheduled;
   }
 
-  if (isSunday) {
-    // Sunday: WordPress only
-    // WordPress Learning
-    if (timeBlocks.deepLearning && timeBlocks.deepLearning.length > 0) {
-      timeBlocks.deepLearning.forEach((block) => {
-        const learningDataWithDayIndex = {
-          ...learningData,
-          dayIndex: dayIndex,
-        };
-        const disciplineContent = getDisciplineContent(
-          learningDataWithDayIndex,
-          block.discipline,
-          weekNum,
-          "study",
-          dayIndex,
-          calculatedDayNumber
-        );
-        scheduled.deepLearning.push({
-          ...block,
-          content: {
-            ...disciplineContent,
-            isRevision: block.isRevision || false,
-          },
-        });
-      });
-    }
-
-    // WordPress Implementation (if any)
-    if (
-      timeBlocks.focusedImplementation &&
-      timeBlocks.focusedImplementation.length > 0
-    ) {
-      timeBlocks.focusedImplementation.forEach((block) => {
-        // For revision sessions, use revision content instead of regular project content
-        const revisionContent = block.isRevision
-          ? getRevisionContent(block.discipline, weekNum, dayIndex)
-          : getDisciplineContent(
-              { ...projectData, dayIndex: dayIndex },
-              block.discipline,
-              weekNum,
-              "build",
-              dayIndex,
-              calculatedDayNumber
-            );
-        scheduled.focusedImplementation.push({
-          ...block,
-          content: {
-            ...revisionContent,
-            isRevision: block.isRevision || false,
-            revisionType: "practice",
-          },
-        });
-      });
-    }
-
-    return scheduled;
-  }
-
-  // Monday-Friday: Mobile (Mon-Wed), Frontend (Thu-Fri), Backend (Fri evening)
-  const allDisciplines = disciplineRotation.allDisciplines; // ['Mobile'] or ['Frontend', 'Backend'] or ['Frontend']
+  // Sun–Fri: Mobile, Frontend, Backend (4:00 AM – 5:30 AM)
+  const allDisciplines = disciplineRotation.allDisciplines || ['Mobile', 'Frontend', 'Backend'];
 
   // Collect all discipline content for syncing
   const allDisciplinesContent = {};
@@ -4715,33 +4607,42 @@ function getDisciplineContent(
 
 // Scheduling and Discipline Rotation Helpers
 // Schedule Structure (dayIndex: 0=Mon … 5=Sat, 6=Sun):
-// - Software Engineering: 4:00 PM - 5:00 PM daily except Sunday
+// - Software Engineering: 4:00 AM - 5:30 AM daily except Saturday
+//   Mobile · Frontend · Backend (all three available on scheduled days)
 // - Body Transformation: 5:00 AM - 5:45 AM weekdays only
 // - Dual Branding: 4:00 AM - 5:00 AM daily except Saturday
 // - Reading: 9:15 PM - 10:00 PM daily except Friday
 // - Writing: 10:00 PM - 10:30 PM daily except Friday
 function getTimeBlocks(dayIndex) {
-  const isSunday = dayIndex === 6;
-  const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2;
-  const isThursday = dayIndex === 3;
-  const isFriday = dayIndex === 4;
   const isSaturday = dayIndex === 5;
 
-  if (isSunday) {
+  // Saturday: no Software Engineering sessions
+  if (isSaturday) {
     return { deepLearning: [], focusedImplementation: [] };
   }
 
-  let discipline = "Mobile";
-  if (isThursday || isFriday) discipline = "Frontend";
-  if (isSaturday) discipline = "Backend";
-
+  // Sun–Fri: Mobile, Frontend, Backend shared across 4:00 AM – 5:30 AM
   return {
     deepLearning: [
       {
-        time: "4:00 PM - 5:00 PM",
-        discipline,
-        type: "study",
-        duration: "60 min",
+        time: '4:00 AM - 4:30 AM',
+        discipline: 'Mobile',
+        type: 'study',
+        duration: '30 min',
+        isRevision: false,
+      },
+      {
+        time: '4:30 AM - 5:00 AM',
+        discipline: 'Frontend',
+        type: 'study',
+        duration: '30 min',
+        isRevision: false,
+      },
+      {
+        time: '5:00 AM - 5:30 AM',
+        discipline: 'Backend',
+        type: 'study',
+        duration: '30 min',
         isRevision: false,
       },
     ],
@@ -4928,17 +4829,9 @@ function organizeWritersSchedule(learningData, projectData, dayIndex, timeBlocks
 
 function getDisciplineRotation(weekNum, dayIndex) {
   const isSaturday = dayIndex === 5;
-  const isSunday = dayIndex === 6;
-  const isMonday = dayIndex === 0;
-  const isTuesday = dayIndex === 1;
-  const isWednesday = dayIndex === 2;
-  const isThursday = dayIndex === 3;
-  const isFriday = dayIndex === 4;
-  const isMondayToWednesday = dayIndex >= 0 && dayIndex <= 2; // Monday-Wednesday
-  const isWeekday = dayIndex >= 0 && dayIndex <= 4; // Monday-Friday
 
-  // Sunday: No Software Engineering sessions
-  if (isSunday) {
+  // Saturday: no Software Engineering sessions
+  if (isSaturday) {
     return {
       primary: null,
       secondary: null,
@@ -4951,72 +4844,16 @@ function getDisciplineRotation(weekNum, dayIndex) {
     };
   }
 
-  // Saturday: Backend (4:00 PM - 5:00 PM)
-  if (isSaturday) {
-    return {
-      primary: "Backend",
-      secondary: null,
-      tertiary: null,
-      quaternary: null,
-      allDisciplines: ["Backend"],
-      priorityOrder: ["Backend"],
-      rotationOrder: ["Backend"],
-      earlyMorningDiscipline: null,
-    };
-  }
-
-  // Monday-Wednesday: Mobile (4:00 PM - 5:00 PM)
-  if (isMondayToWednesday) {
-    return {
-      primary: "Mobile",
-      secondary: null,
-      tertiary: null,
-      quaternary: null,
-      allDisciplines: ["Mobile"],
-      priorityOrder: ["Mobile"],
-      rotationOrder: ["Mobile"],
-      earlyMorningDiscipline: null,
-    };
-  }
-
-  // Thursday: Frontend (4:00 PM - 5:00 PM)
-  if (isThursday) {
-    return {
-      primary: "Frontend",
-      secondary: null,
-      tertiary: null,
-      quaternary: null,
-      allDisciplines: ["Frontend"],
-      priorityOrder: ["Frontend"],
-      rotationOrder: ["Frontend"],
-      earlyMorningDiscipline: null,
-    };
-  }
-
-  // Friday: Frontend (4:00 PM - 5:00 PM)
-  if (isFriday) {
-    return {
-      primary: "Frontend",
-      secondary: null,
-      tertiary: null,
-      quaternary: null,
-      allDisciplines: ["Frontend"],
-      priorityOrder: ["Frontend"],
-      rotationOrder: ["Frontend"],
-      earlyMorningDiscipline: null,
-    };
-  }
-
-  // Fallback (should not reach here)
+  // Sun–Fri: Mobile, Frontend, Backend (4:00 AM – 5:30 AM)
   return {
-    primary: "Mobile",
-    secondary: null,
-    tertiary: null,
+    primary: 'Mobile',
+    secondary: 'Frontend',
+    tertiary: 'Backend',
     quaternary: null,
-    allDisciplines: ["Mobile"],
-    priorityOrder: ["Mobile"],
-    rotationOrder: ["Mobile"],
-    earlyMorningDiscipline: null,
+    allDisciplines: ['Mobile', 'Frontend', 'Backend'],
+    priorityOrder: ['Mobile', 'Frontend', 'Backend'],
+    rotationOrder: ['Mobile', 'Frontend', 'Backend'],
+    earlyMorningDiscipline: 'Mobile',
   };
 }
 

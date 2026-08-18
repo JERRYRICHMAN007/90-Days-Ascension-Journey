@@ -6,6 +6,7 @@ import { MobileNav } from './MobileNav';
 import { cn } from '../../lib/utils';
 import { pageTransition } from '../../lib/motion.js';
 import { AchievementUnlockToast } from '../gamification/AchievementUnlockToast';
+import { IncompleteDaysGuard } from '../journey/IncompleteDaysGuard';
 
 const JOURNEY_PATHS = [
   '/body-transformation',
@@ -31,6 +32,7 @@ export function DashboardLayout({ children, className }) {
       <Sidebar />
       <div className="flex-1 flex flex-col relative z-0 min-w-0 overflow-x-hidden md:pl-[280px]">
         <TopNav />
+        <IncompleteDaysGuard />
         <main
           className={cn(
             'flex-1 relative z-0 overflow-x-hidden w-full',

@@ -47,7 +47,7 @@ export const journeys = [
     id: "software-engineering",
     title: "Software Engineering",
     icon: "💻",
-    timeBlock: "Time: 4:00-5:00 PM (Daily except Sunday)",
+    timeBlock: "Time: 4:00-5:30 AM (Daily except Saturday)",
     description: "Frontend · Backend · APIs · Capstone launch by month 6",
     totalDays: JOURNEY_TOTAL_DAYS,
     color: "#fa709a",

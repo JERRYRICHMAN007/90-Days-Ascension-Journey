@@ -16,6 +16,7 @@ import {
   patchWeeklyPlanFromAvailableDays,
 } from './journeyWeeklyPlan.js';
 import { resolveJourneyAIContext, getDefaultWeeklyPlanForCategory } from './journeyAIContext.js';
+import { seedJourneyPlan } from './journeyCustomPlan.js';
 
 export const GOAL_CHANGE_XP_PENALTY = 15;
 const GOAL_FIELDS = ['goal', 'whyImportant', 'successLooksLike', 'motivation'];
@@ -54,6 +55,7 @@ function writeJson(key, value) {
  * @property {string} [habitsToChange]
  * @property {string} [timeAvailable]
  * @property {SetupMode} [mode]
+ * @property {'default'|'custom'} [planSource]
  * @property {Record<string, unknown>} [smartInputs]
  * @property {boolean} [completed]
  */
@@ -76,6 +78,12 @@ function syncWeeklyPlanFromProfile(journeyId, profile) {
   const existing = getWeeklyPlan(journeyId);
   const hasPlan = Object.keys(readWeeklyPlanRaw(journeyId) || {}).length > 0;
   const ctx = resolveJourneyAIContext(journeyId);
+  // Custom plans must not be overwritten by category defaults
+  if (profile.planSource === 'custom' && hasPlan) {
+    const plan = patchWeeklyPlanFromAvailableDays(journeyId, days, existing);
+    saveWeeklyPlan(journeyId, plan);
+    return;
+  }
   const plan = !hasPlan
     ? getDefaultWeeklyPlanForCategory(ctx.category, ctx.templateId)
     : patchWeeklyPlanFromAvailableDays(journeyId, days, existing);
@@ -115,6 +123,7 @@ export function applyJourneyPatches(journeyId, patches) {
 
   const scoped = { ...patches };
   delete scoped.journeyId;
+  delete scoped.customPlan;
 
   const prev = getJourneySetup(journeyId);
   const merged = { ...prev, ...scoped };
@@ -181,7 +190,12 @@ export function restoreJourneyStateFromUndo(journeyId, snapshot) {
 }
 
 export function applyJourneySetup(journeyId, profile, { autoStart } = {}) {
-  applyJourneyPatches(journeyId, { ...profile, completed: true });
+  const planSource = profile.planSource || 'default';
+  applyJourneyPatches(journeyId, { ...profile, planSource, completed: true });
+  seedJourneyPlan(journeyId, {
+    planSource,
+    customPlan: profile.customPlan,
+  });
 
   const shouldStart = autoStart ?? getStartAllJourneysEnabled();
   if (shouldStart && profile.startYmd) {
@@ -189,12 +203,21 @@ export function applyJourneySetup(journeyId, profile, { autoStart } = {}) {
   }
 }
 
-export const SETUP_STEPS = [
-  { id: 'schedule', title: 'Schedule', subtitle: 'When will you show up?' },
-  { id: 'goals', title: 'Goals', subtitle: 'What are you building toward?' },
-  { id: 'current', title: 'Current state', subtitle: 'Where are you today?' },
-  { id: 'personalize', title: 'Personalize', subtitle: 'Manual or AI-assisted' },
+export const SETUP_STEPS_DEFAULT = [
+  { id: 'planStyle', title: 'Plan style', subtitle: 'Default or custom' },
+  { id: 'schedule', title: 'Schedule', subtitle: 'Start date, days, and times' },
+  { id: 'preview', title: 'Your plan', subtitle: 'Confirm the default journey' },
 ];
+
+export const SETUP_STEPS_CUSTOM = [
+  { id: 'planStyle', title: 'Plan style', subtitle: 'Default or custom' },
+  { id: 'schedule', title: 'Schedule', subtitle: 'Days and start date' },
+  { id: 'content', title: 'Content', subtitle: 'Build your own plan' },
+  { id: 'weekly', title: 'Weekly rhythm', subtitle: 'What happens each day' },
+  { id: 'goals', title: 'Goals', subtitle: 'What are you building toward?' },
+];
+
+export const SETUP_STEPS = SETUP_STEPS_DEFAULT;
 
 const WEEKDAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -235,7 +258,10 @@ export function formatAvailableDays(days = []) {
   if (!days.length) return 'Every day';
   if (days.length === 7) return 'Every day';
   if (days.join(',') === '1,2,3,4,5') return 'Weekdays';
-  return days.map((d) => WEEKDAY_FULL[d]).join(', ');
+  return [...days]
+    .sort((a, b) => a - b)
+    .map((d) => WEEKDAY_FULL[d])
+    .join(', ');
 }
 
 /** Template default goals by journey category — goals fields only */

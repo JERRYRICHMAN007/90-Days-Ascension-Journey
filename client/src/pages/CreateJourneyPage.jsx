@@ -1,14 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, Plus, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowLeft, Check, Plus, Sparkles, LayoutTemplate, Wand2 } from 'lucide-react';
 import { createJourney, getJourneyTemplates } from '../utils/journeyRegistry.js';
-import {
-  getCustomTemplates,
-  saveCustomTemplate,
-  BUILTIN_TEMPLATE_CATEGORIES,
-} from '../utils/journeyTemplates.js';
+import { getCustomTemplates } from '../utils/journeyTemplates.js';
 import { saveJourneySetup } from '../utils/journeySetup.js';
+import { DEFAULT_PLAN_BLURBS } from '../utils/journeyCustomPlan.js';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';
 
@@ -31,53 +28,27 @@ export function CreateJourneyPage() {
     [customTemplates, builtinTemplates]
   );
 
-  const [mode, setMode] = useState('template');
   const [title, setTitle] = useState('');
   const [templateId, setTemplateId] = useState(allTemplates[0]?.templateId || '');
-  const [customName, setCustomName] = useState('');
-  const [customDesc, setCustomDesc] = useState('');
-  const [customGoals, setCustomGoals] = useState('');
-  const [customIcon, setCustomIcon] = useState('✨');
-  const [customCategory, setCustomCategory] = useState('learning');
+  const [planSource, setPlanSource] = useState('default');
 
   const selected = allTemplates.find((t) => t.templateId === templateId);
-  const resolvedTitle =
-    mode === 'custom'
-      ? customName.trim()
-      : title.trim() || selected?.label || '';
-  const canCreate = mode === 'custom' ? Boolean(customName.trim()) : Boolean(templateId && resolvedTitle);
+  const resolvedTitle = title.trim() || selected?.label || '';
+  const canCreate = Boolean(templateId && resolvedTitle);
+  const defaultBlurb = DEFAULT_PLAN_BLURBS[templateId] || 'Aether 6-month default plan for this journey.';
 
   const handleCreate = () => {
     if (!canCreate) return;
-
-    let entry;
-    if (mode === 'custom') {
-      const custom = saveCustomTemplate({
-        name: customName.trim(),
-        description: customDesc.trim(),
-        icon: customIcon,
-        category: customCategory,
-        goals: customGoals.split('\n').map((g) => g.trim()).filter(Boolean),
-        color: '#6ee7b7',
-      });
-      entry = createJourney({
-        title: customName.trim(),
-        templateId: custom.id,
-        icon: custom.icon,
-        color: custom.color,
-      });
-      saveJourneySetup(entry.id, {
-        goal: customGoals,
-        mode: 'manual',
-      });
-    } else {
-      entry = createJourney({
-        title: resolvedTitle,
-        templateId,
-        icon: selected?.icon,
-        color: selected?.color,
-      });
-    }
+    const entry = createJourney({
+      title: resolvedTitle,
+      templateId,
+      icon: selected?.icon,
+      color: selected?.color,
+    });
+    saveJourneySetup(entry.id, {
+      planSource,
+      mode: planSource === 'custom' ? 'manual' : 'smart',
+    });
     navigate(`/journey/${entry.id}?setup=1`);
   };
 
@@ -101,19 +72,12 @@ export function CreateJourneyPage() {
               Create your transformation
             </h1>
             <p className="text-base text-[var(--text-secondary)] mt-3 max-w-xl leading-relaxed">
-              Choose a proven template or build your own. Each journey runs on an independent schedule with its own progress.
+              Pick a journey type, then use the Aether default plan or build your own books, workouts, days, and times.
             </p>
           </div>
 
-          <div className="flex gap-2 p-1 rounded-xl bg-[var(--bg-badge)] w-fit">
-            <ModeTab active={mode === 'template'} onClick={() => setMode('template')} label="Use a template" />
-            <ModeTab active={mode === 'custom'} onClick={() => setMode('custom')} label="Create your own" icon={Wand2} />
-          </div>
-
-          {mode === 'template' ? (
-            <>
               <div className="space-y-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Templates</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Journey type</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                   {allTemplates.map((t) => {
                     const isSelected = templateId === t.templateId;
@@ -138,11 +102,47 @@ export function CreateJourneyPage() {
                         <span className="text-2xl">{t.icon}</span>
                         <p className="font-semibold text-[var(--text-primary)] mt-2">{t.label}</p>
                         {t.isCustom && (
-                          <p className="text-[10px] text-[var(--text-muted)] mt-1">Custom template</p>
+                          <p className="text-[10px] text-[var(--text-muted)] mt-1">Saved template</p>
                         )}
                       </motion.button>
                     );
                   })}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">How will you plan it?</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPlanSource('default')}
+                    className={cn(
+                      'rounded-2xl border p-4 text-left',
+                      planSource === 'default'
+                        ? 'border-[var(--neon-green)] bg-[var(--neon-green)]/8'
+                        : 'border-[var(--border-subtle)] bg-[var(--bg-card)]'
+                    )}
+                  >
+                    <LayoutTemplate className="size-5 mb-2 text-[var(--neon-green)]" />
+                    <p className="font-bold text-[var(--text-primary)]">Use default plan</p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{defaultBlurb}</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlanSource('custom')}
+                    className={cn(
+                      'rounded-2xl border p-4 text-left',
+                      planSource === 'custom'
+                        ? 'border-[var(--neon-green)] bg-[var(--neon-green)]/8'
+                        : 'border-[var(--border-subtle)] bg-[var(--bg-card)]'
+                    )}
+                  >
+                    <Wand2 className="size-5 mb-2 text-[var(--neon-green)]" />
+                    <p className="font-bold text-[var(--text-primary)]">Build custom plan</p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
+                      Choose your own books, workouts, days, and times. Starts from the default so you can edit.
+                    </p>
+                  </button>
                 </div>
               </div>
 
@@ -159,48 +159,6 @@ export function CreateJourneyPage() {
                   className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-3 text-[var(--text-primary)]"
                 />
               </div>
-            </>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
-              <Field label="Template name" value={customName} onChange={setCustomName} placeholder="e.g. Bible Study, Marathon Prep" />
-              <Field label="Icon (emoji)" value={customIcon} onChange={setCustomIcon} placeholder="✨" />
-              <div className="sm:col-span-2">
-                <Field label="Description" value={customDesc} onChange={setCustomDesc} placeholder="What is this journey about?" multiline />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="text-xs font-medium text-[var(--text-secondary)] block mb-1.5">Category</label>
-                <div className="flex flex-wrap gap-2">
-                  {BUILTIN_TEMPLATE_CATEGORIES.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => {
-                        setCustomCategory(c.id);
-                        setCustomIcon(c.icon);
-                      }}
-                      className={cn(
-                        'px-3 py-1.5 rounded-full text-xs border',
-                        customCategory === c.id
-                          ? 'border-[var(--neon-green)] bg-[var(--neon-green)]/10 text-[var(--text-primary)]'
-                          : 'border-[var(--border-subtle)] text-[var(--text-secondary)]'
-                      )}
-                    >
-                      {c.icon} {c.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="sm:col-span-2">
-                <Field
-                  label="Goals (one per line)"
-                  value={customGoals}
-                  onChange={setCustomGoals}
-                  placeholder={'Lose 10 kg\nExercise 4x per week\nBuild consistency'}
-                  multiline
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         <aside className="lg:sticky lg:top-24 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-5 shadow-sm">
@@ -209,7 +167,7 @@ export function CreateJourneyPage() {
             <h2 className="font-display font-bold text-[var(--text-primary)]">What happens next</h2>
           </div>
           <ol className="space-y-3 text-sm text-[var(--text-secondary)] list-decimal list-inside">
-            <li>Personalize schedule &amp; goals</li>
+            <li>{planSource === 'custom' ? 'Build your content and schedule' : 'Confirm start date on the default plan'}</li>
             <li>Review your full plan</li>
             <li>Confirm to officially start</li>
           </ol>
@@ -238,33 +196,3 @@ export function CreateJourneyPage() {
   );
 }
 
-function ModeTab({ active, onClick, label, icon: Icon }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        active ? 'bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)]'
-      )}
-    >
-      {Icon && <Icon className="size-3.5" />}
-      {label}
-    </button>
-  );
-}
-
-function Field({ label, value, onChange, placeholder, multiline }) {
-  const cls =
-    'w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-emerald-500/15';
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-xs font-medium text-[var(--text-secondary)]">{label}</span>
-      {multiline ? (
-        <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={3} className={cls} />
-      ) : (
-        <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className={cls} />
-      )}
-    </label>
-  );
-}

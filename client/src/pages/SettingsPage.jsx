@@ -100,7 +100,7 @@ export function SettingsPage() {
     const count = resetAllJourneysProgress();
     setTick((t) => t + 1);
     showToast(
-      `Progress reset for ${count} journeys. They are ready to start again — schedules and goals were kept.`
+      `Progress reset for ${count} journeys. Start dates set to today — enable or start each journey to begin at Day 1.`
     );
   };
 
@@ -137,7 +137,7 @@ export function SettingsPage() {
       <SettingsConfirmDialog
         open={resetConfirmOpen}
         title="Reset all journey progress?"
-        description="This cannot be undone. Clears progress, streaks, completion history, and journey XP for every journey. Your schedules, goals, and setup stay saved — journeys move back to Ready (not Active)."
+        description="This cannot be undone. Clears all progress, quizzes, notes, streaks, and XP for every journey. Start dates reset to today — when you enable or start again, that date becomes Day 1. Goals and plan setup are kept."
         confirmLabel="Reset all progress"
         variant="danger"
         onConfirm={confirmResetAll}

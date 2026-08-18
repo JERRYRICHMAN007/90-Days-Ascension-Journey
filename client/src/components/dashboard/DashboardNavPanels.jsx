@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
-import { X, Calendar, Bell, CheckCircle2, CheckCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { X, Calendar, Bell, CheckCircle2, CheckCheck, AlertTriangle, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRegistryJourneys } from '../../utils/journeyRegistry.js';
 import { getJourneyState, getJourneyTimeline } from '../../utils/journeyPlanning.js';
@@ -77,6 +78,7 @@ export function DashboardCalendarPanel({ open, onClose }) {
 }
 
 export function DashboardNotificationsPanel({ open, onClose }) {
+  const navigate = useNavigate();
   const [readIds, setReadIds] = useState(() => getReadNotificationIds());
   const [tick, setTick] = useState(0);
 
@@ -88,10 +90,14 @@ export function DashboardNotificationsPanel({ open, onClose }) {
     window.addEventListener('notifications-updated', refresh);
     window.addEventListener('journey-start-updated', refresh);
     window.addEventListener('journey-registry-updated', refresh);
+    window.addEventListener('session-completed', refresh);
+    window.addEventListener('progress-updated', refresh);
     return () => {
       window.removeEventListener('notifications-updated', refresh);
       window.removeEventListener('journey-start-updated', refresh);
       window.removeEventListener('journey-registry-updated', refresh);
+      window.removeEventListener('session-completed', refresh);
+      window.removeEventListener('progress-updated', refresh);
     };
   }, []);
 
@@ -114,6 +120,16 @@ export function DashboardNotificationsPanel({ open, onClose }) {
     markAllNotificationsRead(unreadItems.map((i) => i.id));
     setReadIds(getReadNotificationIds());
   }, [unreadItems]);
+
+  const handleOpenItem = useCallback(
+    (item) => {
+      if (item.href) {
+        onClose?.();
+        navigate(item.href);
+      }
+    },
+    [navigate, onClose]
+  );
 
   return (
     <AnimatePresence>
@@ -163,25 +179,32 @@ export function DashboardNotificationsPanel({ open, onClose }) {
             </div>
             <div className="max-h-[360px] overflow-y-auto p-3 space-y-2">
               {items.map((item) => {
-                const isRead = readSet.has(item.id) || item.type === 'empty';
-                const canMarkRead = item.type !== 'empty';
+                const isAction = item.type === 'action';
+                const isRead = (!isAction && readSet.has(item.id)) || item.type === 'empty';
+                const canMarkRead = item.type !== 'empty' && !isAction;
 
                 return (
                   <div
                     key={item.id}
                     className={cn(
                       'rounded-xl border p-3 flex gap-3 transition-opacity',
-                      isRead
-                        ? 'border-[var(--border-subtle)] bg-[var(--bg-primary)]/60 opacity-70'
-                        : 'border-[var(--neon-green)]/25 bg-[var(--bg-primary)]'
+                      isAction
+                        ? 'border-amber-500/40 bg-amber-500/10'
+                        : isRead
+                          ? 'border-[var(--border-subtle)] bg-[var(--bg-primary)]/60 opacity-70'
+                          : 'border-[var(--neon-green)]/25 bg-[var(--bg-primary)]'
                     )}
                   >
-                    <CheckCircle2
-                      className={cn(
-                        'size-4 shrink-0 mt-0.5',
-                        isRead ? 'text-[var(--text-muted)]' : 'text-[var(--neon-green)]'
-                      )}
-                    />
+                    {isAction ? (
+                      <AlertTriangle className="size-4 shrink-0 mt-0.5 text-amber-400" />
+                    ) : (
+                      <CheckCircle2
+                        className={cn(
+                          'size-4 shrink-0 mt-0.5',
+                          isRead ? 'text-[var(--text-muted)]' : 'text-[var(--neon-green)]'
+                        )}
+                      />
+                    )}
                     <div className="flex-1 min-w-0">
                       <p
                         className={cn(
@@ -192,6 +215,16 @@ export function DashboardNotificationsPanel({ open, onClose }) {
                         {item.title}
                       </p>
                       <p className="text-xs text-[var(--text-secondary)] mt-0.5">{item.body}</p>
+                      {item.href && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenItem(item)}
+                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:text-amber-200"
+                        >
+                          Go complete it
+                          <ArrowRight className="size-3" />
+                        </button>
+                      )}
                     </div>
                     {canMarkRead && !isRead && (
                       <button

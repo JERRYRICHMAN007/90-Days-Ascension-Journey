@@ -6,9 +6,14 @@ import { Button } from '../ui/button';
 /**
  * Shown when the user has not started this journey yet.
  */
-export function JourneyStartGate({ journeyTitle, accentColor, accentRgb, onSetup }) {
+export function JourneyStartGate({ journeyTitle, accentColor, accentRgb, onSetup, planSource }) {
   const rgb = accentRgb || '110,231,183';
   const accent = accentColor || '#6ee7b7';
+  const isCustom = planSource === 'custom';
+  const cta = isCustom ? 'Finish your plan' : 'Start with default plan';
+  const body = isCustom
+    ? `${journeyTitle} needs your custom books, workouts, or weekly rhythm before it can go live.`
+    : `${journeyTitle} is ready on the Aether default plan. Confirm your start date, then press Start Journey.`;
 
   return (
     <motion.div
@@ -39,8 +44,12 @@ export function JourneyStartGate({ journeyTitle, accentColor, accentRgb, onSetup
         Press Start When You&apos;re Ready
       </h3>
       <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6 max-w-sm mx-auto">
-        {journeyTitle} is configured and waiting. Complete setup or press{' '}
-        <strong className="text-[var(--text-primary)]">Start Journey</strong> in Overview when you&apos;re ready.
+        {body}{' '}
+        {!isCustom && (
+          <>
+            Use <strong className="text-[var(--text-primary)]">Start Journey</strong> in Overview when you&apos;re ready.
+          </>
+        )}
       </p>
       {onSetup && (
         <Button
@@ -49,7 +58,7 @@ export function JourneyStartGate({ journeyTitle, accentColor, accentRgb, onSetup
           style={{ background: accent, color: '#0a0a0a' }}
         >
           <Wand2 className="size-4 mr-2" />
-          Personalize journey
+          {cta}
         </Button>
       )}
       <div

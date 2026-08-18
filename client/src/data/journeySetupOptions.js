@@ -37,10 +37,9 @@ export const MOTIVATION_OPTIONS = [
 ];
 
 export const FITNESS_LEVEL_OPTIONS = [
-  { id: 'beginner', label: 'Beginner' },
+  { id: 'starter', label: 'Starter' },
   { id: 'intermediate', label: 'Intermediate' },
-  { id: 'advanced', label: 'Advanced' },
-  { id: 'returning', label: 'Returning after a break' },
+  { id: 'professional', label: 'Professional' },
 ];
 
 export const CURRENT_ACTIVITY_OPTIONS = [

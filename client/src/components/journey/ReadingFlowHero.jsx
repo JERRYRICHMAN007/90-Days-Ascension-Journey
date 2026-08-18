@@ -4,7 +4,8 @@ import { BookOpen, Clock, ExternalLink, RotateCcw } from 'lucide-react';
 import { FlipCard3D } from '../ui/FlipCard3D';
 import { SessionCompletionButton } from '../SessionCompletionButton';
 import { ReadingTomorrowPreview } from './ReadingTomorrowPreview';
-import { getBookForDayNumber } from '../../data/journeys/journeyCuratedResources';
+import { JourneyDailyFlow, FlowCardFace, FlowCardBack } from './JourneyDailyFlow';
+import { getBookForDayNumber } from '../../utils/readingPlan.js';
 import { getJourneyTrace } from '../../utils/tracing';
 import { isTomorrow } from '../../utils/dates';
 
@@ -22,17 +23,16 @@ function BookCover({ title, author }) {
 
   return (
     <div
-      className="shrink-0 w-[100px] sm:w-[120px] aspect-[3/4] rounded-lg border flex flex-col items-center justify-center p-3 text-center"
+      className="shrink-0 w-[72px] sm:w-[84px] aspect-[3/4] rounded-lg border flex flex-col items-center justify-center p-2 text-center"
       style={{
         background: 'linear-gradient(145deg, rgba(167,139,250,0.25) 0%, rgba(124,58,237,0.15) 100%)',
         borderColor: 'rgba(167,139,250,0.35)',
-        boxShadow: READING_GLOW,
       }}
     >
-      <BookOpen className="w-8 h-8 mb-2 opacity-80" style={{ color: READING_ACCENT }} />
-      <span className="text-2xl font-extrabold text-[var(--text-primary)] leading-none">{initial}</span>
+      <BookOpen className="w-5 h-5 mb-1 opacity-80" style={{ color: READING_ACCENT }} />
+      <span className="text-lg font-extrabold text-[var(--text-primary)] leading-none">{initial}</span>
       {author && (
-        <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--text-secondary)] mt-2 line-clamp-2">
+        <span className="text-[8px] font-bold uppercase tracking-wider text-[var(--text-secondary)] mt-1 line-clamp-1">
           {author.split(' ').pop()}
         </span>
       )}
@@ -50,59 +50,39 @@ function ExtraSessionCard({ session }) {
 
   return (
     <FlipCard3D
-      size="wide"
+      size="flow"
+      className="w-full max-w-none"
       ariaLabel={`${session.type} at ${session.time}. ${materialText}`}
       front={
-        <div
-          className="w-full h-full rounded-xl p-4 flex flex-col justify-between min-h-[140px] border transition-all duration-200"
-          style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
-        >
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="aether-label" style={{ color: READING_ACCENT }}>
-              {session.type}
-            </span>
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded"
-              style={{
-                color: READING_ACCENT,
-                border: '1px solid rgba(167,139,250,0.4)',
-                background: 'var(--bg-badge)',
-              }}
-            >
-              {start}
-            </span>
-          </div>
-          <p className="text-sm font-semibold text-[var(--text-primary)] leading-snug line-clamp-3 flex-1">
-            {materialText}
-          </p>
-          <p className="text-[10px] font-bold uppercase tracking-[1px] mt-3 flex items-center gap-1" style={{ color: READING_ACCENT }}>
-            <RotateCcw className="w-3 h-3" />
-            Tap for details
-          </p>
-        </div>
+        <FlowCardFace
+          accentColor={READING_ACCENT}
+          badge={start}
+          eyebrow={session.type}
+          title={materialText}
+          hint={
+            <>
+              <RotateCcw className="size-2.5" /> Tap for details
+            </>
+          }
+        />
       }
       back={
-        <div
-          className="w-full h-full rounded-xl p-4 flex flex-col justify-center gap-2 overflow-y-auto border min-h-[140px]"
-          style={{ background: 'var(--bg-elevated)', borderColor: READING_ACCENT, boxShadow: READING_GLOW }}
-        >
-          <p className="aether-label" style={{ color: READING_ACCENT }}>{session.type}</p>
-          <p className="text-xs text-[var(--text-primary)] leading-relaxed text-left">{materialText}</p>
+        <FlowCardBack eyebrow={session.type} accentColor={READING_ACCENT}>
+          <p>{materialText}</p>
           {bibleData?.link && (
             <a
               href={bibleData.link}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-black mt-1 w-fit"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-black mt-2 w-fit"
               style={{ background: READING_ACCENT }}
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-3 h-3" />
               Read Chapter
             </a>
           )}
-          <p className="text-[10px] text-[var(--text-secondary)]">Tap to flip back</p>
-        </div>
+        </FlowCardBack>
       }
     />
   );
@@ -144,155 +124,24 @@ export function ReadingFlowHero({
   const primarySession =
     readingSessions.find((s) => s.type === 'Book') || readingSessions[0];
   const extraSessions = readingSessions.filter((s) => s !== primarySession);
-  const book = dayNumber != null ? getBookForDayNumber(dayNumber) : null;
+  const book = dayNumber != null ? getBookForDayNumber(dayNumber, journeyId) : null;
   const { start: sessionStart, end: sessionEnd } = parseSessionTime(primarySession?.time);
 
   const displayTitle = book?.title || primarySession?.material;
   const displayAuthor = book?.author || null;
+  const heading = dailyLearning?.title || `Reading Focus${theme ? `: ${theme}` : ''}`;
 
   return (
-    <div className="space-y-4 min-w-0">
-      <div
-        className="rounded-[12px] border overflow-hidden min-w-0"
-        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
-      >
-        {/* Header — Figma Frame 5 */}
-        <div className="p-5 sm:p-6 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ background: READING_ACCENT, boxShadow: READING_GLOW }}
-            />
-            <p className="aether-label">{focusLabel}</p>
-          </div>
-          <h2 className="text-2xl sm:text-[32px] font-extrabold text-[var(--text-primary)] tracking-[-0.64px] leading-tight">
-            {dailyLearning?.title || `Reading Focus${theme ? `: ${theme}` : ''}`}
-          </h2>
-          {dailyLearning?.description && (
-            <p className="text-sm text-[var(--text-secondary)] mt-2 leading-relaxed">
-              {dailyLearning.description}
-            </p>
-          )}
-        </div>
-
-        <div className="p-5 sm:p-6 space-y-5">
-          {/* Book display */}
-          <div
-            className="rounded-xl border p-4 sm:p-5"
-            style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
-          >
-            <div className="flex gap-4 sm:gap-5">
-              <BookCover title={displayTitle} author={displayAuthor} />
-              <div className="min-w-0 flex-1 flex flex-col justify-center">
-                <p className="aether-label mb-2" style={{ color: READING_ACCENT }}>
-                  {primarySession?.type || 'Book'}
-                </p>
-                <h3 className="text-lg sm:text-xl font-bold text-[var(--text-primary)] leading-snug tracking-tight">
-                  {displayTitle}
-                </h3>
-                {displayAuthor && (
-                  <p className="text-sm text-[var(--text-secondary)] mt-1">by {displayAuthor}</p>
-                )}
-                {(primarySession?.focus || book?.purpose) && (
-                  <p className="text-xs text-[var(--text-secondary)] mt-3 leading-relaxed line-clamp-3">
-                    {primarySession?.focus || book?.purpose}
-                  </p>
-                )}
-                {book?.url && (
-                  <a
-                    href={book.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold mt-3 w-fit uppercase tracking-[1px]"
-                    style={{ color: READING_ACCENT }}
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    View on Goodreads
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Session time — 9:15 PM indicator */}
-          <div
-            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3"
-            style={{ background: 'var(--bg-elevated)', borderColor: 'rgba(167,139,250,0.25)' }}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="size-10 rounded-lg flex items-center justify-center border shrink-0"
-                style={{
-                  background: 'rgba(167,139,250,0.12)',
-                  borderColor: 'rgba(167,139,250,0.3)',
-                }}
-              >
-                <Clock className="w-4 h-4" style={{ color: READING_ACCENT }} />
-              </div>
-              <div>
-                <p className="aether-label">Evening Session</p>
-                <p
-                  className="text-xl sm:text-2xl font-extrabold tabular-nums tracking-tight leading-none mt-1"
-                  style={{ color: READING_ACCENT }}
-                >
-                  {sessionStart}
-                </p>
-              </div>
-            </div>
-            {sessionEnd && (
-              <span
-                className="text-[10px] font-bold uppercase tracking-[1.2px] px-3 py-1.5 rounded-full"
-                style={{
-                  color: READING_ACCENT,
-                  border: '1px solid rgba(167,139,250,0.35)',
-                  background: 'rgba(167,139,250,0.08)',
-                }}
-              >
-                Until {sessionEnd}
-              </span>
-            )}
-          </div>
-
-          {/* Reading progress tracker */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="aether-label">Reading Progress</span>
-              <span className="aether-label" style={{ color: READING_ACCENT }}>
-                {progress.percentComplete ?? 0}%
-              </span>
-            </div>
-            <div className="aether-progress-track">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.max(progress.percentComplete ?? 0, 0)}%`,
-                  background: `linear-gradient(90deg, ${READING_ACCENT}, #7c3aed)`,
-                  boxShadow: (progress.percentComplete ?? 0) > 0 ? READING_GLOW : 'none',
-                }}
-              />
-            </div>
-            <p className="text-[10px] uppercase tracking-wide text-[var(--text-secondary)] mt-2">
-              Day {progress.currentDay ?? dayNumber ?? 0} of {progress.totalDays ?? 90}
-            </p>
-          </div>
-
-          {/* Additional sessions (Bible, etc.) */}
-          {extraSessions.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {extraSessions.map((session, idx) => (
-                <ExtraSessionCard key={idx} session={session} />
-              ))}
-            </div>
-          )}
-
-          {dayNumber !== undefined && !previewingTomorrow && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="pt-5 border-t"
-              style={{ borderColor: 'var(--border-subtle)' }}
-            >
+    <div className="space-y-3 min-w-0">
+      <JourneyDailyFlow
+        icon={BookOpen}
+        title={heading}
+        label={focusLabel}
+        accentColor={READING_ACCENT}
+        columns={1}
+        footer={
+          dayNumber !== undefined && !previewingTomorrow ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
               <SessionCompletionButton
                 journeyId={journeyId}
                 dayNumber={dayNumber}
@@ -309,9 +158,83 @@ export function ReadingFlowHero({
                 }}
               />
             </motion.div>
-          )}
+          ) : null
+        }
+      >
+        <div
+          className="rounded-xl border p-3 flex gap-3"
+          style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
+        >
+          <BookCover title={displayTitle} author={displayAuthor} />
+          <div className="min-w-0 flex-1 flex flex-col justify-center gap-1">
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: READING_ACCENT }}>
+              {primarySession?.type || 'Book'}
+            </p>
+            <h3 className="text-sm sm:text-[15px] font-bold text-[var(--text-primary)] leading-snug line-clamp-2">
+              {displayTitle}
+            </h3>
+            {displayAuthor && (
+              <p className="text-[11px] text-[var(--text-secondary)]">by {displayAuthor}</p>
+            )}
+            {(primarySession?.focus || book?.purpose) && (
+              <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed line-clamp-2 mt-0.5">
+                {primarySession?.focus || book?.purpose}
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded"
+                style={{
+                  color: READING_ACCENT,
+                  background: 'rgba(167,139,250,0.12)',
+                }}
+              >
+                <Clock className="size-2.5" />
+                {sessionStart}
+                {sessionEnd ? ` – ${sessionEnd}` : ''}
+              </span>
+              <span className="text-[10px] text-[var(--text-muted)] tabular-nums">
+                {progress.percentComplete ?? 0}% · Day {progress.currentDay ?? dayNumber ?? 0}/
+                {progress.totalDays ?? 90}
+              </span>
+              {book?.url && (
+                <a
+                  href={book.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.08em]"
+                  style={{ color: READING_ACCENT }}
+                >
+                  <ExternalLink className="size-2.5" />
+                  Goodreads
+                </a>
+              )}
+            </div>
+            <div className="aether-progress-track mt-2 h-1">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.max(progress.percentComplete ?? 0, 0)}%`,
+                  background: `linear-gradient(90deg, ${READING_ACCENT}, #7c3aed)`,
+                }}
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      </JourneyDailyFlow>
+
+      {extraSessions.length > 0 && (
+        <JourneyDailyFlow
+          title="More sessions"
+          label="Additional reading blocks"
+          accentColor={READING_ACCENT}
+          columns={extraSessions.length === 1 ? 1 : 2}
+        >
+          {extraSessions.map((session, idx) => (
+            <ExtraSessionCard key={idx} session={session} />
+          ))}
+        </JourneyDailyFlow>
+      )}
 
       {showTomorrowPreview && (
         <ReadingTomorrowPreview nextDay={nextDay} onPreview={onPreviewDay} />

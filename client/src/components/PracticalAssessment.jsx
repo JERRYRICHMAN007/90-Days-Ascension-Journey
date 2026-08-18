@@ -1,295 +1,279 @@
-import { useState } from "react";
-import { CheckCircle2, Circle, Code, GitBranch, FileText, Camera, ArrowRight, Lightbulb } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Button } from "./ui/button";
+import { useEffect, useMemo, useState } from 'react';
+import {
+  CheckCircle2,
+  Circle,
+  Code,
+  GitBranch,
+  FileText,
+  Camera,
+  Lightbulb,
+  Lock,
+  Trophy,
+} from 'lucide-react';
+import {
+  getAssessmentResult,
+  saveAssessmentResult,
+} from '../utils/quizResults.js';
 
-function PracticalAssessment({ assessment, onComplete }) {
+function ChecklistItem({ done, locked, label, onToggle }) {
+  return (
+    <button
+      type="button"
+      disabled={locked}
+      onClick={onToggle}
+      className="w-full flex items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors disabled:opacity-80"
+      style={{
+        background: done
+          ? 'color-mix(in srgb, var(--neon-green) 10%, var(--bg-elevated))'
+          : 'var(--bg-elevated)',
+        borderColor: done
+          ? 'color-mix(in srgb, var(--neon-green) 35%, var(--border-subtle))'
+          : 'var(--border-subtle)',
+      }}
+    >
+      {done ? (
+        <CheckCircle2 className="size-4 mt-0.5 shrink-0 text-[var(--neon-green)]" />
+      ) : (
+        <Circle className="size-4 mt-0.5 shrink-0 text-[var(--text-muted)]" />
+      )}
+      <span
+        className={`text-sm flex-1 ${done ? 'line-through text-[var(--text-muted)]' : 'text-[var(--text-primary)]'}`}
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
+
+export default function PracticalAssessment({
+  assessment,
+  journeyId,
+  dayNumber,
+  onComplete,
+  accentColor = 'var(--neon-green)',
+}) {
+  const saved = useMemo(() => {
+    if (journeyId == null || dayNumber == null) return null;
+    return getAssessmentResult(journeyId, dayNumber);
+  }, [journeyId, dayNumber]);
+
   const [completedItems, setCompletedItems] = useState([]);
   const [submissionItems, setSubmissionItems] = useState([]);
+  const [locked, setLocked] = useState(Boolean(saved));
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setTick((t) => t + 1);
+    window.addEventListener('assessment-results-updated', refresh);
+    return () => window.removeEventListener('assessment-results-updated', refresh);
+  }, []);
+
+  useEffect(() => {
+    void tick;
+    if (journeyId == null || dayNumber == null) return;
+    if (getAssessmentResult(journeyId, dayNumber)) setLocked(true);
+  }, [journeyId, dayNumber, tick]);
+
+  if (!assessment) {
+    return (
+      <div
+        className="rounded-xl border p-8 text-center text-sm text-[var(--text-muted)]"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
+      >
+        No practical assessment available for today
+      </div>
+    );
+  }
+
+  const reqCount = assessment.requirements?.length || 0;
+  const subCount = assessment.submission?.checklist?.length || 0;
+  const allRequirementsMet = completedItems.length === reqCount && reqCount > 0;
+  const allSubmissionReady = subCount === 0 || submissionItems.length === subCount;
+  const canSubmit = !locked && allRequirementsMet && allSubmissionReady;
 
   const toggleRequirement = (index) => {
+    if (locked) return;
     setCompletedItems((prev) =>
-      prev.includes(index)
-        ? prev.filter((i) => i !== index)
-        : [...prev, index]
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
 
   const toggleSubmission = (index) => {
+    if (locked) return;
     setSubmissionItems((prev) =>
-      prev.includes(index)
-        ? prev.filter((i) => i !== index)
-        : [...prev, index]
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
 
-  if (!assessment) {
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    const payload = {
+      dayNumber: assessment.dayNumber ?? dayNumber,
+      requirementsCompleted: completedItems.length,
+      submissionReady: submissionItems.length,
+      completedAt: new Date().toISOString(),
+    };
+    if (journeyId != null && dayNumber != null) {
+      saveAssessmentResult(journeyId, dayNumber, payload);
+    }
+    setLocked(true);
+    onComplete?.(payload);
+  };
+
+  if (locked) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center text-muted-foreground">
-          <p>No practical assessment available for today</p>
-        </CardContent>
-      </Card>
+      <div
+        className="rounded-xl border p-5 sm:p-6 text-center"
+        style={{
+          background: 'var(--bg-card)',
+          borderColor: `color-mix(in srgb, ${accentColor} 40%, var(--border-subtle))`,
+        }}
+      >
+        <Trophy className="size-12 mx-auto mb-3" style={{ color: accentColor }} />
+        <h2 className="text-xl font-bold mb-1" style={{ color: accentColor }}>
+          Assessment complete
+        </h2>
+        <p className="text-xs text-[var(--text-secondary)] mb-3">
+          Recorded for Day {dayNumber ?? assessment.dayNumber}. This assessment is locked.
+        </p>
+        <p className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+          <Lock className="size-3" />
+          No retake
+        </p>
+      </div>
     );
   }
 
-  const allRequirementsMet = completedItems.length === (assessment.requirements?.length || 0);
-  const allSubmissionReady = submissionItems.length === (assessment.submission?.checklist?.length || 0);
-  const canSubmit = allRequirementsMet && allSubmissionReady;
-
   return (
-    <div className="practical-assessment space-y-6">
-      {/* Header */}
-      <Card className="border-4 border-purple-500 bg-gradient-to-r from-purple-50 to-pink-50">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">{assessment.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-700 mb-4">{assessment.description}</p>
-          {assessment.cumulative && assessment.buildingOn && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-center gap-2 text-purple-600 bg-purple-100 p-3 rounded-lg">
-                <GitBranch className="w-5 h-5" />
-                <span className="font-semibold">{assessment.buildingOn.message}</span>
-              </div>
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-sm font-semibold text-blue-800 mb-2">📈 Cumulative Learning Strategy:</p>
-                <p className="text-sm text-blue-700">
-                  Each day's project builds on the previous ones. This means you're not starting from scratch - 
-                  you're enhancing and expanding what you've already built. This approach mirrors real-world 
-                  software development where projects evolve and grow over time.
-                </p>
-              </div>
-            </div>
-          )}
-          {!assessment.cumulative && (
-            <div className="flex items-center justify-center gap-2 text-green-600 bg-green-100 p-3 rounded-lg">
-              <span className="font-semibold">🎯 Foundation Project - This will be built upon in future days!</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Today's Skills */}
-      {assessment.todaySkills && assessment.todaySkills.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-yellow-500" />
-              Skills Learned Today
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {assessment.todaySkills.map((skill, idx) => (
-                <div key={idx} className="p-3 bg-muted/30 rounded-lg border">
-                  <div className="font-semibold text-sm text-primary">{skill.discipline}</div>
-                  <div className="font-medium">{skill.skill}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{skill.description}</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Previous Projects Reference */}
-      {assessment.previousProjects && assessment.previousProjects.length > 0 && (
-        <Card className="border-2 border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GitBranch className="w-5 h-5 text-blue-600" />
-              Build On These Previous Projects
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {assessment.previousProjects.map((project, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-blue-200">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                    {project.day}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">Day {project.day}: {project.title}</div>
-                    {project.skills && project.skills.length > 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        Skills: {project.skills.join(", ")}
-                      </div>
-                    )}
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-blue-500" />
-                </div>
-              ))}
-            </div>
-            <p className="mt-4 text-sm text-gray-600 italic">
-              💡 Tip: Integrate features from these projects into today's build. Make sure previous functionality still works!
+    <div className="space-y-3">
+      <div
+        className="rounded-xl border overflow-hidden"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
+      >
+        <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+          <h3 className="text-sm font-bold text-[var(--text-primary)]">{assessment.title}</h3>
+          {assessment.description && (
+            <p className="text-[11px] text-[var(--text-secondary)] mt-1 leading-relaxed">
+              {assessment.description}
             </p>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </div>
 
-      {/* Project Requirements */}
-      {assessment.todayProject && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Code className="w-5 h-5" />
-              Today's Project: {assessment.todayProject.title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {assessment.todayProject.description && (
-              <p className="text-gray-700 mb-4">{assessment.todayProject.description}</p>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-3">Requirements Checklist</h4>
-                <div className="space-y-2">
-                  {assessment.requirements?.map((req, idx) => {
-                    const isCompleted = completedItems.includes(idx);
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
-                          isCompleted
-                            ? "bg-green-50 border-green-300"
-                            : "bg-white border-gray-200 hover:border-blue-300"
-                        }`}
-                        onClick={() => toggleRequirement(idx)}
-                      >
-                        <div className="mt-0.5">
-                          {isCompleted ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <Circle className="w-5 h-5 text-gray-400" />
-                          )}
-                        </div>
-                        <div className={`flex-1 ${isCompleted ? "line-through text-gray-500" : ""}`}>
-                          {req}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {assessment.mustHave && assessment.mustHave.length > 0 && (
-                <div className="mt-6 pt-6 border-t">
-                  <h4 className="font-semibold mb-3 text-orange-600">Must Have (Non-Negotiable)</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                    {assessment.mustHave.map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {assessment.stretchGoals && assessment.stretchGoals.length > 0 && (
-                <div className="mt-6 pt-6 border-t">
-                  <h4 className="font-semibold mb-3 text-purple-600">Stretch Goals (Bonus Points!)</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                    {assessment.stretchGoals.map((goal, idx) => (
-                      <li key={idx}>{goal}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+        <div className="p-3 sm:p-4 space-y-3">
+          {assessment.cumulative && assessment.buildingOn && (
+            <div
+              className="flex items-start gap-2 rounded-lg border px-3 py-2 text-xs"
+              style={{
+                borderColor: 'color-mix(in srgb, #a78bfa 35%, var(--border-subtle))',
+                background: 'color-mix(in srgb, #a78bfa 8%, transparent)',
+                color: '#c4b5fd',
+              }}
+            >
+              <GitBranch className="size-3.5 mt-0.5 shrink-0" />
+              <span>{assessment.buildingOn.message}</span>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
 
-      {/* Submission Checklist */}
-      {assessment.submission && (
-        <Card className="border-2 border-green-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-green-600" />
-              Submission Checklist
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 mb-4">
-              <h4 className="font-semibold">Before Submitting:</h4>
-              {assessment.submission.checklist?.map((item, idx) => {
-                const isCompleted = submissionItems.includes(idx);
-                return (
+          {assessment.todaySkills?.length > 0 && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)] mb-2 flex items-center gap-1.5">
+                <Lightbulb className="size-3" style={{ color: accentColor }} />
+                Skills today
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {assessment.todaySkills.map((skill, idx) => (
                   <div
                     key={idx}
-                    className={`flex items-center gap-3 p-2 rounded ${
-                      isCompleted ? "bg-green-50" : "bg-gray-50"
-                    }`}
-                    onClick={() => toggleSubmission(idx)}
+                    className="rounded-lg border px-3 py-2"
+                    style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
                   >
-                    {isCompleted ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <Circle className="w-4 h-4 text-gray-400" />
-                    )}
-                    <span className={isCompleted ? "line-through text-gray-500" : ""}>{item}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-6 pt-6 border-t">
-              <h4 className="font-semibold mb-3">Deliverables:</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {assessment.submission.deliverables?.map((deliverable, idx) => (
-                  <div key={idx} className="flex items-center gap-2 p-2 bg-muted/30 rounded">
-                    {deliverable.includes("GitHub") && <GitBranch className="w-4 h-4 text-gray-600" />}
-                    {deliverable.includes("Screenshot") && <Camera className="w-4 h-4 text-gray-600" />}
-                    {deliverable.includes("README") && <FileText className="w-4 h-4 text-gray-600" />}
-                    <span className="text-sm">{deliverable}</span>
+                    <p className="text-[10px] font-bold" style={{ color: accentColor }}>
+                      {skill.discipline}
+                    </p>
+                    <p className="text-xs font-semibold text-[var(--text-primary)]">{skill.skill}</p>
                   </div>
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
 
-      {/* Submit Button */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300">
-        <CardContent className="p-6">
-          <div className="text-center space-y-4">
-            <div className="flex items-center justify-center gap-2 text-green-700">
-              <CheckCircle2 className="w-6 h-6" />
-              <span className="font-semibold text-lg">
-                {allRequirementsMet && allSubmissionReady
-                  ? "Ready to Submit!"
-                  : `Complete ${(assessment.requirements?.length || 0) - completedItems.length} more requirements`}
-              </span>
+          {assessment.todayProject && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)] mb-2 flex items-center gap-1.5">
+                <Code className="size-3" style={{ color: accentColor }} />
+                {assessment.todayProject.title}
+              </p>
+              {assessment.todayProject.description && (
+                <p className="text-[11px] text-[var(--text-secondary)] mb-2 leading-relaxed">
+                  {assessment.todayProject.description}
+                </p>
+              )}
+              <div className="space-y-1.5">
+                {assessment.requirements?.map((req, idx) => (
+                  <ChecklistItem
+                    key={idx}
+                    done={completedItems.includes(idx)}
+                    locked={locked}
+                    label={req}
+                    onToggle={() => toggleRequirement(idx)}
+                  />
+                ))}
+              </div>
             </div>
-            <Button
-              size="lg"
-              onClick={() => {
-                if (canSubmit && onComplete) {
-                  onComplete({
-                    dayNumber: assessment.dayNumber,
-                    requirementsCompleted: completedItems.length,
-                    submissionReady: submissionItems.length,
-                    completedAt: new Date().toISOString()
-                  });
-                }
-              }}
-              disabled={!canSubmit}
-              className={`w-full text-lg py-6 font-bold ${
-                canSubmit
-                  ? "bg-green-500 hover:bg-green-600"
-                  : "bg-gray-400 cursor-not-allowed"
-              }`}
-            >
-              <Code className="w-5 h-5 mr-2" />
-              {canSubmit ? "Mark Assessment Complete" : "Complete All Requirements First"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          )}
+
+          {assessment.submission?.checklist?.length > 0 && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-muted)] mb-2 flex items-center gap-1.5">
+                <FileText className="size-3" style={{ color: accentColor }} />
+                Submission checklist
+              </p>
+              <div className="space-y-1.5">
+                {assessment.submission.checklist.map((item, idx) => (
+                  <ChecklistItem
+                    key={idx}
+                    done={submissionItems.includes(idx)}
+                    locked={locked}
+                    label={item}
+                    onToggle={() => toggleSubmission(idx)}
+                  />
+                ))}
+              </div>
+              {assessment.submission.deliverables?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {assessment.submission.deliverables.map((d, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-md border text-[var(--text-secondary)]"
+                      style={{ borderColor: 'var(--border-subtle)' }}
+                    >
+                      {d.includes('GitHub') && <GitBranch className="size-3" />}
+                      {d.includes('Screenshot') && <Camera className="size-3" />}
+                      {d.includes('README') && <FileText className="size-3" />}
+                      {d}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        disabled={!canSubmit}
+        onClick={handleSubmit}
+        className="w-full rounded-xl py-3 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          background: canSubmit ? accentColor : 'var(--bg-elevated)',
+          color: canSubmit ? '#000' : 'var(--text-muted)',
+        }}
+      >
+        {canSubmit
+          ? 'Mark assessment complete'
+          : `Complete ${Math.max(0, reqCount - completedItems.length)} more requirement(s)`}
+      </button>
     </div>
   );
 }
-
-export default PracticalAssessment;
-

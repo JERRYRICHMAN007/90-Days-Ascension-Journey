@@ -29,10 +29,13 @@ function parseExercise(name) {
   const repMatch = name.match(/^(\d+)\s+(.+)$/);
   if (repMatch) {
     const label = repMatch[2];
-    const sideNote = label.includes('each side') ? ' each side' : '';
+    const eachSide = /\beach side\b/i.test(label) || /—\s*Each Side/i.test(label);
     return {
-      metric: `${repMatch[1]}${sideNote || ' reps'}`,
-      label: label.replace(/\s*\(each side\)/i, '').trim(),
+      metric: eachSide ? `${repMatch[1]} each side` : `${repMatch[1]} reps`,
+      label: label
+        .replace(/\s*[—(]\s*each side\)?/i, '')
+        .replace(/\s*—\s*Each Side/i, '')
+        .trim(),
     };
   }
 
@@ -45,17 +48,18 @@ function ExerciseFlipCard({ exercise, step, isActive, onHover }) {
 
   return (
     <FlipCard3D
-      size="md"
+      size="fluid"
       isActive={isActive}
       ariaLabel={`${label}. Tap to view form guide.`}
       onMouseEnter={() => onHover?.(exercise.guideKey)}
       onMouseLeave={() => onHover?.(null)}
       onFocus={() => onHover?.(exercise.guideKey)}
       onBlur={() => onHover?.(null)}
-      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      onFlip={() => onHover?.(exercise.guideKey)}
+      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full max-w-none mx-0"
       front={
         <div
-          className="w-full h-full rounded-xl p-4 flex flex-col items-center justify-center min-w-[132px] sm:min-w-[148px] min-h-[168px] relative border transition-all duration-200 cursor-pointer text-center snap-start"
+          className="w-full h-full rounded-xl p-4 flex flex-col items-center justify-center min-w-0 relative border transition-all duration-200 cursor-pointer text-center"
           style={{
             background: 'var(--bg-elevated)',
             borderColor: isActive ? 'var(--neon-green)' : 'var(--border-subtle)',
@@ -63,7 +67,7 @@ function ExerciseFlipCard({ exercise, step, isActive, onHover }) {
           }}
         >
           <span
-            className="absolute top-2.5 left-2.5 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold tabular-nums"
+            className="absolute top-3 left-3 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold tabular-nums"
             style={{
               color: 'var(--neon-green)',
               border: '1px solid var(--neon-green)',
@@ -73,20 +77,20 @@ function ExerciseFlipCard({ exercise, step, isActive, onHover }) {
             {step}
           </span>
           {metric && (
-            <span className="text-[40px] sm:text-[48px] font-extrabold text-[var(--text-primary)] leading-none tabular-nums tracking-[-0.96px]">
+            <span className="text-3xl sm:text-4xl font-extrabold text-[var(--text-primary)] leading-none tabular-nums tracking-tight">
               {metric.split(' ')[0]}
             </span>
           )}
           {metric && metric.includes(' ') && (
-            <span className="text-[11px] font-bold uppercase tracking-[1.1px] text-[var(--text-secondary)] mt-1">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[1px] text-[var(--text-secondary)] mt-1.5">
               {metric.replace(/^\d+\s*/, '')}
             </span>
           )}
           <span className="text-sm font-semibold text-[var(--text-primary)] mt-2 leading-snug line-clamp-2 px-1">
             {label}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-[1px] text-[var(--neon-green)] mt-3 flex items-center gap-1">
-            <RotateCcw className="w-3 h-3" />
+          <span className="text-[10px] font-bold uppercase tracking-[1px] text-[var(--neon-green)] mt-auto pt-3 flex items-center gap-1">
+            <RotateCcw className="w-3 h-3 shrink-0" />
             Tap for form
           </span>
         </div>
@@ -179,7 +183,7 @@ export function WorkoutCircuitCards({
       <FlowCircuit
         label="Circuit flow · complete in order"
         accentColor="var(--neon-green)"
-        forceScroll
+        fitInView
         footer={
           workout.rounds > 1 ? (
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">

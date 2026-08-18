@@ -204,26 +204,28 @@ export function getDefaultWeeklyPlanForCategory(category, templateId = '') {
     };
   }
 
-  if (category === 'learning') {
-    return {
-      1: { type: 'learning', label: 'Learning session', time: evening },
-      2: { type: 'learning', label: 'Learning session', time: evening },
-      3: { type: 'learning', label: 'Learning session', time: evening },
-      4: { type: 'learning', label: 'Learning session', time: evening },
-      5: { type: 'learning', label: 'Learning session', time: evening },
-      6: { type: 'learning', label: 'Project work', time: '10:00' },
-      0: { type: 'recovery', label: 'Weekly revision', time: '11:00' },
-    };
+  if (category === 'learning' || templateId === 'software-engineering') {
+    // Mobile · Frontend · Backend — 4:00–5:30 AM every day except Saturday
+    const plan = {};
+    [0, 1, 2, 3, 4, 5].forEach((d) => {
+      plan[d] = {
+        type: 'learning',
+        label: 'Mobile · Frontend · Backend',
+        time: '04:00',
+      };
+    });
+    plan[6] = { type: 'recovery', label: 'Rest day', time: '08:00' };
+    return plan;
   }
 
   if (category === 'business') {
     return {
-      1: { type: 'custom', label: 'Planning', time: '09:00' },
-      2: { type: 'custom', label: 'Execution', time: '09:00' },
-      3: { type: 'custom', label: 'Execution', time: '09:00' },
-      4: { type: 'custom', label: 'Execution', time: '09:00' },
-      5: { type: 'custom', label: 'Execution', time: '09:00' },
-      0: { type: 'recovery', label: 'Weekly review', time: evening },
+      1: { type: 'custom', label: 'Planning', time: '04:00' },
+      2: { type: 'custom', label: 'Execution', time: '04:00' },
+      3: { type: 'custom', label: 'Execution', time: '04:00' },
+      4: { type: 'custom', label: 'Execution', time: '04:00' },
+      5: { type: 'custom', label: 'Execution', time: '04:00' },
+      0: { type: 'recovery', label: 'Weekly review', time: '19:00' },
     };
   }
 

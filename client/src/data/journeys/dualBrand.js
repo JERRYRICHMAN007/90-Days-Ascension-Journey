@@ -923,14 +923,26 @@ function getDualBrandLearningResources(weekNum, dayIndex) {
     ],
   ];
   const dayResources = allResources[weekNum - 1]?.[dayIndex] || [];
-  const normalizedDay = dayResources.map((r) =>
-    normalizeResource({
-      ...r,
-      type: r.type || (r.platform === 'YouTube' ? 'youtube' : r.category === 'Tutorial' ? 'article' : 'tool'),
-      description: r.description || r.title,
-    })
-  );
-  return [...DUAL_BRAND_CURATED_RESOURCES, ...normalizedDay];
+  const flatDay = Array.isArray(dayResources[0]) ? dayResources.flat() : dayResources;
+  const normalizedDay = flatDay
+    .filter((r) => r && (r.title || r.url))
+    .map((r) =>
+      normalizeResource({
+        ...r,
+        type:
+          r.type ||
+          (r.platform === 'YouTube' ? 'youtube' : r.category === 'Tutorial' ? 'article' : 'tool'),
+        description: r.description || r.title,
+      })
+    );
+
+  // Only today's task materials (max 4). Fall back to 2 curated if day list empty.
+  if (normalizedDay.length > 0) return normalizedDay.slice(0, 4);
+  const start = ((weekNum - 1) * 7 + dayIndex) % DUAL_BRAND_CURATED_RESOURCES.length;
+  return [
+    DUAL_BRAND_CURATED_RESOURCES[start],
+    DUAL_BRAND_CURATED_RESOURCES[(start + 1) % DUAL_BRAND_CURATED_RESOURCES.length],
+  ];
 }
 
 function getPersonalBrandTasks(weekNum, dayIndex) {

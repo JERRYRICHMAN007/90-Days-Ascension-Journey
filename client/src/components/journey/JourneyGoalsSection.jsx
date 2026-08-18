@@ -7,11 +7,17 @@ import {
 } from '../../utils/journeySetup.js';
 import { getDisplayWeeklyPlan } from '../../utils/journeyWeeklyPlan.js';
 import { resolveJourneyAIContext } from '../../utils/journeyAIContext.js';
+import {
+  WEEKDAY_DISPLAY_ORDER,
+  shouldShowPlanWeekday,
+  getJourneyWeekNumber,
+  getCurrentDayNumber as getJourneyCurrentDay,
+} from '../../utils/journeyPlanning.js';
 import { Button } from '../ui/button';
 import { ResetGoalsConfirmDialog } from './ResetGoalsConfirmDialog.jsx';
 import { cn } from '../../lib/utils';
 
-const WEEK_DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+const WEEK_DISPLAY_ORDER = WEEKDAY_DISPLAY_ORDER;
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatTime12h(time) {
@@ -41,8 +47,12 @@ function activityMeta(type, category) {
   return { icon: Dumbbell, short: 'Workout', tone: 'work' };
 }
 
-function buildWeekDisplay(weeklyPlan, category) {
-  return WEEK_DISPLAY_ORDER.map((weekday) => {
+function buildWeekDisplay(weeklyPlan, category, journeyId) {
+  const current = getJourneyCurrentDay(journeyId);
+  const isStartWeek = !current || getJourneyWeekNumber(journeyId, current) === 1;
+  return WEEK_DISPLAY_ORDER.filter((weekday) =>
+    shouldShowPlanWeekday(journeyId, weekday, isStartWeek)
+  ).map((weekday) => {
     const act = weeklyPlan[weekday];
     if (act) {
       return {
@@ -93,8 +103,8 @@ export function JourneyGoalsSection({ journeyId, accentColor = '#6ee7b7', accent
   const aiContext = resolveJourneyAIContext(journeyId);
 
   const weekDays = useMemo(
-    () => buildWeekDisplay(weeklyPlan, aiContext.category),
-    [weeklyPlan, aiContext.category]
+    () => buildWeekDisplay(weeklyPlan, aiContext.category, journeyId),
+    [weeklyPlan, aiContext.category, journeyId]
   );
 
   const activeCount = weekDays.filter((d) => d.tone === 'work').length;

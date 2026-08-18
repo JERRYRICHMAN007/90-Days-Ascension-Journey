@@ -3,6 +3,10 @@ import { mergeBackendCompletedDays } from './progressTracking.js';
 import { STORAGE_KEYS } from './storageKeys.js';
 import { JOURNEY_IDS } from './journeyTheme.js';
 import { getCurrentDayNumber, getCurrentPhaseStatus } from './dates.js';
+import {
+  hydrateJourneyStateFromBackend,
+  syncJourneyStateToBackend,
+} from './journeyPersist.js';
 
 const DEFAULT_DOMAINS = {
   'body-transformation': 0,
@@ -46,17 +50,26 @@ function readLocalJson(key, fallback) {
 }
 
 /**
- * Pull progress, XP, streaks, and achievements from the backend after sign-in.
+ * Pull progress, XP, streaks, achievements, and journey starts from the backend after sign-in.
  * Never throws — failures are logged and the app continues with local data.
  */
 export async function hydrateFromBackend() {
   const accessToken = localStorage.getItem('accessToken');
   if (!accessToken) return;
 
+  // Always restore journey start/setup first so journeys don't look "not started"
+  try {
+    await hydrateJourneyStateFromBackend();
+  } catch (error) {
+    console.warn('Aether: journey state hydrate failed', error);
+  }
+
   const currentDay = getCurrentDayNumber();
   const phase = getCurrentPhaseStatus();
   if (currentDay === 0 || phase === 'onboarding') {
-    console.log('Aether: skipping backend hydration during onboarding');
+    console.log('Aether: skipping progress hydration during onboarding');
+    // Still push local journey state up if we have any
+    await syncJourneyStateToBackend();
     return;
   }
 
@@ -125,4 +138,11 @@ export async function hydrateFromBackend() {
 
   window.dispatchEvent(new CustomEvent('gamification-hydrated'));
   window.dispatchEvent(new CustomEvent('progress-updated'));
+
+  // Keep cloud copy of journey starts / setup in sync
+  try {
+    await syncJourneyStateToBackend();
+  } catch (error) {
+    console.warn('Aether: journey state push failed', error);
+  }
 }

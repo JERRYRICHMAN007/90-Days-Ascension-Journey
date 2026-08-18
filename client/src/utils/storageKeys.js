@@ -31,6 +31,10 @@ export const STORAGE_KEYS = {
   JOURNEY_DAILY_NOTES: 'aetherJourneyDailyNotes',
   /** Per-journey weekly plan: { [journeyId]: { [0-6]: WeekdayActivity } } */
   JOURNEY_WEEKLY_PLAN: 'aetherJourneyWeeklyPlan',
+  /** Per-journey workout circuit overrides + level: { [journeyId]: WorkoutPlanState } */
+  WORKOUT_PLAN: 'aetherWorkoutPlan',
+  /** Per-journey custom content (books, weekday tasks, SE disciplines): { [journeyId]: CustomPlan } */
+  JOURNEY_CUSTOM_PLAN: 'aetherJourneyCustomPlan',
 };
 
 /** Older key names → current Aether keys (run once on load). */

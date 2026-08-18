@@ -8,11 +8,13 @@ import {
   isJourneyStarted,
   startJourney,
   getAllJourneyStartDates,
-  parseStartEntry,
+  getDefaultPickerDate,
+  resolveLiveStartYmd,
 } from './journeyPlanning.js';
-import { resetJourneyProgress } from './progressTracking.js';
+import { formatYmd } from './dates.js';
 import { STORAGE_KEYS } from './storageKeys.js';
 import { getJourneySetup } from './journeySetup.js';
+import { wipeJourneyRuntimeData, dispatchJourneyWipeEvents } from './journeyReset.js';
 
 function readJson(key, fallback) {
   try {
@@ -66,11 +68,14 @@ export function enableAllConfiguredJourneys() {
   summary
     .filter((j) => j.configured && !j.started)
     .forEach((j) => {
-      const ymd = j.startYmd || getJourneyTimeline(j.id).startYmd;
-      if (ymd) {
-        startJourney(j.id, ymd);
-        started += 1;
-      }
+      const ymd = resolveLiveStartYmd(
+        getJourneySetup(j.id).startYmd ||
+          j.startYmd ||
+          getJourneyTimeline(j.id).startYmd ||
+          getDefaultPickerDate()
+      );
+      startJourney(j.id, ymd);
+      started += 1;
     });
 
   dispatchBulkEvents();
@@ -82,37 +87,28 @@ export function enableAllConfiguredJourneys() {
 }
 
 /**
- * Reset progress, streaks, and stats for all journeys while preserving schedules & setup.
+ * Reset all journey progress and move every journey back to planned (not active).
+ * Start dates are set to today so the next start begins at Day 1.
  */
 export function resetAllJourneysProgress() {
   const summary = getJourneyBulkSummary();
   const ids = summary.map((j) => j.id);
+  const today = formatYmd(new Date());
 
-  ids.forEach((id) => resetJourneyProgress(id));
+  ids.forEach((id) => wipeJourneyRuntimeData(id));
 
   const map = { ...getAllJourneyStartDates() };
   ids.forEach((id) => {
-    const entry = parseStartEntry(map[id]);
-    if (entry?.startYmd) {
-      map[id] = { startYmd: entry.startYmd, startedAt: null };
-    }
+    map[id] = { startYmd: today, startedAt: null };
   });
   writeJson(STORAGE_KEYS.JOURNEY_STARTS, map);
 
-  const xp = readJson(STORAGE_KEYS.XP, { global: 0, domains: {} });
-  let globalRemoved = 0;
-  ids.forEach((id) => {
-    if (xp.domains?.[id]) {
-      globalRemoved += xp.domains[id];
-      xp.domains[id] = 0;
-    }
-  });
-  xp.global = Math.max(0, (xp.global || 0) - globalRemoved);
-  writeJson(STORAGE_KEYS.XP, xp);
-
   writeJson(STORAGE_KEYS.STREAKS, { current: 0, longest: 0, lastDate: null });
 
-  dispatchBulkEvents();
+  if (typeof window !== 'undefined') {
+    ids.forEach((id) => dispatchJourneyWipeEvents(id));
+    dispatchBulkEvents();
+  }
   return ids.length;
 }
 
