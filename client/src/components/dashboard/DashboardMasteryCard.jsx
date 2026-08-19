@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Target } from 'lucide-react';
+import { ChevronRight, Target, X } from 'lucide-react';
 import { getJourneyAccent } from '../../utils/journeyAccents.js';
-import { getContentTemplateId } from '../../utils/journeyRegistry.js';
+import { getContentTemplateId, removeJourney } from '../../utils/journeyRegistry.js';
 import {
   getJourneyState,
   getJourneyTimeline,
@@ -11,6 +11,7 @@ import {
 } from '../../utils/journeyPlanning.js';
 import { calculateSessionBasedProgress } from '../../utils/progressTracking.js';
 import { getJourneyData } from '../../data/journeys/index.js';
+import { SettingsConfirmDialog } from '../settings/SettingsConfirmDialog.jsx';
 
 /**
  * Lightweight dashboard card — summary only; tap opens dedicated journey page.
@@ -45,8 +46,10 @@ export function DashboardMasteryCard({ entry, index = 0, tick = 0 }) {
   }, [journeyId, templateId, tick]);
 
   const color = entry.color || accent.color;
+  const [removeOpen, setRemoveOpen] = useState(false);
 
   return (
+    <>
     <motion.button
       type="button"
       initial={{ opacity: 0, y: 10 }}
@@ -69,16 +72,30 @@ export function DashboardMasteryCard({ entry, index = 0, tick = 0 }) {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {entry.isDemo && (
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--neon-purple)]/15 text-[var(--neon-purple)]">
-              Demo
-            </span>
-          )}
-          {state === 'active' && !entry.isDemo && (
+          {state === 'active' && (
             <span className="text-sm font-bold tabular-nums" style={{ color }}>
               {progress}%
             </span>
           )}
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={`Remove ${entry.title}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setRemoveOpen(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                setRemoveOpen(true);
+              }
+            }}
+            className="flex size-8 items-center justify-center rounded-full text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+          >
+            <X className="size-4" />
+          </span>
         </div>
       </div>
 
@@ -108,5 +125,18 @@ export function DashboardMasteryCard({ entry, index = 0, tick = 0 }) {
         <ChevronRight className="size-4 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" />
       </div>
     </motion.button>
+    <SettingsConfirmDialog
+      open={removeOpen}
+      title={`Remove ${entry.title}?`}
+      description="This takes it off your dashboard and clears its progress. You can add the same type again anytime."
+      confirmLabel="Remove"
+      variant="danger"
+      onCancel={() => setRemoveOpen(false)}
+      onConfirm={() => {
+        removeJourney(journeyId);
+        setRemoveOpen(false);
+      }}
+    />
+    </>
   );
 }

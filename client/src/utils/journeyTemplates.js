@@ -61,6 +61,7 @@ export function getCustomTemplate(id) {
 export const BUILTIN_TEMPLATE_CATEGORIES = [
   { id: 'fitness', label: 'Fitness', icon: '💪' },
   { id: 'reading', label: 'Reading', icon: '📚' },
+  { id: 'writing', label: 'Writing', icon: '✍️' },
   { id: 'faith', label: 'Bible Study', icon: '📖' },
   { id: 'learning', label: 'Learning', icon: '🎓' },
   { id: 'business', label: 'Business', icon: '💼' },

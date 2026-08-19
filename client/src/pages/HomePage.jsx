@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { cleanInvalidProgress, resetAllProgress } from "../utils/progressTracking";
 import { STORAGE_KEYS } from "../utils/storageKeys.js";
@@ -106,13 +107,14 @@ export function HomePage() {
             Your transformation begins with a single journey.
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mb-8 leading-relaxed">
-            Create a journey, set your schedule, and start when you&apos;re ready. Each path runs independently.
+            Pick a path, set your days and times, and start when you&apos;re ready.
           </p>
           <Link
             to="/dashboard/create-journey"
-            className="inline-flex items-center justify-center rounded-xl bg-[var(--neon-green)] px-8 py-4 text-base font-bold text-[#003d1f] hover:opacity-90 transition-opacity"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--neon-green)] px-8 py-4 text-base font-bold text-[#003d1f] hover:opacity-90 transition-opacity"
           >
-            Create Your First Journey
+            <Plus className="size-5" />
+            Create a journey
           </Link>
         </div>
         <DashboardFAB />
@@ -123,11 +125,20 @@ export function HomePage() {
   return (
     <>
       <div className="flex flex-col gap-10 w-full">
-        <div className="flex flex-col gap-1">
-          <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
-            {name ? `Welcome back, ${name}.` : 'Welcome back.'}
-          </h1>
-          <p className="text-base text-[var(--text-secondary)]">{subtitle}</p>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div className="flex flex-col gap-1 min-w-0">
+            <h1 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
+              {name ? `Welcome back, ${name}.` : 'Welcome back.'}
+            </h1>
+            <p className="text-base text-[var(--text-secondary)]">{subtitle}</p>
+          </div>
+          <Link
+            to="/dashboard/create-journey"
+            className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-[var(--neon-green)] px-4 py-2.5 text-sm font-bold text-[#003d1f] hover:opacity-90 transition-opacity shrink-0"
+          >
+            <Plus className="size-4" />
+            New journey
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">

@@ -63,6 +63,12 @@ export function CustomContentEditor({
           accentColor={accentColor}
         />
       )}
+      {templateId === 'custom-scratch' && (
+        <GenericDaysEditor
+          days={plan.genericDays || {}}
+          onChange={(genericDays) => patch({ genericDays })}
+        />
+      )}
     </div>
   );
 }
@@ -476,6 +482,45 @@ function SeDaysEditor({ days, onChange, accentColor }) {
                   className="rounded-lg border px-2 py-1.5 text-xs bg-[var(--bg-primary)] border-[var(--border-subtle)]"
                 />
               </>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function GenericDaysEditor({ days, onChange }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-bold text-[var(--text-primary)]">What you do each day</p>
+      <p className="text-[11px] text-[var(--text-muted)]">One simple task per weekday. Rest days skip the session.</p>
+      {WEEKDAY_FULL.map((name, d) => {
+        const row = days[String(d)] || { rest: false, task: '' };
+        return (
+          <div
+            key={d}
+            className="rounded-xl border p-3 space-y-2"
+            style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-elevated)' }}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold">{name}</p>
+              <label className="text-[10px] text-[var(--text-muted)] flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={Boolean(row.rest)}
+                  onChange={(e) => onChange({ ...days, [String(d)]: { ...row, rest: e.target.checked } })}
+                />
+                Rest
+              </label>
+            </div>
+            {!row.rest && (
+              <input
+                value={row.task || ''}
+                onChange={(e) => onChange({ ...days, [String(d)]: { ...row, task: e.target.value } })}
+                placeholder="What should you do this day?"
+                className="w-full rounded-lg border px-2 py-1.5 text-xs bg-[var(--bg-primary)] border-[var(--border-subtle)]"
+              />
             )}
           </div>
         );

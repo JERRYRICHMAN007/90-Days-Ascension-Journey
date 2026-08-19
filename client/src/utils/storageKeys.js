@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
   HAS_CREATED_JOURNEY: 'aetherHasCreatedJourney',
   /** Registry migration marker */
   JOURNEY_REGISTRY_MIGRATED_V2: 'aetherJourneyRegistryMigratedV2',
+  /** Starter journeys were seeded once (new users see the five paths; removals stick) */
+  JOURNEY_STARTERS_SEEDED: 'aetherJourneyStartersSeeded',
   /** Per-journey availability: { [journeyId]: { enabled, availableDays, hoursPerDay } } */
   JOURNEY_AVAILABILITY: 'aetherJourneyAvailability',
   /** When true, all configured journeys start together */

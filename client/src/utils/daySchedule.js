@@ -60,9 +60,10 @@ export function hasScheduledActivities(day, journeyId) {
   }
 
   if (journeyId === 'software-engineering') {
-    // Software engineering always has content (learning, projects, etc.)
     if (day.dailyLearning || day.miniProject || day.cursorWorkflow) return true;
   }
+
+  if (day.customSession) return true;
 
   return false;
 }

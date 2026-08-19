@@ -4,6 +4,7 @@ import { dualBrandWeeks } from './dualBrand.js';
 import { readingWeeks } from './reading.js';
 import { writersWeeks } from './writers.js';
 import { softwareEngineeringWeeks } from './softwareEngineering.js';
+import { customScratchWeeks, customScratchJourney } from './customScratch.js';
 
 export { journeys } from './shared.js';
 export {
@@ -34,6 +35,8 @@ export function getJourneyData(journeyId) {
       return { weeks: writersWeeks, journey: journeys[3] };
     case "software-engineering":
       return { weeks: softwareEngineeringWeeks, journey: journeys[4] };
+    case "custom-scratch":
+      return { weeks: customScratchWeeks, journey: customScratchJourney };
     default:
       return { weeks: [], journey: null };
   }

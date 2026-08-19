@@ -113,11 +113,26 @@ function defaultSeDays() {
   return days;
 }
 
+function defaultGenericDays() {
+  const days = {};
+  WEEKDAY_FULL.forEach((_, d) => {
+    days[String(d)] = {
+      rest: d === 0,
+      task: d === 0 ? '' : "Today's session",
+    };
+  });
+  return days;
+}
+
 export function getDefaultCustomPlanDraft(journeyId) {
   const templateId = getContentTemplateId(journeyId);
   const ctx = resolveJourneyAIContext(journeyId);
   const weeklyPlan = getDefaultWeeklyPlanForCategory(ctx.category, templateId);
   const draft = { weeklyPlan };
+
+  if (templateId === 'custom-scratch') {
+    draft.genericDays = defaultGenericDays();
+  }
 
   if (templateId === 'reading') {
     draft.readingQueue = getDefaultReadingQueue();
@@ -181,6 +196,9 @@ export function getDefaultPlanPreviewItems(journeyId) {
       'Saturday rest',
     ];
   }
+  if (templateId === 'custom-scratch') {
+    return ['Your own name and schedule', 'Days and times you choose', 'Tasks you write for each weekday'];
+  }
   return ['6-month independent schedule', 'Daily sessions + weekly rest'];
 }
 
@@ -233,6 +251,10 @@ export function seedJourneyPlan(journeyId, { planSource = 'default', customPlan 
   }
   if (templateId === 'software-engineering') {
     stored.seDays = planSource === 'custom' && draft.seDays ? draft.seDays : defaultSeDays();
+  }
+  if (templateId === 'custom-scratch') {
+    stored.genericDays =
+      planSource === 'custom' && draft.genericDays ? draft.genericDays : defaultGenericDays();
   }
 
   saveCustomPlan(journeyId, stored);

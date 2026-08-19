@@ -9,17 +9,43 @@ import {
   getAllJourneyStartDates,
   migratePerJourneyStartsFromGlobal,
 } from './journeyPlanning.js';
+import { wipeJourneyRuntimeData, dispatchJourneyWipeEvents } from './journeyReset.js';
 
 /** @typedef {{ id: string, title: string, templateId: string, icon?: string, color?: string, createdAt: string, isDemo?: boolean }} JourneyRegistryEntry */
 
 export const DEMO_JOURNEY_ID = 'demo-intro-journey';
 
 const TEMPLATE_META = {
-  'body-transformation': { title: 'Body Transformation', icon: '💪', color: '#00ff87' },
-  'dual-brand': { title: 'Dual Brand', icon: '🚀', color: '#00e5ff' },
-  reading: { title: 'Reading Journey', icon: '📚', color: '#a78bfa' },
-  writers: { title: "Writer's Journey", icon: '✍️', color: '#f59e0b' },
-  'software-engineering': { title: 'Software Engineering', icon: '💻', color: '#3b82f6' },
+  'body-transformation': {
+    title: 'Body Transformation',
+    icon: '💪',
+    color: '#00ff87',
+    description: 'Strength, energy, and a daily training rhythm.',
+  },
+  'dual-brand': {
+    title: 'Dual Brand',
+    icon: '🚀',
+    color: '#00e5ff',
+    description: 'Grow your personal brand and your business together.',
+  },
+  reading: {
+    title: 'Reading Journey',
+    icon: '📚',
+    color: '#a78bfa',
+    description: 'Read with a plan — books that change how you think.',
+  },
+  writers: {
+    title: "Writer's Journey",
+    icon: '✍️',
+    color: '#f59e0b',
+    description: 'Write, publish, and build a consistent voice.',
+  },
+  'software-engineering': {
+    title: 'Software Engineering',
+    icon: '💻',
+    color: '#3b82f6',
+    description: 'Mobile, frontend, and backend — ship real skills.',
+  },
 };
 
 function readRegistry() {
@@ -54,18 +80,21 @@ function legacyEntry(templateId) {
   };
 }
 
-function demoEntry() {
-  const meta = TEMPLATE_META['body-transformation'];
-  const theme = JOURNEY_THEME['body-transformation'];
-  return {
-    id: DEMO_JOURNEY_ID,
-    title: theme?.label || meta.title,
-    templateId: 'body-transformation',
-    icon: meta.icon,
-    color: meta.color,
-    createdAt: new Date().toISOString(),
-    isDemo: true,
-  };
+function starterEntries() {
+  return JOURNEY_IDS.map((templateId) => legacyEntry(templateId));
+}
+
+function stripJourneyKeyedStore(storageKey, journeyId) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return;
+    const all = JSON.parse(raw);
+    if (!all || typeof all !== 'object' || !(journeyId in all)) return;
+    delete all[journeyId];
+    localStorage.setItem(storageKey, JSON.stringify(all));
+  } catch {
+    /* ignore */
+  }
 }
 
 /** Journeys with saved completions, schedules, or availability */
@@ -107,39 +136,9 @@ function detectLegacyJourneyIds() {
   return active;
 }
 
-function hasMeaningfulAppUsage() {
-  try {
-    const xpRaw = localStorage.getItem(STORAGE_KEYS.XP);
-    if (xpRaw) {
-      const xp = JSON.parse(xpRaw);
-      if ((xp.global || 0) > 0) return true;
-      if (Object.values(xp.domains || {}).some((v) => Number(v) > 0)) return true;
-    }
-  } catch {
-    return true;
-  }
-
-  try {
-    const stored = localStorage.getItem('sessionCompletions');
-    if (stored && stored !== '{}' && stored !== 'null') {
-      const parsed = JSON.parse(stored);
-      if (Object.keys(parsed).length > 0) return true;
-    }
-  } catch {
-    return true;
-  }
-
-  if (localStorage.getItem(STORAGE_KEYS.HAS_CREATED_JOURNEY) === 'true') return true;
-
-  const globalStart = localStorage.getItem(STORAGE_KEYS.JOURNEY_START);
-  if (globalStart) return true;
-
-  return detectLegacyJourneyIds().size > 0;
-}
-
 export function hasCreatedJourney() {
   if (localStorage.getItem(STORAGE_KEYS.HAS_CREATED_JOURNEY) === 'true') return true;
-  return readRegistry().some((e) => !e.isDemo);
+  return readRegistry().some((e) => !e.isDemo && e.id !== DEMO_JOURNEY_ID);
 }
 
 function markHasCreatedJourney() {
@@ -151,38 +150,34 @@ function removeDemoEntries(entries) {
 }
 
 /**
- * Idempotent migration: restore legacy journeys, inject demo only for brand-new users.
- * User data always wins over placeholders.
+ * New users get the five starter journeys once. Removals stick.
+ * Journeys with existing local progress are restored if missing from the list.
  */
 export function migrateJourneyRegistry() {
   if (typeof window === 'undefined') return [];
 
   migratePerJourneyStartsFromGlobal();
 
-  let entries = readRegistry();
-  const returningUser = hasMeaningfulAppUsage();
-  const realEntries = removeDemoEntries(entries);
+  let entries = removeDemoEntries(readRegistry());
   const byId = new Map(entries.map((e) => [e.id, e]));
 
-  if (returningUser) {
+  detectLegacyJourneyIds().forEach((templateId) => {
+    const hasEntry = [...byId.values()].some(
+      (e) => e.id === templateId || e.templateId === templateId
+    );
+    if (!hasEntry) byId.set(templateId, legacyEntry(templateId));
+  });
+
+  entries = [...byId.values()];
+
+  const startersSeeded = localStorage.getItem(STORAGE_KEYS.JOURNEY_STARTERS_SEEDED) === 'true';
+  if (entries.length === 0 && !startersSeeded) {
+    entries = starterEntries();
+  }
+
+  if (entries.length > 0) {
+    localStorage.setItem(STORAGE_KEYS.JOURNEY_STARTERS_SEEDED, 'true');
     markHasCreatedJourney();
-
-    JOURNEY_IDS.forEach((templateId) => {
-      const hasNonDemo = [...byId.values()].some(
-        (e) => !e.isDemo && (e.id === templateId || e.templateId === templateId)
-      );
-      if (!hasNonDemo) {
-        byId.set(templateId, legacyEntry(templateId));
-      }
-    });
-
-    entries = removeDemoEntries([...byId.values()]);
-  } else if (realEntries.length === 0) {
-    if (!byId.has(DEMO_JOURNEY_ID)) {
-      entries = [demoEntry()];
-    }
-  } else {
-    entries = removeDemoEntries([...byId.values()]);
   }
 
   const serialized = JSON.stringify(entries);
@@ -216,6 +211,7 @@ export function getContentTemplateId(journeyId) {
     if (custom?.baseTemplateId && JOURNEY_IDS.includes(custom.baseTemplateId)) {
       return custom.baseTemplateId;
     }
+    if (custom?.fromScratch) return 'custom-scratch';
     return 'body-transformation';
   }
   if (entry?.templateId && JOURNEY_IDS.includes(entry.templateId)) return entry.templateId;
@@ -232,6 +228,7 @@ export function getJourneyTemplates() {
 
 export function createJourney({ title, templateId, icon, color }) {
   markHasCreatedJourney();
+  localStorage.setItem(STORAGE_KEYS.JOURNEY_STARTERS_SEEDED, 'true');
 
   const id = `journey-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const meta = TEMPLATE_META[templateId] || {};
@@ -251,5 +248,19 @@ export function createJourney({ title, templateId, icon, color }) {
 }
 
 export function removeJourney(journeyId) {
+  if (!journeyId) return;
+  wipeJourneyRuntimeData(journeyId);
+  [
+    STORAGE_KEYS.JOURNEY_STARTS,
+    STORAGE_KEYS.JOURNEY_AVAILABILITY,
+    STORAGE_KEYS.JOURNEY_SETUP,
+    STORAGE_KEYS.JOURNEY_WEEKLY_PLAN,
+    STORAGE_KEYS.JOURNEY_CUSTOM_PLAN,
+    STORAGE_KEYS.JOURNEY_DAILY_NOTES,
+    STORAGE_KEYS.WORKOUT_PLAN,
+  ].forEach((key) => stripJourneyKeyedStore(key, journeyId));
+
+  localStorage.setItem(STORAGE_KEYS.JOURNEY_STARTERS_SEEDED, 'true');
   writeRegistry(readRegistry().filter((e) => e.id !== journeyId));
+  dispatchJourneyWipeEvents(journeyId);
 }

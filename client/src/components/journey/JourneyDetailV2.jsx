@@ -58,7 +58,9 @@ import { JourneyOverviewPage } from './JourneyOverviewPage';
 import { JourneyStatsPage } from './JourneyStatsPage';
 import { JourneyAchievementsPage } from './JourneyAchievementsPage';
 import { JourneyNotesPage } from './JourneyNotesPage';
-import { getRegistryEntry } from '../../utils/journeyRegistry.js';
+import { getContentTemplateId, getRegistryEntry } from '../../utils/journeyRegistry.js';
+import { getCustomPlan } from '../../utils/journeyCustomPlan.js';
+import { getDisplayWeeklyPlan } from '../../utils/journeyWeeklyPlan.js';
 import { JourneyWeekNav } from './JourneyWeekNav';
 import { GamificationToast } from './GamificationToast';
 import { JourneyStartGate } from './JourneyStartGate';
@@ -552,6 +554,23 @@ export function JourneyDetailV2({
     if (day.isTestRun) return [];
     
     const tasks = [];
+
+    if (getContentTemplateId(journeyId) === 'custom-scratch') {
+      const live = getJourneyDateForDay(journeyId, day.dayNumber);
+      const weekday = live ? live.getDay() : new Date().getDay();
+      const generic = getCustomPlan(journeyId).genericDays?.[String(weekday)];
+      const weekly = getDisplayWeeklyPlan(journeyId)[weekday];
+      if (generic?.rest || weekly?.type === 'recovery' || weekly?.type === 'rest') {
+        return [];
+      }
+      const text = (generic?.task || '').trim() || weekly?.label || "Complete today's session";
+      tasks.push({
+        id: `scratch-${day.dayNumber}`,
+        text,
+        category: 'Session',
+      });
+      return tasks;
+    }
     
     // Dual Brand tasks
     if (journeyId === 'dual-brand') {
