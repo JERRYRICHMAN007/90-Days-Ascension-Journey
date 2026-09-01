@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, Sparkles, Target } from 'lucide-react';
+import { ChevronLeft, Sparkles, Target, SlidersHorizontal } from 'lucide-react';
 import { Button } from '../ui/button';
 import { JourneyScheduleCard } from './JourneyScheduleCard';
 import { JourneyMotivationQuote } from './JourneyMotivationQuote';
@@ -93,6 +93,18 @@ export function JourneyOverviewPage({
             )}
           </div>
         </div>
+        {onEditSetup && (
+          <Button
+            data-tour="customize-journey"
+            variant="outline"
+            size="sm"
+            className="rounded-full shrink-0 text-xs font-semibold"
+            onClick={onEditSetup}
+          >
+            <SlidersHorizontal className="size-3.5 mr-1.5" />
+            Customize
+          </Button>
+        )}
       </div>
 
       {state === 'active' && (

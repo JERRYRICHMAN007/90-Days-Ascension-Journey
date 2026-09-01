@@ -27,6 +27,7 @@ import { ResetPasswordForm } from "./components/auth/ResetPasswordForm";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { migrateLegacyStorage } from "./utils/storageKeys.js";
 import { migrateJourneyRegistry } from "./utils/journeyRegistry.js";
+import { migrateLeakedEngineeringPlans } from "./utils/journeyCustomPlan.js";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
 import { hydrateFromBackend } from "./utils/hydrateFromBackend.js";
 import { flushQueue } from "./utils/offlineQueue.js";
@@ -35,6 +36,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 // Run migration synchronously before React mounts so a bad key cannot white-screen the app
 migrateLegacyStorage();
 migrateJourneyRegistry();
+migrateLeakedEngineeringPlans();
 
 async function runPostAuthSync() {
   try {

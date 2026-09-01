@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
@@ -7,6 +8,8 @@ import { cn } from '../../lib/utils';
 import { pageTransition } from '../../lib/motion.js';
 import { AchievementUnlockToast } from '../gamification/AchievementUnlockToast';
 import { IncompleteDaysGuard } from '../journey/IncompleteDaysGuard';
+import { ProductTour } from '../onboarding/ProductTour';
+import { migrateLeakedEngineeringPlans } from '../../utils/journeyCustomPlan.js';
 
 const JOURNEY_PATHS = [
   '/body-transformation',
@@ -18,6 +21,10 @@ const JOURNEY_PATHS = [
 
 export function DashboardLayout({ children, className }) {
   const location = useLocation();
+
+  useEffect(() => {
+    migrateLeakedEngineeringPlans();
+  }, []);
   const isJourneyPage =
     JOURNEY_PATHS.some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`)) ||
     location.pathname.startsWith('/journey/') ||
@@ -62,6 +69,7 @@ export function DashboardLayout({ children, className }) {
         <MobileNav />
       </div>
       <AchievementUnlockToast />
+      <ProductTour />
     </div>
   );
 }

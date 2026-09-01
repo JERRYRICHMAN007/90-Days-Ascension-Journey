@@ -3,7 +3,10 @@
  */
 
 import { STORAGE_KEYS } from './storageKeys.js';
-import { getDefaultWeeklyPlanForCategory, resolveJourneyAIContext } from './journeyAIContext.js';
+import {
+  getDefaultWeeklyPlanForJourney,
+  resolveJourneyAIContext,
+} from './journeyAIContext.js';
 
 /** @typedef {{ type: 'workout'|'recovery'|'learning'|'rest'|'custom', label: string, time?: string }} WeekdayActivity */
 
@@ -46,8 +49,19 @@ export function getDefaultWorkoutWeeklyPlan() {
 export function getWeeklyPlan(journeyId) {
   const all = readAll();
   if (all[journeyId]) return all[journeyId];
+  return getDefaultWeeklyPlanForJourney(journeyId);
+}
+
+export function getDefaultActivityForWeekday(journeyId, weekday) {
+  const defaults = getDefaultWeeklyPlanForJourney(journeyId);
   const ctx = resolveJourneyAIContext(journeyId);
-  return getDefaultWeeklyPlanForCategory(ctx.category, ctx.templateId);
+  return (
+    defaults[weekday] || {
+      type: ctx.category === 'fitness' ? 'workout' : 'learning',
+      label: ctx.journeyTitle || ctx.sessionTerm || 'Session',
+      time: '19:00',
+    }
+  );
 }
 
 function isFitnessJourney(ctx) {
@@ -114,10 +128,7 @@ export function patchWeeklyPlanFromAvailableDays(journeyId, availableDays, exist
 
   days.forEach((d) => {
     if (!plan[d]) {
-      plan[d] =
-        d === 0 || d === 6
-          ? { type: 'recovery', label: 'Rest & Recovery', time: '08:00' }
-          : { type: 'workout', label: 'Workout', time: '06:00' };
+      plan[d] = getDefaultActivityForWeekday(journeyId, d);
     }
   });
   Object.keys(plan).forEach((d) => {

@@ -111,6 +111,7 @@ export function HomePage() {
           </p>
           <Link
             to="/dashboard/create-journey"
+            data-tour="create-journey"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--neon-green)] px-8 py-4 text-base font-bold text-[#003d1f] hover:opacity-90 transition-opacity"
           >
             <Plus className="size-5" />
@@ -134,6 +135,7 @@ export function HomePage() {
           </div>
           <Link
             to="/dashboard/create-journey"
+            data-tour="create-journey"
             className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-[var(--neon-green)] px-4 py-2.5 text-sm font-bold text-[#003d1f] hover:opacity-90 transition-opacity shrink-0"
           >
             <Plus className="size-4" />

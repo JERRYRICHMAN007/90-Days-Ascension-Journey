@@ -102,7 +102,7 @@ export function JourneyScheduleCard({ journeyId, onSaved, onEditSetup, accentCol
           accentRgb={rgb}
         />
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" data-tour="start-journey">
           <Button
             onClick={handleStart}
             className="rounded-full font-display text-xs uppercase tracking-wider font-bold text-[#0a0a0a]"

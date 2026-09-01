@@ -4,13 +4,17 @@
  */
 
 import { STORAGE_KEYS } from './storageKeys.js';
-import { getContentTemplateId } from './journeyRegistry.js';
+import { getContentTemplateId, getRegistryJourneys } from './journeyRegistry.js';
 import {
   READING_LIBRARY_QUEUE,
   READING_BOOKS_BY_MONTH,
 } from '../data/journeys/journeyCuratedResources.js';
 import { DEFAULT_WEEKLY_ROUTINES } from '../data/journeys/bodyWorkoutPlan.js';
-import { getDefaultWeeklyPlanForCategory, resolveJourneyAIContext } from './journeyAIContext.js';
+import {
+  getDefaultWeeklyPlanForJourney,
+  isSoftwareEngineeringLabel,
+  resolveJourneyAIContext,
+} from './journeyAIContext.js';
 import { saveWeeklyPlan } from './journeyWeeklyPlan.js';
 import { saveWorkoutPlanState } from './workoutPlan.js';
 
@@ -113,13 +117,12 @@ function defaultSeDays() {
   return days;
 }
 
-function defaultGenericDays() {
+function defaultGenericDays(sessionLabel = "Today's session") {
   const days = {};
   WEEKDAY_FULL.forEach((_, d) => {
-    days[String(d)] = {
-      rest: d === 0,
-      task: d === 0 ? '' : "Today's session",
-    };
+    days[String(d)] = d === 6
+      ? { rest: true, task: '' }
+      : { rest: false, task: sessionLabel };
   });
   return days;
 }
@@ -127,11 +130,11 @@ function defaultGenericDays() {
 export function getDefaultCustomPlanDraft(journeyId) {
   const templateId = getContentTemplateId(journeyId);
   const ctx = resolveJourneyAIContext(journeyId);
-  const weeklyPlan = getDefaultWeeklyPlanForCategory(ctx.category, templateId);
+  const weeklyPlan = getDefaultWeeklyPlanForJourney(journeyId);
   const draft = { weeklyPlan };
 
   if (templateId === 'custom-scratch') {
-    draft.genericDays = defaultGenericDays();
+    draft.genericDays = defaultGenericDays(ctx.journeyTitle || "Today's session");
   }
 
   if (templateId === 'reading') {
@@ -161,11 +164,15 @@ export const DEFAULT_PLAN_BLURBS = {
   'dual-brand': 'Personal + company brand streams on workdays. Weekly review on Sunday.',
   'software-engineering':
     'Mobile · Frontend · Backend every day except Saturday, 4:00–5:30 AM.',
+  'custom-scratch':
+    'Your own schedule. Session names match this journey — change days, times, and tasks anytime.',
 };
 
 export function getDefaultPlanBlurb(journeyId) {
   const templateId = getContentTemplateId(journeyId);
-  return DEFAULT_PLAN_BLURBS[templateId] || 'Aether 6-month default plan for this journey.';
+  if (DEFAULT_PLAN_BLURBS[templateId]) return DEFAULT_PLAN_BLURBS[templateId];
+  const ctx = resolveJourneyAIContext(journeyId);
+  return `${ctx.journeyTitle || 'This journey'} — set your own days and times. You can change them anytime.`;
 }
 
 export function getDefaultPlanPreviewItems(journeyId) {
@@ -197,9 +204,82 @@ export function getDefaultPlanPreviewItems(journeyId) {
     ];
   }
   if (templateId === 'custom-scratch') {
-    return ['Your own name and schedule', 'Days and times you choose', 'Tasks you write for each weekday'];
+    const ctx = resolveJourneyAIContext(journeyId);
+    return [
+      ctx.journeyTitle ? `Sessions named “${ctx.journeyTitle}”` : 'Your own name and schedule',
+      'Days and times you choose',
+      'Change anything later — even after you start',
+    ];
   }
   return ['6-month independent schedule', 'Daily sessions + weekly rest'];
+}
+
+/**
+ * Custom / learning journeys used to inherit Software Engineering labels.
+ * Repair stored weekly plans in place.
+ */
+export function migrateLeakedEngineeringPlans() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOURNEY_WEEKLY_PLAN) || '{}');
+    const customAll = readAll();
+    let weeklyChanged = false;
+    let customChanged = false;
+
+    getRegistryJourneys().forEach((entry) => {
+      const templateId = getContentTemplateId(entry.id);
+      if (templateId === 'software-engineering') return;
+
+      const plan = stored[entry.id];
+      if (plan && typeof plan === 'object') {
+        const leaked = Object.values(plan).some((act) => isSoftwareEngineeringLabel(act?.label));
+        if (leaked) {
+          const defaults = getDefaultWeeklyPlanForJourney(entry.id);
+          const next = { ...plan };
+          Object.keys(next).forEach((key) => {
+            const act = next[key];
+            if (!act || !isSoftwareEngineeringLabel(act.label)) return;
+            const fallback = defaults[key] || defaults[Number(key)];
+            const isRest = act.type === 'recovery' || act.type === 'rest';
+            next[key] = {
+              ...act,
+              type: fallback?.type || (isRest ? 'recovery' : 'learning'),
+              label: fallback?.label || (isRest ? 'Rest day' : entry.title || 'Session'),
+              time: act.time === '04:00' ? fallback?.time || '19:00' : act.time,
+            };
+          });
+          stored[entry.id] = next;
+          weeklyChanged = true;
+        }
+      }
+
+      const generic = customAll[entry.id]?.genericDays;
+      if (generic && typeof generic === 'object' && templateId === 'custom-scratch') {
+        let genericDirty = false;
+        const nextGeneric = { ...generic };
+        Object.keys(nextGeneric).forEach((key) => {
+          const row = nextGeneric[key];
+          if (row && isSoftwareEngineeringLabel(row.task)) {
+            nextGeneric[key] = { ...row, task: entry.title || "Today's session" };
+            genericDirty = true;
+          }
+        });
+        if (genericDirty) {
+          customAll[entry.id] = { ...customAll[entry.id], genericDays: nextGeneric };
+          customChanged = true;
+        }
+      }
+    });
+
+    if (weeklyChanged) {
+      localStorage.setItem(STORAGE_KEYS.JOURNEY_WEEKLY_PLAN, JSON.stringify(stored));
+      window.dispatchEvent(new CustomEvent('journey-weekly-plan-updated'));
+    }
+    if (customChanged) writeAll(customAll);
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
@@ -214,7 +294,7 @@ export function seedJourneyPlan(journeyId, { planSource = 'default', customPlan 
   const weeklyPlan =
     planSource === 'custom' && draft.weeklyPlan && Object.keys(draft.weeklyPlan).length
       ? draft.weeklyPlan
-      : getDefaultWeeklyPlanForCategory(ctx.category, templateId);
+      : getDefaultWeeklyPlanForJourney(journeyId);
   saveWeeklyPlan(journeyId, weeklyPlan);
 
   const stored = {
@@ -254,7 +334,9 @@ export function seedJourneyPlan(journeyId, { planSource = 'default', customPlan 
   }
   if (templateId === 'custom-scratch') {
     stored.genericDays =
-      planSource === 'custom' && draft.genericDays ? draft.genericDays : defaultGenericDays();
+      planSource === 'custom' && draft.genericDays
+        ? draft.genericDays
+        : defaultGenericDays(ctx.journeyTitle || "Today's session");
   }
 
   saveCustomPlan(journeyId, stored);

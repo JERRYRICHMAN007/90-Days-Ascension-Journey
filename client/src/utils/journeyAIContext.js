@@ -167,11 +167,29 @@ function readWeeklyPlanStorage(journeyId) {
   }
 }
 
+export function isSoftwareEngineeringLabel(label) {
+  const text = String(label || '');
+  return /mobile/i.test(text) && /frontend/i.test(text) && /backend/i.test(text);
+}
+
+function sessionLabelFor(category, templateId, journeyTitle) {
+  const title = String(journeyTitle || '').trim();
+  if (templateId === 'software-engineering') return 'Mobile · Frontend · Backend';
+  if (title) return title;
+  const persona = AI_PERSONAS[category];
+  if (persona?.sessionTerm) {
+    return persona.sessionTerm.charAt(0).toUpperCase() + persona.sessionTerm.slice(1);
+  }
+  return 'Session';
+}
+
 /** Default weekly activity plans per category */
-export function getDefaultWeeklyPlanForCategory(category, templateId = '') {
+export function getDefaultWeeklyPlanForCategory(category, templateId = '', options = {}) {
   const evening = '19:00';
   const morning = '07:00';
   const early = '06:00';
+  const journeyTitle = options.journeyTitle || '';
+  const sessionLabel = sessionLabelFor(category, templateId, journeyTitle);
 
   if (category === 'fitness' || templateId === 'body-transformation') {
     const plan = {};
@@ -204,8 +222,7 @@ export function getDefaultWeeklyPlanForCategory(category, templateId = '') {
     };
   }
 
-  if (category === 'learning' || templateId === 'software-engineering') {
-    // Mobile · Frontend · Backend — 4:00–5:30 AM every day except Saturday
+  if (templateId === 'software-engineering') {
     const plan = {};
     [0, 1, 2, 3, 4, 5].forEach((d) => {
       plan[d] = {
@@ -213,6 +230,15 @@ export function getDefaultWeeklyPlanForCategory(category, templateId = '') {
         label: 'Mobile · Frontend · Backend',
         time: '04:00',
       };
+    });
+    plan[6] = { type: 'recovery', label: 'Rest day', time: '08:00' };
+    return plan;
+  }
+
+  if (category === 'learning') {
+    const plan = {};
+    [0, 1, 2, 3, 4, 5].forEach((d) => {
+      plan[d] = { type: 'learning', label: sessionLabel, time: evening };
     });
     plan[6] = { type: 'recovery', label: 'Rest day', time: '08:00' };
     return plan;
@@ -249,7 +275,22 @@ export function getDefaultWeeklyPlanForCategory(category, templateId = '') {
     };
   }
 
-  return {};
+  const plan = {};
+  [1, 2, 3, 4, 5].forEach((d) => {
+    plan[d] = { type: 'custom', label: sessionLabel, time: evening };
+  });
+  [0, 6].forEach((d) => {
+    plan[d] = { type: 'recovery', label: 'Rest day', time: '08:00' };
+  });
+  return plan;
+}
+
+/** Default weekly plan for a specific journey instance (uses its title + category). */
+export function getDefaultWeeklyPlanForJourney(journeyId) {
+  const ctx = resolveJourneyAIContext(journeyId);
+  return getDefaultWeeklyPlanForCategory(ctx.category, ctx.templateId, {
+    journeyTitle: ctx.journeyTitle,
+  });
 }
 
 /**
@@ -292,7 +333,9 @@ export function loadJourneyAIScope(journeyId) {
     context,
     weeklyPlan:
       readWeeklyPlanStorage(journeyId) ||
-      getDefaultWeeklyPlanForCategory(context.category, context.templateId),
+      getDefaultWeeklyPlanForCategory(context.category, context.templateId, {
+        journeyTitle: context.journeyTitle,
+      }),
   };
 }
 

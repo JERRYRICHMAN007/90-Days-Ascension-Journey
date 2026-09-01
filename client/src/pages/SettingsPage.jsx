@@ -14,6 +14,7 @@ import {
   PlayCircle,
   RotateCcw,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,6 +30,7 @@ import {
   getGlobalRemindersEnabled,
   setGlobalRemindersEnabled,
 } from '../utils/journeyBulkActions.js';
+import { restartProductTour } from '../utils/productTour.js';
 
 const themeOptions = [
   { value: 'light', label: 'Light', icon: Sun },
@@ -334,6 +336,22 @@ export function SettingsPage() {
       <SettingsSection icon={Info} title="About" description="Application information">
         <SettingsRow label="Aether" description="Personal journey operating system">
           <span className="text-xs font-mono text-[var(--text-muted)]">v1.0</span>
+        </SettingsRow>
+        <SettingsRow
+          label="New user guide"
+          description="Replay the walkthrough for creating and customizing a journey"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full text-xs"
+            onClick={() => {
+              restartProductTour();
+              navigate('/dashboard');
+            }}
+          >
+            <Sparkles className="size-3.5 mr-1" /> Replay guide
+          </Button>
         </SettingsRow>
       </SettingsSection>
     </div>

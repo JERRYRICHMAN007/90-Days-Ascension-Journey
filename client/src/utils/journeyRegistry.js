@@ -211,8 +211,7 @@ export function getContentTemplateId(journeyId) {
     if (custom?.baseTemplateId && JOURNEY_IDS.includes(custom.baseTemplateId)) {
       return custom.baseTemplateId;
     }
-    if (custom?.fromScratch) return 'custom-scratch';
-    return 'body-transformation';
+    return 'custom-scratch';
   }
   if (entry?.templateId && JOURNEY_IDS.includes(entry.templateId)) return entry.templateId;
   return entry?.templateId || journeyId;

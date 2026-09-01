@@ -37,6 +37,8 @@ export const STORAGE_KEYS = {
   WORKOUT_PLAN: 'aetherWorkoutPlan',
   /** Per-journey custom content (books, weekday tasks, SE disciplines): { [journeyId]: CustomPlan } */
   JOURNEY_CUSTOM_PLAN: 'aetherJourneyCustomPlan',
+  /** Product tour: { status: 'idle'|'active'|'done'|'skipped', step: number } */
+  PRODUCT_TOUR: 'aetherProductTour',
 };
 
 /** Older key names → current Aether keys (run once on load). */

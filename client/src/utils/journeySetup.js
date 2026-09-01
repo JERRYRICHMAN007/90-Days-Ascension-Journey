@@ -15,7 +15,7 @@ import {
   saveWeeklyPlan,
   patchWeeklyPlanFromAvailableDays,
 } from './journeyWeeklyPlan.js';
-import { resolveJourneyAIContext, getDefaultWeeklyPlanForCategory } from './journeyAIContext.js';
+import { resolveJourneyAIContext, getDefaultWeeklyPlanForJourney } from './journeyAIContext.js';
 import { seedJourneyPlan } from './journeyCustomPlan.js';
 
 export const GOAL_CHANGE_XP_PENALTY = 15;
@@ -77,7 +77,6 @@ function syncWeeklyPlanFromProfile(journeyId, profile) {
   if (!days?.length) return;
   const existing = getWeeklyPlan(journeyId);
   const hasPlan = Object.keys(readWeeklyPlanRaw(journeyId) || {}).length > 0;
-  const ctx = resolveJourneyAIContext(journeyId);
   // Custom plans must not be overwritten by category defaults
   if (profile.planSource === 'custom' && hasPlan) {
     const plan = patchWeeklyPlanFromAvailableDays(journeyId, days, existing);
@@ -85,7 +84,7 @@ function syncWeeklyPlanFromProfile(journeyId, profile) {
     return;
   }
   const plan = !hasPlan
-    ? getDefaultWeeklyPlanForCategory(ctx.category, ctx.templateId)
+    ? getDefaultWeeklyPlanForJourney(journeyId)
     : patchWeeklyPlanFromAvailableDays(journeyId, days, existing);
   saveWeeklyPlan(journeyId, plan);
 }
@@ -218,6 +217,24 @@ export const SETUP_STEPS_CUSTOM = [
 ];
 
 export const SETUP_STEPS = SETUP_STEPS_DEFAULT;
+
+/** Setup wizard steps — skip redundant plan-style when already chosen. */
+export function getSetupSteps(templateId, planSource) {
+  if (templateId === 'custom-scratch') {
+    return [
+      { id: 'schedule', title: 'Days & times', subtitle: 'When you practice — you can change this anytime' },
+      { id: 'content', title: 'Daily tasks', subtitle: 'What you do on each active day' },
+      { id: 'goals', title: 'Goals', subtitle: 'Optional — add or edit these later' },
+    ];
+  }
+  if (planSource === 'custom') {
+    return SETUP_STEPS_CUSTOM.filter((s) => s.id !== 'planStyle');
+  }
+  if (planSource === 'default') {
+    return SETUP_STEPS_DEFAULT.filter((s) => s.id !== 'planStyle');
+  }
+  return SETUP_STEPS_DEFAULT;
+}
 
 const WEEKDAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 

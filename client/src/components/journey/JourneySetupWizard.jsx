@@ -15,14 +15,14 @@ import { GoalChangeConfirmDialog } from './GoalChangeConfirmDialog.jsx';
 import { cn } from '../../lib/utils';
 import { JourneyDateRangePicker } from './JourneyDatePicker.jsx';
 import {
-  SETUP_STEPS_CUSTOM,
-  SETUP_STEPS_DEFAULT,
+  getSetupSteps,
   applyJourneySetup,
   applyJourneyPatches,
   getJourneySetup,
   wouldIncurGoalPenalty,
   GOAL_CHANGE_XP_PENALTY,
 } from '../../utils/journeySetup.js';
+import { getContentTemplateId } from '../../utils/journeyRegistry.js';
 import { getDefaultPickerDate } from '../../utils/journeyPlanning.js';
 import { addMonths, formatYmd, JOURNEY_DURATION_MONTHS, parseYmd } from '../../utils/dates.js';
 import {
@@ -67,7 +67,7 @@ export function JourneySetupWizard({
 }) {
   const saved = useMemo(() => getJourneySetup(journeyId), [journeyId, open]);
   const { addXP } = useGamification();
-  const [step, setStep] = useState(() => (saved.planSource ? 1 : 0));
+  const [step, setStep] = useState(0);
   const [goalConfirmOpen, setGoalConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -126,15 +126,16 @@ export function JourneySetupWizard({
     setGoalWhy(initSelections(next, 'whyImportant', GOAL_WHY_OPTIONS));
     setGoalSuccess(initSelections(next, 'successLooksLike', SUCCESS_LOOKS_OPTIONS));
     setGoalMotivation(initSelections(next, 'motivation', MOTIVATION_OPTIONS));
-    setStep(next.planSource ? 1 : 0);
+    setStep(0);
   }, [open, journeyId]);
 
   const rgb = accentRgb || '110,231,183';
   const accent = accentColor || '#6ee7b7';
   const endYmd = formatYmd(addMonths(parseYmd(profile.startYmd), JOURNEY_DURATION_MONTHS));
   const isCustom = planSource === 'custom';
-  const steps = isCustom ? SETUP_STEPS_CUSTOM : SETUP_STEPS_DEFAULT;
-  const stepMeta = steps[Math.min(step, steps.length - 1)];
+  const templateId = getContentTemplateId(journeyId);
+  const steps = getSetupSteps(templateId, planSource);
+  const stepMeta = steps[Math.min(step, steps.length - 1)] || steps[0];
 
   const patch = (p) => setProfile((prev) => ({ ...prev, ...p }));
 
@@ -406,18 +407,8 @@ export function JourneySetupWizard({
               </Button>
             )}
             <div className="flex-1" />
-            {step === 0 ? (
-              planSource ? (
-                <Button
-                  className="rounded-full font-bold"
-                  style={{ background: accent, color: '#0a0a0a' }}
-                  onClick={handleContinue}
-                >
-                  Continue <ArrowRight className="size-4 ml-1" />
-                </Button>
-              ) : (
-                <p className="text-xs text-[var(--text-muted)]">Choose a plan style to continue</p>
-              )
+            {stepMeta.id === 'planStyle' && !planSource ? (
+              <p className="text-xs text-[var(--text-muted)]">Choose a plan style to continue</p>
             ) : step < steps.length - 1 ? (
               <Button
                 className="rounded-full font-bold"
