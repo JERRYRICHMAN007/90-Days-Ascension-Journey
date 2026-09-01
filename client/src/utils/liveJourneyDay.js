@@ -4,8 +4,9 @@
  * which can disagree with the per-journey start the user actually chose.
  */
 
-import { getDateForDay as getJourneyDateForDay } from './journeyPlanning.js';
+import { getContentWeekForDay, getDateForDay as getJourneyDateForDay } from './journeyPlanning.js';
 import { getDisplayWeeklyPlan, formatHourLabel } from './journeyWeeklyPlan.js';
+import { getContentTemplateId } from './journeyRegistry.js';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -37,6 +38,59 @@ export function formatLiveYmd(date) {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+}
+
+function weekdayFromYmd(ymd) {
+  if (!ymd) return null;
+  const [y, m, d] = String(ymd).split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d).getDay();
+}
+
+/**
+ * Find a library day whose baked weekday matches the live calendar.
+ * Prefers a full week over the partial first week (Saturday-only rest when
+ * the content calendar starts on Saturday).
+ */
+export function findLibraryDayForWeekday(weeks, weekday, preferredDayNumber = 1) {
+  if (weekday == null || !weeks?.length) return null;
+  const preferredWeek = getContentWeekForDay(weeks, preferredDayNumber);
+  const ordered = [...weeks].sort((a, b) => {
+    const ad = Math.abs((a.weekNumber || 0) - preferredWeek);
+    const bd = Math.abs((b.weekNumber || 0) - preferredWeek);
+    return ad - bd;
+  });
+
+  let restFallback = null;
+  for (const week of ordered) {
+    for (const day of week.days || []) {
+      if (weekdayFromYmd(day.date) !== weekday) continue;
+      const looksRest = day.isRestDay || /rest/i.test(day.focus || '');
+      if (looksRest && (day.dayNumber || 0) <= 1) {
+        restFallback = restFallback || { ...day, weekNumber: week.weekNumber };
+        continue;
+      }
+      return { ...day, weekNumber: week.weekNumber };
+    }
+  }
+  return restFallback;
+}
+
+function applyWeeklyPlanFocus(day, journeyId, weekday) {
+  const act = getDisplayWeeklyPlan(journeyId)?.[weekday];
+  if (!act) return day;
+  const planIsRest = act.type === 'recovery' || act.type === 'rest';
+  const focusLooksRest = /rest/i.test(day.focus || '') || day.isRestDay;
+  if (!planIsRest && focusLooksRest) {
+    return { ...day, isRestDay: false, focus: act.label || day.focus };
+  }
+  if (!day.focus || day.focus === 'Session') {
+    return { ...day, focus: act.label || day.focus };
+  }
+  if (planIsRest && focusLooksRest) {
+    return { ...day, focus: act.label || day.focus };
+  }
+  return day;
 }
 
 /** SE: Mobile / Frontend / Backend every day except Saturday */
@@ -133,24 +187,39 @@ export function resolveLiveSoftwareEngineeringDay(day, journeyId) {
 }
 
 /**
- * Patch any journey day with the live calendar weekday/date.
- * Body workouts already resolve live via BodyWorkoutHero; this keeps dayName/date honest everywhere.
+ * Patch any journey day with the live calendar weekday/date and weekday-matched content.
+ * Body/reading/writing templates repeat weekly — Day 1 must not stay Saturday rest
+ * when the user's Day 1 is a Tuesday.
  */
-export function resolveLiveJourneyDay(day, journeyId) {
+export function resolveLiveJourneyDay(day, journeyId, weeks) {
   if (!day?.dayNumber || !journeyId) return day;
 
-  if (journeyId === 'software-engineering') {
+  const templateId = getContentTemplateId(journeyId);
+  if (templateId === 'software-engineering') {
     return resolveLiveSoftwareEngineeringDay(day, journeyId);
   }
 
   const liveDate = getLiveCalendarDate(journeyId, day.dayNumber);
   if (!liveDate) return day;
 
+  const weekday = liveDate.getDay();
+  const template = findLibraryDayForWeekday(weeks, weekday, day.dayNumber);
+  const merged = template
+    ? {
+        ...template,
+        dayNumber: day.dayNumber,
+        weekNumber: day.weekNumber || template.weekNumber,
+      }
+    : { ...day };
+
+  const withPlan = applyWeeklyPlanFocus(merged, journeyId, weekday);
+
   return {
-    ...day,
-    dayName: DAY_NAMES[liveDate.getDay()],
+    ...withPlan,
+    dayNumber: day.dayNumber,
+    dayName: DAY_NAMES[weekday],
     date: formatLiveYmd(liveDate),
-    dayIndex: jsDayToScheduleIndex(liveDate.getDay()),
+    dayIndex: jsDayToScheduleIndex(weekday),
   };
 }
 
@@ -163,7 +232,8 @@ export function getLiveTimeBlock(journeyId, dayNumber, fallback = '') {
   const act = plan[weekday];
   if (!act) return fallback || null;
   const time = act.time ? formatHourLabel(act.time) : null;
-  if (time && act.label) return `${time} · ${act.label}`;
-  if (time) return time;
-  return act.label || fallback || null;
+  const label = act.label || '';
+  if (time && label) return `Session ${time} · ${label}`;
+  if (time) return `Session ${time}`;
+  return label || fallback || null;
 }

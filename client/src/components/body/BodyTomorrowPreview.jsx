@@ -1,10 +1,14 @@
 import { ChevronRight, Dumbbell } from 'lucide-react';
-import { isTomorrow } from '../../utils/dates';
+import { isTomorrow as isGlobalTomorrow } from '../../utils/dates';
+import { isTomorrowFor } from '../../utils/journeyPlanning.js';
 
 const BODY_ACCENT = '#00ff87';
 
-export function BodyTomorrowPreview({ nextDay, onPreview }) {
-  if (!nextDay?.dayNumber || !isTomorrow(nextDay.dayNumber)) return null;
+export function BodyTomorrowPreview({ nextDay, onPreview, journeyId }) {
+  const isNextTomorrow = journeyId
+    ? isTomorrowFor(journeyId, nextDay?.dayNumber)
+    : isGlobalTomorrow(nextDay?.dayNumber);
+  if (!nextDay?.dayNumber || !isNextTomorrow) return null;
 
   const exerciseCount = nextDay.workout?.exercises?.length ?? 0;
   const isRest = exerciseCount === 0;

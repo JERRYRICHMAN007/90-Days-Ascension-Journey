@@ -38,19 +38,27 @@ function writeJson(key, value) {
 /** @typedef {'not_started'|'active'|'completed'} JourneyState */
 
 /** @returns {{ startYmd: string, startedAt: string|null, isStarted: boolean } | null} */
+/** Calendar date only — never Date.parse, which shifts YYYY-MM-DD across timezones. */
+export function normalizeStartYmd(value) {
+  if (!value) return null;
+  const match = String(value).trim().match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : null;
+}
+
 export function parseStartEntry(raw) {
   if (!raw) return null;
-  if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    return { startYmd: raw, startedAt: raw, isStarted: true };
+  if (typeof raw === 'string') {
+    const ymd = normalizeStartYmd(raw);
+    if (!ymd) return null;
+    return { startYmd: ymd, startedAt: ymd, isStarted: true };
   }
-  if (raw?.startYmd && /^\d{4}-\d{2}-\d{2}$/.test(raw.startYmd)) {
-    const startedAt = raw.startedAt;
-    if (startedAt === null || startedAt === false) {
-      return { startYmd: raw.startYmd, startedAt: null, isStarted: false };
-    }
-    return { startYmd: raw.startYmd, startedAt, isStarted: true };
+  const startYmd = normalizeStartYmd(raw?.startYmd);
+  if (!startYmd) return null;
+  const startedAt = raw.startedAt;
+  if (startedAt === null || startedAt === false) {
+    return { startYmd, startedAt: null, isStarted: false };
   }
-  return null;
+  return { startYmd, startedAt, isStarted: true };
 }
 
 function entryIsExplicitlyStarted(entry) {
@@ -195,6 +203,31 @@ export function getLiveDayYmd(journeyId, dayNumber) {
   return date ? formatYmd(date) : null;
 }
 
+export function isDayAccessibleFor(journeyId, dayNumber) {
+  const total = getJourneyTotalDays(journeyId);
+  if (!total) return dayNumber >= 1;
+  return dayNumber >= 1 && dayNumber <= total;
+}
+
+export function canCompleteDayFor(journeyId, dayNumber) {
+  if (!isJourneyStarted(journeyId)) return false;
+  const current = getCurrentDayNumber(journeyId);
+  if (current == null) return dayNumber === 1;
+  return dayNumber >= 1 && dayNumber <= current;
+}
+
+export function isDayPastFor(journeyId, dayNumber) {
+  const dayDate = getDateForDay(journeyId, dayNumber);
+  if (!dayDate) return false;
+  return startOfLocalDay(dayDate) < startOfLocalDay();
+}
+
+export function isTomorrowFor(journeyId, dayNumber) {
+  const current = getCurrentDayNumber(journeyId);
+  if (current == null) return false;
+  return dayNumber === current + 1;
+}
+
 /** Which content-library week contains this journey day number */
 export function getContentWeekForDay(weeks, dayNumber) {
   if (!weeks?.length || !dayNumber || dayNumber < 1) return 1;
@@ -309,9 +342,9 @@ export function getJourneyTotalDays(journeyId) {
 
 export function getDateForDay(journeyId, dayNumber) {
   if (!dayNumber || dayNumber < 1) return null;
+  const start = getJourneyStartDate(journeyId) || startOfLocalDay();
   const total = getJourneyTotalDays(journeyId);
-  if (dayNumber > total) return null;
-  const start = getJourneyStartDate(journeyId);
+  if (total != null && dayNumber > total) return null;
   const target = new Date(start);
   target.setDate(start.getDate() + dayNumber - 1);
   return target;

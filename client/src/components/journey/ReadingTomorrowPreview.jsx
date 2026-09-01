@@ -1,10 +1,14 @@
 import { ChevronRight, BookOpen } from 'lucide-react';
-import { isTomorrow } from '../../utils/dates';
+import { isTomorrow as isGlobalTomorrow } from '../../utils/dates';
+import { isTomorrowFor } from '../../utils/journeyPlanning.js';
 
 const READING_ACCENT = '#a78bfa';
 
-export function ReadingTomorrowPreview({ nextDay, onPreview }) {
-  if (!nextDay?.dayNumber || !isTomorrow(nextDay.dayNumber)) return null;
+export function ReadingTomorrowPreview({ nextDay, onPreview, journeyId }) {
+  const isNextTomorrow = journeyId
+    ? isTomorrowFor(journeyId, nextDay?.dayNumber)
+    : isGlobalTomorrow(nextDay?.dayNumber);
+  if (!nextDay?.dayNumber || !isNextTomorrow) return null;
 
   const session = nextDay.readingSessions?.[0];
   const material =

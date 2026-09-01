@@ -1,10 +1,14 @@
 import { ChevronRight, Palette } from 'lucide-react';
-import { isTomorrow } from '../../utils/dates';
+import { isTomorrow as isGlobalTomorrow } from '../../utils/dates';
+import { isTomorrowFor } from '../../utils/journeyPlanning.js';
 
 const BRAND_ACCENT = '#00e5ff';
 
-export function BrandTomorrowPreview({ nextDay, onPreview }) {
-  if (!nextDay?.dayNumber || !isTomorrow(nextDay.dayNumber)) return null;
+export function BrandTomorrowPreview({ nextDay, onPreview, journeyId }) {
+  const isNextTomorrow = journeyId
+    ? isTomorrowFor(journeyId, nextDay?.dayNumber)
+    : isGlobalTomorrow(nextDay?.dayNumber);
+  if (!nextDay?.dayNumber || !isNextTomorrow) return null;
 
   const personal = nextDay.personalBrandTasks || nextDay.ryxenTasks;
   const company = nextDay.companyBrandTasks || nextDay.havenXTasks;

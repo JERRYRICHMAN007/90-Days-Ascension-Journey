@@ -7,7 +7,7 @@ import { ReadingTomorrowPreview } from './ReadingTomorrowPreview';
 import { JourneyDailyFlow, FlowCardFace, FlowCardBack } from './JourneyDailyFlow';
 import { getBookForDayNumber } from '../../utils/readingPlan.js';
 import { getJourneyTrace } from '../../utils/tracing';
-import { isTomorrow } from '../../utils/dates';
+import { isTomorrowFor } from '../../utils/journeyPlanning.js';
 
 const READING_ACCENT = '#a78bfa';
 const READING_GLOW = 'var(--neon-glow-purple)';
@@ -117,9 +117,9 @@ export function ReadingFlowHero({
 
   if (!readingSessions?.length) return null;
 
-  const previewingTomorrow = dayNumber != null && isTomorrow(dayNumber);
+  const previewingTomorrow = dayNumber != null && isTomorrowFor(journeyId, dayNumber);
   const showTomorrowPreview =
-    nextDay && dayNumber != null && !previewingTomorrow && isTomorrow(nextDay.dayNumber);
+    nextDay && dayNumber != null && !previewingTomorrow && isTomorrowFor(journeyId, nextDay.dayNumber);
 
   const primarySession =
     readingSessions.find((s) => s.type === 'Book') || readingSessions[0];
@@ -237,7 +237,7 @@ export function ReadingFlowHero({
       )}
 
       {showTomorrowPreview && (
-        <ReadingTomorrowPreview nextDay={nextDay} onPreview={onPreviewDay} />
+        <ReadingTomorrowPreview nextDay={nextDay} onPreview={onPreviewDay} journeyId={journeyId} />
       )}
     </div>
   );

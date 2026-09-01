@@ -33,8 +33,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useGamification } from '../../hooks/useGamification';
 import { useAuth } from '../../contexts/AuthContext';
-import { getCurrentDayNumber, getCurrentPhaseStatus, getDateForDay, isDayAccessible, canCompleteDay, isTomorrow, isDayPast } from '../../utils/dates';
-import { getCurrentPhase, getPhaseDescription, formatPhaseDayNumber, isDisciplineAvailable, getPhaseDaysRemaining } from '../../utils/phases';
+import { getCurrentPhase } from '../../utils/phases';
 import { calculateSessionBasedProgress, isDayFullyComplete, markSessionComplete, isSessionComplete, cleanInvalidProgress, toggleDayComplete } from '../../utils/progressTracking';
 import { hasScheduledActivities, getNoActivityMessage } from '../../utils/daySchedule';
 import { SessionCompletionButton } from '../SessionCompletionButton';
@@ -72,6 +71,10 @@ import {
   getContentWeekForDay,
   getLiveDayLabel,
   getLiveDayYmd,
+  isDayAccessibleFor,
+  canCompleteDayFor,
+  isDayPastFor,
+  isTomorrowFor,
 } from '../../utils/journeyPlanning.js';
 import { JourneyMotivationQuote } from './JourneyMotivationQuote';
 import { JourneySetupWizard } from './JourneySetupWizard';
@@ -104,6 +107,11 @@ export function JourneyDetailV2({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [quizPhase, setQuizPhase] = useState('quiz'); // 'quiz' | 'assessment'
   const journeyStarted = isJourneyStarted(journeyId);
+  const contentTemplateId = getContentTemplateId(journeyId);
+  const isTomorrow = (dayNumber) => isTomorrowFor(journeyId, dayNumber);
+  const isDayPast = (dayNumber) => isDayPastFor(journeyId, dayNumber);
+  const isDayAccessible = (dayNumber) => isDayAccessibleFor(journeyId, dayNumber);
+  const canCompleteDay = (dayNumber) => canCompleteDayFor(journeyId, dayNumber);
 
   useEffect(() => {
     if (searchParams.get('setup') === '1') {
@@ -189,9 +197,8 @@ export function JourneyDetailV2({
   
   // FORCE Level 0 if XP is 0 or if we're on Day 0 (preparation phase)
   // This ensures all journeys show "Progress to Level 1" when starting
-  const currentDayForLevelCheck = getCurrentDayNumber();
-  const phaseForLevelCheck = getCurrentPhaseStatus();
-  const isDay0 = currentDayForLevelCheck === 0 || currentDayForLevelCheck === null || phaseForLevelCheck === 'onboarding';
+  const currentDayForLevelCheck = getJourneyCurrentDay(journeyId);
+  const isDay0 = currentDayForLevelCheck === 0 || currentDayForLevelCheck === null;
   
   // If XP is 0 OR we're on Day 0/preparation, ALWAYS force Level 1
   // This prevents showing incorrect levels from old data
@@ -223,7 +230,7 @@ export function JourneyDetailV2({
   const currentPhase = getCurrentPhase();
   const currentDayNumber = journeyStarted ? getJourneyCurrentDay(journeyId) : null;
   
-  const isPreparationPhase = getCurrentPhaseStatus() === 'onboarding';
+  const isPreparationPhase = false;
   
   // Always get preparation data so Day 0 is always available
   const preparationData = getJourneyPreparation(journeyId);
@@ -284,7 +291,7 @@ export function JourneyDetailV2({
 
   // Remap baked content calendar → this journey's real weekday (fixes false Saturday rest, etc.)
   if (currentDay) {
-    currentDay = resolveLiveJourneyDay(currentDay, journeyId);
+    currentDay = resolveLiveJourneyDay(currentDay, journeyId, weeks);
   }
   
   // Debug: Log if currentDay is not found (only in development)
@@ -410,7 +417,7 @@ export function JourneyDetailV2({
 
   // Get scheduled disciplines for the current day based on schedule
   const scheduledDisciplines = useMemo(() => {
-    if (journeyId !== 'software-engineering' || !currentDay?.schedule) {
+    if (contentTemplateId !== 'software-engineering' || !currentDay?.schedule) {
       return [];
     }
     
@@ -436,7 +443,7 @@ export function JourneyDetailV2({
     }
     
     return Array.from(disciplinesSet);
-  }, [journeyId, currentDay?.schedule]);
+  }, [contentTemplateId, currentDay?.schedule]);
 
   // Discipline tabs — only show disciplines scheduled for THIS day
   // SE schedule: Mobile + Frontend + Backend every day except Saturday (4:00–5:30 AM)
@@ -447,7 +454,7 @@ export function JourneyDetailV2({
   ];
 
   const disciplines = useMemo(() => {
-    if (journeyId !== 'software-engineering') {
+    if (contentTemplateId !== 'software-engineering') {
       return allDisciplines;
     }
 
@@ -473,7 +480,7 @@ export function JourneyDetailV2({
   
   // Auto-select first available discipline if current one is not scheduled
   useEffect(() => {
-    if (journeyId === 'software-engineering' && disciplines.length > 0) {
+    if (contentTemplateId === 'software-engineering' && disciplines.length > 0) {
       const isCurrentDisciplineScheduled = disciplines.some(d => d.id === activeDiscipline);
       if (!isCurrentDisciplineScheduled) {
         // Switch to first scheduled discipline
@@ -484,7 +491,7 @@ export function JourneyDetailV2({
 
   // Filter schedule content by active discipline for Software Engineering
   const getDisciplineContent = () => {
-    if (journeyId !== 'software-engineering' || !currentDay?.schedule) {
+    if (contentTemplateId !== 'software-engineering' || !currentDay?.schedule) {
       return null;
     }
 
@@ -573,7 +580,7 @@ export function JourneyDetailV2({
     }
     
     // Dual Brand tasks
-    if (journeyId === 'dual-brand') {
+    if (contentTemplateId === 'dual-brand') {
       if (day.personalBrandTasks) {
         tasks.push({
           id: `personal-brand-${day.dayNumber}`,
@@ -606,7 +613,7 @@ export function JourneyDetailV2({
     }
     
     // Body Transformation tasks
-    if (journeyId === 'body-transformation' && day.workout) {
+    if (contentTemplateId === 'body-transformation' && day.workout) {
       tasks.push({
         id: `workout-${day.dayNumber}`,
         text: `Complete ${day.focus || 'workout'} session`,
@@ -615,7 +622,7 @@ export function JourneyDetailV2({
     }
     
     // Reading tasks
-    if (journeyId === 'reading' && day.readingSessions) {
+    if (contentTemplateId === 'reading' && day.readingSessions) {
       day.readingSessions.forEach((session, idx) => {
         const materialText = typeof session.material === 'object' 
           ? session.material.text 
@@ -629,7 +636,7 @@ export function JourneyDetailV2({
     }
     
     // Writer's Journey tasks (skip rest days)
-    if (journeyId === 'writers' && day.execution && !day.isRestDay) {
+    if (contentTemplateId === 'writers' && day.execution && !day.isRestDay) {
       tasks.push({
         id: `writers-${day.dayNumber}`,
         text: day.execution,
@@ -638,7 +645,7 @@ export function JourneyDetailV2({
     }
     
     // Software Engineering tasks - discipline-specific
-    if (journeyId === 'software-engineering' && day.schedule?.scheduledContent) {
+    if (contentTemplateId === 'software-engineering' && day.schedule?.scheduledContent) {
       const schedule = day.schedule.scheduledContent;
       
       // Get tasks for the active discipline
@@ -696,13 +703,13 @@ export function JourneyDetailV2({
   };
 
   // Get tasks for current day (include activeDiscipline for Software Engineering)
-  const dayTasks = useMemo(() => extractTasks(currentDay), [currentDay, journeyId, activeDiscipline]);
+  const dayTasks = useMemo(() => extractTasks(currentDay), [currentDay, journeyId, contentTemplateId, activeDiscipline]);
   
   // Task completion state (discipline-aware for Software Engineering)
   const [taskCompletion, setTaskCompletion] = useState(() => {
     if (!currentDay?.dayNumber) return {};
     try {
-      const key = journeyId === 'software-engineering' && currentDay?.dayNumber
+      const key = contentTemplateId === 'software-engineering' && currentDay?.dayNumber
         ? `tasks_${journeyId}_${currentDay.dayNumber}_${activeDiscipline}`
         : `tasks_${journeyId}_${currentDay.dayNumber}`;
       const saved = localStorage.getItem(key);
@@ -719,7 +726,7 @@ export function JourneyDetailV2({
       return;
     }
     try {
-      const key = journeyId === 'software-engineering' && currentDay?.dayNumber
+      const key = contentTemplateId === 'software-engineering' && currentDay?.dayNumber
         ? `tasks_${journeyId}_${currentDay.dayNumber}_${activeDiscipline}`
         : `tasks_${journeyId}_${currentDay.dayNumber}`;
       const saved = localStorage.getItem(key);
@@ -745,7 +752,7 @@ export function JourneyDetailV2({
     }
     
     if (currentDay?.dayNumber) {
-      const key = journeyId === 'software-engineering' && currentDay?.dayNumber
+      const key = contentTemplateId === 'software-engineering' && currentDay?.dayNumber
         ? `tasks_${journeyId}_${currentDay.dayNumber}_${activeDiscipline}`
         : `tasks_${journeyId}_${currentDay.dayNumber}`;
       localStorage.setItem(key, JSON.stringify(newCompletion));
@@ -807,10 +814,11 @@ export function JourneyDetailV2({
                 date: `${liveDate.getFullYear()}-${String(liveDate.getMonth() + 1).padStart(2, '0')}-${String(liveDate.getDate()).padStart(2, '0')}`,
                 weekNumber: week.weekNumber,
               },
-              journeyId
+              journeyId,
+              weeks
             );
           }
-          return resolveLiveJourneyDay(nextDay, journeyId);
+          return resolveLiveJourneyDay(nextDay, journeyId, weeks);
         }
       }
     }
@@ -1255,7 +1263,7 @@ export function JourneyDetailV2({
           <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
             <div className="max-w-4xl space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 pb-4 sm:pb-6 md:pb-8 px-0">
                   {/* Discipline Tabs - Only for Software Engineering (Inside Content Area) */}
-                  {journeyId === 'software-engineering' && (
+                  {contentTemplateId === 'software-engineering' && (
                     <div className="flex items-center gap-1.5 sm:gap-2 border-b border-border/50 pb-2 sm:pb-3 overflow-x-auto scrollbar-hide -mx-1 sm:mx-0 px-1 sm:px-0">
                       {disciplines.length === 0 ? (
                         <p className="text-sm text-muted-foreground px-2 py-2">
@@ -1560,7 +1568,7 @@ export function JourneyDetailV2({
                       className="space-y-4"
                     >
                       {/* Focus Section (for other journeys) - Hide for Week 1 */}
-                      {currentDay.focus && !currentDay.isTestRun && journeyId !== 'body-transformation' && journeyId !== 'dual-brand' && (
+                      {currentDay.focus && !currentDay.isTestRun && contentTemplateId !== 'body-transformation' && contentTemplateId !== 'dual-brand' && (
                         <Card className="p-4 sm:p-6 border border-border/50">
                           <div className="flex items-center gap-2 mb-4">
                             <Target className="w-5 h-5 text-primary" />
@@ -1602,7 +1610,7 @@ export function JourneyDetailV2({
 
                       {/* Learning Content - Hide for Week 1 */}
                       {/* For Software Engineering: Show schedule-based discipline content */}
-                      {!currentDay?.isTestRun && journeyId === 'software-engineering' && currentDay?.schedule && disciplineContent ? (
+                      {!currentDay?.isTestRun && contentTemplateId === 'software-engineering' && currentDay?.schedule && disciplineContent ? (
                         <>
                           {/* Not Scheduled Message */}
                           {disciplineContent.notScheduled && (
@@ -1808,7 +1816,7 @@ export function JourneyDetailV2({
                             </>
                           )}
                         </>
-                      ) : journeyId === 'body-transformation' ? (
+                      ) : contentTemplateId === 'body-transformation' ? (
                         <>
                           {hasScheduledActivities(currentDay, journeyId) && currentDay.focus ? (
                             <BodyWorkoutHero
@@ -1819,6 +1827,7 @@ export function JourneyDetailV2({
                               mindset={currentDay.mindset}
                               journeyId={journeyId}
                               dayNumber={currentDay.dayNumber}
+                              dayIndex={currentDay.dayIndex}
                               weekNum={currentWeek?.weekNumber || selectedWeek || 1}
                               dayName={dayName || currentDay.dayName}
                               dailyLearning={null}
@@ -1853,7 +1862,7 @@ export function JourneyDetailV2({
                             </Card>
                           )}
                         </>
-                      ) : journeyId === 'reading' ? (
+                      ) : contentTemplateId === 'reading' ? (
                         <>
                           {hasScheduledActivities(currentDay, journeyId) && currentDay.readingSessions ? (
                             <ReadingFlowHero
@@ -1893,7 +1902,7 @@ export function JourneyDetailV2({
                             </Card>
                           )}
                         </>
-                      ) : journeyId === 'writers' ? (
+                      ) : contentTemplateId === 'writers' ? (
                         <>
                           {hasScheduledActivities(currentDay, journeyId) && (currentDay.learning || currentDay.execution) ? (
                             <WritersFlowHero
@@ -1929,7 +1938,7 @@ export function JourneyDetailV2({
                             </Card>
                           )}
                         </>
-                      ) : journeyId === 'dual-brand' ? (
+                      ) : contentTemplateId === 'dual-brand' ? (
                         <>
                           {hasScheduledActivities(currentDay, journeyId) && currentDay.focus ? (
                             <DualBrandFlowHero
@@ -2090,7 +2099,7 @@ export function JourneyDetailV2({
                         </>
                       ) : null}
                       
-                      {!currentDay.dailyLearning && !currentDay.focus && !currentDay.learning && !currentDay.readingSessions && journeyId !== 'dual-brand' && journeyId !== 'writers' && journeyId !== 'reading' && journeyId !== 'body-transformation' && (
+                      {!currentDay.dailyLearning && !currentDay.focus && !currentDay.learning && !currentDay.readingSessions && contentTemplateId !== 'dual-brand' && contentTemplateId !== 'writers' && contentTemplateId !== 'reading' && contentTemplateId !== 'body-transformation' && (
                         <Card className="p-12 text-center border border-border/50">
                           <p className="text-muted-foreground">No learning content for this day.</p>
                         </Card>
@@ -2106,7 +2115,7 @@ export function JourneyDetailV2({
                       exit={{ opacity: 0, y: -10 }}
                     >
                       {/* For Software Engineering: Show discipline-specific project from schedule */}
-                      {journeyId === 'software-engineering' && disciplineContent && disciplineContent.implementation.length > 0 ? (
+                      {contentTemplateId === 'software-engineering' && disciplineContent && disciplineContent.implementation.length > 0 ? (
                         <div className="space-y-4">
                           <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
                             <Code className="w-5 h-5 text-primary" />
@@ -2149,7 +2158,7 @@ export function JourneyDetailV2({
                             </Card>
                           ))}
                         </div>
-                      ) : currentDay.project && journeyId === 'dual-brand' ? (
+                      ) : currentDay.project && contentTemplateId === 'dual-brand' ? (
                         <Card className="p-4 sm:p-6 border border-border/50">
                           <div className="flex items-center gap-2 mb-4">
                             <Target className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
@@ -2349,7 +2358,7 @@ export function JourneyDetailV2({
                     >
                       <DayResourcesPanel
                         title={
-                          journeyId === 'software-engineering' && activeDiscipline
+                          contentTemplateId === 'software-engineering' && activeDiscipline
                             ? activeDiscipline + ' resources'
                             : "Today's resources"
                         }
@@ -2359,7 +2368,7 @@ export function JourneyDetailV2({
                           journeyId,
                           day: currentDay,
                           disciplineContent:
-                            journeyId === 'software-engineering' ? disciplineContent : null,
+                            contentTemplateId === 'software-engineering' ? disciplineContent : null,
                           max: 4,
                         })}
                       />
@@ -2497,7 +2506,7 @@ export function JourneyDetailV2({
                       exit={{ opacity: 0, y: -10 }}
                     >
                       {/* For Software Engineering: Show discipline-specific reflection */}
-                      {journeyId === 'software-engineering' && disciplineContent ? (
+                      {contentTemplateId === 'software-engineering' && disciplineContent ? (
                         <Card className="p-4 sm:p-6 border border-border/50">
                           <div className="flex items-center gap-2 mb-4">
                             <FileText className="w-5 h-5 text-primary" />

@@ -6,8 +6,9 @@ import { BodyTomorrowPreview } from './BodyTomorrowPreview';
 import { WorkoutPlanEditor } from './WorkoutPlanEditor';
 import { WorkoutCircuitCards } from '../journey/WorkoutCircuitCards';
 import { SessionCompletionButton } from '../SessionCompletionButton';
-import { isTomorrow } from '../../utils/dates';
+import { getDateForDay, isTomorrowFor } from '../../utils/journeyPlanning.js';
 import {
+  dateToBodyDayIndex,
   dayNameToBodyDayIndex,
   resolveBodyWorkout,
 } from '../../utils/workoutPlan';
@@ -36,10 +37,12 @@ export function BodyWorkoutHero({
   const [planVersion, setPlanVersion] = useState(0);
 
   const dayIndex = useMemo(() => {
+    const liveDate = getDateForDay(journeyId, dayNumber);
+    if (liveDate) return dateToBodyDayIndex(liveDate);
     if (typeof dayIndexProp === 'number') return dayIndexProp;
     if (dayName) return dayNameToBodyDayIndex(dayName);
     return 0;
-  }, [dayIndexProp, dayName]);
+  }, [journeyId, dayNumber, dayIndexProp, dayName]);
 
   const refreshPlan = useCallback(() => {
     setPlanVersion((v) => v + 1);
@@ -68,14 +71,16 @@ export function BodyWorkoutHero({
   const resolvedLink = workout?.link || workoutLink || null;
   const displayFocus = workout?.focus || focus;
   const hasCircuit = workout?.exercises?.length > 0;
-  const previewingTomorrow = isTomorrow(dayNumber);
+  const previewingTomorrow = isTomorrowFor(journeyId, dayNumber);
   const showTomorrowPreview =
-    nextDay && !previewingTomorrow && isTomorrow(nextDay.dayNumber);
+    nextDay && !previewingTomorrow && isTomorrowFor(journeyId, nextDay.dayNumber);
 
   const nextDayResolved = useMemo(() => {
     if (!nextDay) return null;
-    const nextIndex =
-      typeof nextDay.dayIndex === 'number'
+    const nextLive = getDateForDay(journeyId, nextDay.dayNumber);
+    const nextIndex = nextLive
+      ? dateToBodyDayIndex(nextLive)
+      : typeof nextDay.dayIndex === 'number'
         ? nextDay.dayIndex
         : dayNameToBodyDayIndex(nextDay.dayName);
     const nextWeek = nextDay.weekNumber || weekNum;
@@ -286,7 +291,11 @@ export function BodyWorkoutHero({
       </div>
 
       {showTomorrowPreview && nextDayResolved && (
-        <BodyTomorrowPreview nextDay={nextDayResolved} onPreview={onPreviewDay} />
+        <BodyTomorrowPreview
+          nextDay={nextDayResolved}
+          onPreview={onPreviewDay}
+          journeyId={journeyId}
+        />
       )}
 
       {editorOpen && (

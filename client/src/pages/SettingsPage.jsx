@@ -31,6 +31,7 @@ import {
   setGlobalRemindersEnabled,
 } from '../utils/journeyBulkActions.js';
 import { restartProductTour } from '../utils/productTour.js';
+import { APP_RELEASE } from '../utils/appRelease.js';
 
 const themeOptions = [
   { value: 'light', label: 'Light', icon: Sun },
@@ -335,7 +336,7 @@ export function SettingsPage() {
       {/* About */}
       <SettingsSection icon={Info} title="About" description="Application information">
         <SettingsRow label="Aether" description="Personal journey operating system">
-          <span className="text-xs font-mono text-[var(--text-muted)]">v1.0</span>
+          <span className="text-xs font-mono text-[var(--text-muted)]">v{APP_RELEASE}</span>
         </SettingsRow>
         <SettingsRow
           label="New user guide"

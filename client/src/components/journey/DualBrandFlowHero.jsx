@@ -4,7 +4,7 @@ import { FlipCard3D } from '../ui/FlipCard3D';
 import { SessionCompletionButton } from '../SessionCompletionButton';
 import { BrandTomorrowPreview } from './BrandTomorrowPreview';
 import { JourneyDailyFlow, FlowCardFace, FlowCardBack } from './JourneyDailyFlow';
-import { isTomorrow } from '../../utils/dates';
+import { isTomorrowFor } from '../../utils/journeyPlanning.js';
 
 const BRAND_ACCENT = '#00e5ff';
 const BRAND_GLOW = 'var(--neon-glow-cyan)';
@@ -56,9 +56,9 @@ export function DualBrandFlowHero({
 }) {
   const personal = personalBrandTasks || ryxenTasks;
   const company = companyBrandTasks || havenXTasks;
-  const previewingTomorrow = dayNumber != null && isTomorrow(dayNumber);
+  const previewingTomorrow = dayNumber != null && isTomorrowFor(journeyId, dayNumber);
   const showTomorrowPreview =
-    nextDay && dayNumber != null && !previewingTomorrow && isTomorrow(nextDay.dayNumber);
+    nextDay && dayNumber != null && !previewingTomorrow && isTomorrowFor(journeyId, nextDay.dayNumber);
   const hasTasks = personal || company;
 
   if (!focus && !hasTasks) return null;
@@ -129,7 +129,7 @@ export function DualBrandFlowHero({
       )}
 
       {showTomorrowPreview && (
-        <BrandTomorrowPreview nextDay={nextDay} onPreview={onPreviewDay} />
+        <BrandTomorrowPreview nextDay={nextDay} onPreview={onPreviewDay} journeyId={journeyId} />
       )}
     </div>
   );

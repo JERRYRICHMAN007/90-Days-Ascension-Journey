@@ -24,7 +24,11 @@ export function formatYmd(date) {
 }
 
 export function parseYmd(ymd) {
-  const [y, m, d] = String(ymd).split('-').map(Number);
+  const match = String(ymd).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return new Date(NaN);
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
   return new Date(y, m - 1, d);
 }
 
